@@ -23,9 +23,9 @@ export const AppHeader = () => {
               variant="outline"
               size="sm"
               onClick={() => setIsCopilotOpen(true)}
-              className="gap-2"
+              className="gap-2 bg-transparent border-[#4ECDC4] text-foreground hover:bg-[#4ECDC4]/10"
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-4 w-4 text-[#4ECDC4]" />
               Ask Copilot
             </Button>
             <div className="flex items-center gap-2">
