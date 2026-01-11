@@ -27,6 +27,14 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleClose = () => {
+    // Reset conversation state when closing
+    setMessages([]);
+    setInput("");
+    setIsLoading(false);
+    onClose();
+  };
+
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
     
@@ -63,7 +71,7 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/20 z-40"
-          onClick={onClose}
+          onClick={handleClose}
         />
       )}
       
@@ -80,7 +88,7 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
             <Sparkles className="h-5 w-5 text-primary" />
             <span className="font-semibold text-foreground">Copilot</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={handleClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
