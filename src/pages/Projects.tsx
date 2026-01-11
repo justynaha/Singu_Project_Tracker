@@ -1,0 +1,1006 @@
+import { useState, useEffect, useMemo } from "react";
+import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { useProjects, CreateProjectInput } from "@/hooks/useProjects";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+interface TimelineItem {
+  id: string;
+  project_id: string;
+  type: string;
+  status: string;
+  due_date: string | null;
+  name: string;
+  sort_order: number;
+}
+
+interface CashflowData {
+  timeline_item_id: string;
+  project_id: string;
+  contracted: number;
+}
+
+export default function Projects() {
+  const navigate = useNavigate();
+  const { projects, loading, createProject } = useProjects();
+  const [showFilters, setShowFilters] = useState(false);
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
+  const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    site: "",
+    building: "",
+    tenant: "",
+    budgetLine: "",
+    fiscalYear: "2025",
+    budget: "",
+    currency: "PLN",
+    startDate: new Date(),
+    endDate: null as Date | null,
+  });
+  const [budgetLineOpen, setBudgetLineOpen] = useState(false);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [endDateOpen, setEndDateOpen] = useState(false);
+
+  const budgetLineLabels: Record<string, string> = {
+    common_areas: "Common Areas",
+    tenant_fitout: "Tenant Fit-Out",
+    building_upgrades: "Building Upgrades",
+    sustainability: "Sustainability",
+    safety_compliance: "Safety & Compliance",
+  };
+
+  // Site to country mapping based on sample data
+  const siteToCountry: Record<string, string> = {
+    "Mapletree Park Bedzin": "Poland",
+    "Mapletree Park Blonie 2": "Poland",
+    "Mapletree Park Gdańsk-Airport": "Poland",
+    "Mapletree Park Nadarzyn": "Poland",
+    "Mapletree Park Piotrków 1": "Poland",
+    "Mapletree Park Piotrków 2": "Poland",
+    "Mapletree Park Szczecin": "Poland",
+    "Mapletree Park Bologna Castel San Pietro": "Italy",
+    "Mapletree Park Fogars": "Spain",
+    "Mapletree Park Les Franqueses": "Spain",
+    "Mapletree Park Sallent": "Spain",
+    "Mapletree Park Valls": "Spain",
+    "Százhalombatta": "Hungary",
+    "Üllő": "Hungary",
+  };
+
+  // Pending filter values (before clicking Search)
+  const [pendingCountry, setPendingCountry] = useState("");
+  const [pendingBudgetLine, setPendingBudgetLine] = useState("");
+  const [pendingSite, setPendingSite] = useState("");
+  const [pendingStatus, setPendingStatus] = useState("");
+  const [pendingFiscalYear, setPendingFiscalYear] = useState("");
+  const [pendingTracking, setPendingTracking] = useState("");
+
+  // Applied filter values (after clicking Search)
+  const [filterCountry, setFilterCountry] = useState("");
+  const [filterBudgetLine, setFilterBudgetLine] = useState("");
+  const [filterSite, setFilterSite] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterFiscalYear, setFilterFiscalYear] = useState("");
+  const [filterTracking, setFilterTracking] = useState("");
+
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterTracking;
+
+  const applyFilters = () => {
+    setFilterCountry(pendingCountry);
+    setFilterBudgetLine(pendingBudgetLine);
+    setFilterSite(pendingSite);
+    setFilterStatus(pendingStatus);
+    setFilterFiscalYear(pendingFiscalYear);
+    setFilterTracking(pendingTracking);
+  };
+
+  const clearFilters = () => {
+    setPendingCountry("");
+    setPendingBudgetLine("");
+    setPendingSite("");
+    setPendingStatus("");
+    setPendingFiscalYear("");
+    setPendingTracking("");
+    setFilterCountry("");
+    setFilterBudgetLine("");
+    setFilterSite("");
+    setFilterStatus("");
+    setFilterFiscalYear("");
+    setFilterTracking("");
+  };
+
+  // Derive filter options from actual project data
+  const filterOptions = useMemo(() => {
+    const sites = [...new Set(projects.map(p => p.site).filter(Boolean))].sort() as string[];
+    const countries = [...new Set(sites.map(site => siteToCountry[site] || "Unknown"))].sort();
+    const budgetLines = [...new Set(projects.map(p => p.budget_line).filter(Boolean))].sort();
+    const statuses = [...new Set(projects.map(p => p.status).filter(Boolean))].sort();
+    const fiscalYears = [...new Set(projects.map(p => p.fiscal_year).filter(Boolean))].sort();
+    return { sites, countries, budgetLines, statuses, fiscalYears };
+  }, [projects]);
+
+  // Fetch all timeline items for all projects
+  useEffect(() => {
+    const fetchTimelineItems = async () => {
+      const { data, error } = await supabase
+        .from("timeline_items")
+        .select("id, project_id, type, status, due_date, name, sort_order");
+      if (!error && data) {
+        setTimelineItems(data);
+      }
+    };
+    fetchTimelineItems();
+  }, [projects]);
+
+  // Fetch cashflow data for all projects
+  useEffect(() => {
+    const fetchCashflowData = async () => {
+      const { data, error } = await supabase
+        .from("milestone_cashflow")
+        .select("timeline_item_id, contracted");
+      if (!error && data && timelineItems.length > 0) {
+        // Map cashflow data to include project_id
+        const mappedData = data.map(cf => {
+          const item = timelineItems.find(ti => ti.id === cf.timeline_item_id);
+          return {
+            timeline_item_id: cf.timeline_item_id,
+            project_id: item?.project_id || '',
+            contracted: Number(cf.contracted) || 0
+          };
+        });
+        setCashflowData(mappedData);
+      }
+    };
+    fetchCashflowData();
+  }, [timelineItems]);
+
+  const handleProjectClick = (project: { id: string }) => {
+    navigate(`/project/${project.id}`);
+  };
+
+  const DEFAULT_MILESTONES = [
+    "Planning and Concept",
+    "Tendering",
+    "Formal Approval and Contracting",
+    "Logistics and Work Kick-off",
+    "Execution and Delivery",
+    "Closure and Financial Settlement",
+  ];
+
+  const handleFormSubmit = async () => {
+    const input: CreateProjectInput = {
+      name: formData.name,
+      total_budget: formData.budget ? parseFloat(formData.budget) : 0,
+      status: "Open",
+      start_date: formData.startDate ? format(formData.startDate, "yyyy-MM-dd") : undefined,
+      end_date: formData.endDate ? format(formData.endDate, "yyyy-MM-dd") : undefined,
+      site: formData.site || undefined,
+      building: formData.building || undefined,
+      tenant: formData.tenant || undefined,
+      budget_line: formData.budgetLine || undefined,
+      fiscal_year: formData.fiscalYear || undefined,
+      currency: formData.currency || "PLN",
+    };
+    const result = await createProject(input);
+    if (result) {
+      // Create default milestones for the new project
+      const milestonesToInsert = DEFAULT_MILESTONES.map((name, index) => ({
+        project_id: result.id,
+        name,
+        type: "milestone",
+        status: "not-started",
+        sort_order: index,
+        include_in_cashflow: true,
+      }));
+
+      await supabase.from("timeline_items").insert(milestonesToInsert);
+
+      setShowNewProject(false);
+      setFormData({
+        name: "",
+        site: "",
+        building: "",
+        tenant: "",
+        budgetLine: "",
+        fiscalYear: "2025",
+        budget: "",
+        currency: "PLN",
+        startDate: new Date(),
+        endDate: null,
+      });
+      // Navigate to newly created project
+      navigate(`/project/${result.id}`);
+    }
+  };
+
+  // Pre-calculate tracking status for all projects
+  const projectTrackingStatus = useMemo(() => {
+    const statusMap: Record<string, boolean> = {};
+    projects.forEach(project => {
+      const projectItems = timelineItems.filter(item => item.project_id === project.id);
+      const overdueItems = projectItems.filter(item => {
+        if (!item.due_date) return false;
+        if (item.status === "done") return false;
+        return new Date(item.due_date) < new Date();
+      });
+      statusMap[project.id] = overdueItems.length === 0;
+    });
+    return statusMap;
+  }, [projects, timelineItems]);
+
+  const filteredProjects = projects.filter((project) => {
+    const matchesSearch =
+      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const projectCountry = project.site ? siteToCountry[project.site] : null;
+    const matchesCountry = !filterCountry || projectCountry === filterCountry;
+    const matchesBudgetLine = !filterBudgetLine || project.budget_line === filterBudgetLine;
+    const matchesSite = !filterSite || project.site === filterSite;
+    const matchesStatusFilter = !filterStatus || project.status === filterStatus;
+    const matchesFiscalYear = !filterFiscalYear || project.fiscal_year === filterFiscalYear;
+    const isOnTrack = projectTrackingStatus[project.id] ?? true;
+    const matchesTracking = !filterTracking || 
+      (filterTracking === "on-track" && isOnTrack) || 
+      (filterTracking === "off-track" && !isOnTrack);
+    return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatusFilter && matchesFiscalYear && matchesTracking;
+  });
+
+  // Calculate progress for each project from real timeline data
+  const getProjectProgress = (projectId: string) => {
+    const projectItems = timelineItems.filter(item => item.project_id === projectId);
+    const milestones = projectItems.filter(item => item.type === "milestone");
+    const achievedMilestones = milestones.filter(m => m.status === "done");
+    const milestonesAchieved = achievedMilestones.length;
+    
+    // Find the last achieved milestone (highest sort_order among done milestones)
+    const lastAchievedMilestone = achievedMilestones.length > 0
+      ? achievedMilestones.reduce((prev, current) => 
+          (current.sort_order > prev.sort_order) ? current : prev
+        )
+      : null;
+    
+    const itemsDone = projectItems.filter(item => item.status === "done").length;
+    
+    // Check for overdue items (same logic as project details)
+    const overdueItems = projectItems.filter(item => {
+      if (!item.due_date) return false;
+      if (item.status === "done") return false;
+      return new Date(item.due_date) < new Date();
+    });
+    
+    return {
+      milestonesAchieved,
+      totalMilestones: milestones.length,
+      lastAchieved: lastAchievedMilestone?.name || "-",
+      itemsDone,
+      totalItems: projectItems.length,
+      onTrack: overdueItems.length === 0,
+    };
+  };
+
+  // Get total contracted amount for a project from cashflow data
+  const getProjectSpent = (projectId: string) => {
+    return cashflowData
+      .filter(cf => cf.project_id === projectId)
+      .reduce((sum, cf) => sum + cf.contracted, 0);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Projects</h1>
+          <Button onClick={() => setShowNewProject(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add project
+          </Button>
+        </div>
+
+        {/* Search */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search"
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="mb-4"
+          >
+            Filters
+            <ChevronLeft className={cn("h-4 w-4 ml-2 transition-transform", !showFilters && "-rotate-90")} />
+          </Button>
+
+          {showFilters && (
+            <div className="p-4 border border-border rounded-lg bg-card space-y-4">
+              <div className="flex items-end gap-4">
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Country</Label>
+                  <Select value={pendingCountry || "all"} onValueChange={(val) => setPendingCountry(val === "all" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All countries" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All countries</SelectItem>
+                      {filterOptions.countries.map((country) => (
+                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Site</Label>
+                  <Select value={pendingSite || "all"} onValueChange={(val) => setPendingSite(val === "all" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All sites" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All sites</SelectItem>
+                      {filterOptions.sites.map((site) => (
+                        <SelectItem key={site} value={site}>{site}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Budget line</Label>
+                  <Select value={pendingBudgetLine || "all"} onValueChange={(val) => setPendingBudgetLine(val === "all" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All budget lines" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All budget lines</SelectItem>
+                      {filterOptions.budgetLines.map((bl) => (
+                        <SelectItem key={bl} value={bl}>{budgetLineLabels[bl] || bl}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Status</Label>
+                  <Select value={pendingStatus || "all"} onValueChange={(val) => setPendingStatus(val === "all" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All statuses</SelectItem>
+                      {filterOptions.statuses.map((status) => (
+                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Fiscal year</Label>
+                  <Select value={pendingFiscalYear || "all"} onValueChange={(val) => setPendingFiscalYear(val === "all" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All years" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All years</SelectItem>
+                      {filterOptions.fiscalYears.map((year) => (
+                        <SelectItem key={year} value={year}>{year}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Tracking</Label>
+                  <Select value={pendingTracking || "all"} onValueChange={(val) => setPendingTracking(val === "all" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="on-track">On track</SelectItem>
+                      <SelectItem value="off-track">Off track</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button className="shrink-0" onClick={applyFilters}>
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
+
+              {/* Filter chips - only show when filters are applied */}
+              {hasAppliedFilters && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {filterCountry && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      {filterCountry}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterCountry(""); setPendingCountry(""); }} />
+                    </Badge>
+                  )}
+                  {filterSite && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      {filterSite}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterSite(""); setPendingSite(""); }} />
+                    </Badge>
+                  )}
+                  {filterBudgetLine && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      {budgetLineLabels[filterBudgetLine] || filterBudgetLine}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetLine(""); setPendingBudgetLine(""); }} />
+                    </Badge>
+                  )}
+                  {filterStatus && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      {filterStatus}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterStatus(""); setPendingStatus(""); }} />
+                    </Badge>
+                  )}
+                  {filterFiscalYear && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      {filterFiscalYear}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFiscalYear(""); setPendingFiscalYear(""); }} />
+                    </Badge>
+                  )}
+                  {filterTracking && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      {filterTracking === "on-track" ? "On track" : "Off track"}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterTracking(""); setPendingTracking(""); }} />
+                    </Badge>
+                  )}
+                  <button
+                    className="text-sm text-primary hover:underline font-medium"
+                    onClick={clearFilters}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Table */}
+        <div className="border border-border rounded-lg overflow-hidden bg-card">
+          {/* Pagination and actions */}
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">1</Button>
+              <Button variant="outline" size="sm">2</Button>
+              <Button variant="outline" size="sm">3</Button>
+              <Button variant="outline" size="sm">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground ml-2">
+                Rows 1 to {filteredProjects.length} out of {filteredProjects.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover">
+                  <DropdownMenuItem>PDF</DropdownMenuItem>
+                  <DropdownMenuItem>CSV</DropdownMenuItem>
+                  <DropdownMenuItem>XLS</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="ghost" size="sm">
+                <Settings2 className="h-4 w-4 mr-2" />
+                Columns
+              </Button>
+            </div>
+          </div>
+
+          <table className="w-full">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="text-left p-4 text-sm font-medium w-16">No.</th>
+                <th className="text-left p-4 text-sm font-medium w-44">Title</th>
+                <th className="text-left p-4 text-sm font-medium w-36">Site</th>
+                <th className="text-left p-4 text-sm font-medium w-28">Status</th>
+                <th className="text-left p-4 text-sm font-medium w-36">Created by</th>
+                <th className="text-left p-4 text-sm font-medium w-52">Milestones</th>
+                <th className="text-left p-4 text-sm font-medium w-36">Progress</th>
+                <th className="text-left p-4 text-sm font-medium w-24">Fiscal year</th>
+                <th className="text-right p-4 text-sm font-medium w-44">Budget/Budget line</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={idx} className="border-t border-border">
+                    <td className="p-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="p-4"><Skeleton className="h-4 w-32" /></td>
+                    <td className="p-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="p-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="p-4"><Skeleton className="h-8 w-24" /></td>
+                    <td className="p-4"><Skeleton className="h-8 w-40" /></td>
+                    <td className="p-4"><Skeleton className="h-8 w-28" /></td>
+                    <td className="p-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="p-4"><Skeleton className="h-8 w-32" /></td>
+                  </tr>
+                ))
+              ) : filteredProjects.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                    No projects found. Click "Add project" to create one.
+                  </td>
+                </tr>
+              ) : (
+                filteredProjects.map((project, index) => {
+                  const progress = getProjectProgress(project.id);
+                  const progressPercent = progress.totalItems > 0 
+                    ? Math.round((progress.itemsDone / progress.totalItems) * 100) 
+                    : 0;
+                  const projectSpent = getProjectSpent(project.id);
+                  const budgetUsedPercent = project.total_budget && project.total_budget > 0 
+                    ? Math.round((projectSpent / project.total_budget) * 100)
+                    : 0;
+                  
+                  const getStatusBadgeClass = (status: string) => {
+                    switch (status) {
+                      case "Open":
+                      case "In Progress":
+                        return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800";
+                      case "Completed":
+                        return "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700";
+                      case "Closed":
+                        return "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-600";
+                      case "Cancelled":
+                        return "bg-slate-200 text-slate-700 border-slate-400 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-500";
+                      default:
+                        return "bg-muted text-muted-foreground border-border";
+                    }
+                  };
+                  
+                  return (
+                    <tr
+                      key={project.id}
+                      className="border-t border-border hover:bg-muted/30 cursor-pointer transition-colors align-top"
+                      onClick={() => handleProjectClick(project)}
+                    >
+                      <td className="p-4 text-sm text-primary font-medium">
+                        {13536 + index}
+                      </td>
+                      <td className="p-4 text-sm text-primary font-medium">{project.name}</td>
+                      <td className="p-4 text-sm text-muted-foreground">
+                        {project.site || "-"}
+                      </td>
+                      <td className="p-4 text-sm text-muted-foreground">
+                        {project.status}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                            <img 
+                              src={index === 1 
+                                ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
+                                : "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
+                              } 
+                              alt="User" 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span className="text-sm text-foreground">
+                            {index === 1 ? "Michael Chen" : "Anna Snow"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-sm">
+                            <span className="text-muted-foreground">◇</span>
+                            <span>{progress.totalMilestones > 0 ? `Milestones achieved: ${progress.milestonesAchieved}/${progress.totalMilestones}` : "No milestones assigned"}</span>
+                          </div>
+                          {progress.lastAchieved && progress.lastAchieved !== "-" ? (
+                            <div className="flex items-center gap-1.5 text-sm text-green-600">
+                              <span>✓</span>
+                              <span>Last achieved: {progress.lastAchieved}</span>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              Items done: {progress.itemsDone}/{progress.totalItems}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="space-y-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge 
+                                  variant="outline" 
+                                  className={cn(
+                                    "text-xs font-medium cursor-pointer",
+                                    progress.onTrack 
+                                      ? "bg-success/10 text-success border-success" 
+                                      : "bg-destructive text-destructive-foreground border-destructive"
+                                  )}
+                                >
+                                  {progress.onTrack ? "on track" : "off track"}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent 
+                                side="bottom" 
+                                className={cn(
+                                  "p-3 max-w-xs",
+                                  progress.onTrack 
+                                    ? "bg-success/10 border border-success/20" 
+                                    : "bg-destructive/10 border border-destructive/20"
+                                )}
+                              >
+                                {progress.onTrack ? (
+                                  <div className="flex items-start gap-2">
+                                    <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                                    <div>
+                                      <p className="text-sm font-medium text-success">On Track</p>
+                                      <p className="text-sm text-success">No due dates have been missed</p>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-start gap-2">
+                                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                                    <div>
+                                      <p className="text-sm font-medium text-destructive">Off Track</p>
+                                      <p className="text-sm text-destructive">Some tasks or milestones have missed their due dates</p>
+                                    </div>
+                                  </div>
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium">{progressPercent}%</span>
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden min-w-[60px]">
+                              <div 
+                                className={cn(
+                                  "h-full rounded-full transition-all",
+                                  progressPercent === 0 ? "bg-muted-foreground/30" : "bg-blue-500"
+                                )}
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Items done: {progress.itemsDone}/{progress.totalItems}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-sm text-muted-foreground">
+                        2025
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="space-y-0.5">
+                          {project.total_budget && project.total_budget > 0 ? (
+                            <>
+                              <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
+                                {budgetLineLabels[project.budget_line || ""] || project.budget_line || "Unassigned"}
+                              </Badge>
+                              <div className="text-sm">
+                                Used: {project.currency || "EUR"} {projectSpent.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                of: {project.currency || "EUR"} {project.total_budget.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                              </div>
+                              <div className={cn(
+                                "text-xs font-medium",
+                                budgetUsedPercent > 100 ? "text-red-500" : "text-primary"
+                              )}>
+                                {budgetUsedPercent}% used
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-sm text-muted-foreground italic">No budget line assigned</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* New Project Dialog */}
+      <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>New project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="name">
+                Title<span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="name"
+                placeholder="Type the name of your new project"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="site">
+                Site<span className="text-destructive">*</span>
+              </Label>
+              <Select value={formData.site} onValueChange={(val) => setFormData({ ...formData, site: val })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose site" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filterOptions.sites.map((site) => (
+                    <SelectItem key={site} value={site}>{site}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="building">Building (optional)</Label>
+              <Select value={formData.building} onValueChange={(val) => setFormData({ ...formData, building: val })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select building" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="building-a">Building A - Main Office</SelectItem>
+                  <SelectItem value="building-b">Building B - Warehouse</SelectItem>
+                  <SelectItem value="building-c">Building C - Research Center</SelectItem>
+                  <SelectItem value="building-d">Building D - Manufacturing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="tenant">Tenant (optional)</Label>
+              <Select value={formData.tenant} onValueChange={(val) => setFormData({ ...formData, tenant: val })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tenant" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tenant-alpha">Alpha Corp</SelectItem>
+                  <SelectItem value="tenant-beta">Beta Industries</SelectItem>
+                  <SelectItem value="tenant-gamma">Gamma Solutions</SelectItem>
+                  <SelectItem value="tenant-delta">Delta Partners</SelectItem>
+                  <SelectItem value="tenant-epsilon">Epsilon Ltd</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Project start date</Label>
+                <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.startDate ? format(formData.startDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.startDate}
+                      onSelect={(date) => {
+                        setFormData({ ...formData, startDate: date || new Date() });
+                        setStartDateOpen(false);
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label>Project end date</Label>
+                <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.endDate ? format(formData.endDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.endDate || undefined}
+                      onSelect={(date) => {
+                        setFormData({ ...formData, endDate: date || null });
+                        setEndDateOpen(false);
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="budgetLine">Budget line</Label>
+                <Popover open={budgetLineOpen} onOpenChange={setBudgetLineOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={budgetLineOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {formData.budgetLine
+                        ? budgetLineLabels[formData.budgetLine] || formData.budgetLine
+                        : "Choose or type"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search or type..." 
+                        onValueChange={(val) => setFormData({ ...formData, budgetLine: val })}
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          <span className="text-muted-foreground text-sm">Press enter to use "{formData.budgetLine}"</span>
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {filterOptions.budgetLines.map((bl) => (
+                            <CommandItem
+                              key={bl}
+                              value={bl}
+                              onSelect={(currentValue) => {
+                                setFormData({ ...formData, budgetLine: currentValue });
+                                setBudgetLineOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.budgetLine === bl ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {budgetLineLabels[bl] || bl}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label htmlFor="fiscalYear">Fiscal year</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between font-normal"
+                    >
+                      {formData.fiscalYear || "Select year"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0" align="start">
+                    <div className="max-h-[200px] overflow-y-auto">
+                      {Array.from({ length: 31 }, (_, i) => {
+                        const year = new Date().getFullYear() + i;
+                        return (
+                          <button
+                            key={year}
+                            type="button"
+                            className={cn(
+                              "w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors",
+                              formData.fiscalYear === String(year) && "bg-primary/10 font-medium"
+                            )}
+                            onClick={() => setFormData({ ...formData, fiscalYear: String(year) })}
+                          >
+                            {year}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="budget">Project budget</Label>
+                <Input
+                  id="budget"
+                  type="number"
+                  placeholder="Type the budget"
+                  value={formData.budget}
+                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="currency">Currency</Label>
+                <Select value={formData.currency} onValueChange={(val) => setFormData({ ...formData, currency: val })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PLN">PLN</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowNewProject(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleFormSubmit} disabled={!formData.name || !formData.site}>
+              Add project
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
