@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Message {
   role: "user" | "assistant";
@@ -22,6 +23,8 @@ const suggestions = [
   "Do we have any savings this quarter?",
 ];
 
+const COPILOT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/copilot`;
+
 export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -35,23 +38,133 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
     onClose();
   };
 
+  const streamChat = async (userMessages: Message[]) => {
+    const resp = await fetch(COPILOT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ messages: userMessages }),
+    });
+
+    if (!resp.ok) {
+      const errorData = await resp.json().catch(() => ({}));
+      if (resp.status === 429) {
+        toast.error("Rate limit exceeded. Please try again later.");
+        throw new Error("Rate limit exceeded");
+      }
+      if (resp.status === 402) {
+        toast.error("AI credits exhausted. Please add funds to your workspace.");
+        throw new Error("Payment required");
+      }
+      throw new Error(errorData.error || "Failed to get response");
+    }
+
+    if (!resp.body) throw new Error("No response body");
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let textBuffer = "";
+    let assistantContent = "";
+
+    // Add empty assistant message that we'll update
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      textBuffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+        let line = textBuffer.slice(0, newlineIndex);
+        textBuffer = textBuffer.slice(newlineIndex + 1);
+
+        if (line.endsWith("\r")) line = line.slice(0, -1);
+        if (line.startsWith(":") || line.trim() === "") continue;
+        if (!line.startsWith("data: ")) continue;
+
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === "[DONE]") break;
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            assistantContent += content;
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              newMessages[newMessages.length - 1] = {
+                role: "assistant",
+                content: assistantContent,
+              };
+              return newMessages;
+            });
+          }
+        } catch {
+          textBuffer = line + "\n" + textBuffer;
+          break;
+        }
+      }
+    }
+
+    // Final flush
+    if (textBuffer.trim()) {
+      for (let raw of textBuffer.split("\n")) {
+        if (!raw) continue;
+        if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+        if (raw.startsWith(":") || raw.trim() === "") continue;
+        if (!raw.startsWith("data: ")) continue;
+        const jsonStr = raw.slice(6).trim();
+        if (jsonStr === "[DONE]") continue;
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            assistantContent += content;
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              newMessages[newMessages.length - 1] = {
+                role: "assistant",
+                content: assistantContent,
+              };
+              return newMessages;
+            });
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  };
+
   const handleSend = async (text: string) => {
-    if (!text.trim()) return;
-    
+    if (!text.trim() || isLoading) return;
+
     const userMessage: Message = { role: "user", content: text };
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response (placeholder for actual AI integration)
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: "I'm your project copilot. This feature will be connected to AI soon to answer questions about your projects, budgets, and timelines.",
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+    try {
+      await streamChat(newMessages);
+    } catch (error) {
+      console.error("Copilot error:", error);
+      if (!messages.find((m) => m.role === "assistant" && m.content === "")) {
+        // Only show error if we haven't already added an assistant message
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Sorry, I encountered an error. Please try again.",
+          },
+        ]);
+      }
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -69,12 +182,9 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 z-40"
-          onClick={handleClose}
-        />
+        <div className="fixed inset-0 bg-black/20 z-40" onClick={handleClose} />
       )}
-      
+
       {/* Panel */}
       <div
         className={cn(
@@ -106,7 +216,7 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
               <p className="text-muted-foreground text-sm text-center mb-8 max-w-[280px]">
                 Ask me about your projects, budgets, timelines, and more.
               </p>
-              
+
               {/* Suggestions */}
               <div className="space-y-2 w-full">
                 {suggestions.map((suggestion, index) => (
@@ -140,32 +250,31 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-lg px-4 py-2 text-sm",
+                      "max-w-[80%] rounded-lg px-4 py-2 text-sm whitespace-pre-wrap",
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-foreground"
                     )}
                   >
-                    {message.content}
+                    {message.content || (
+                      <div className="flex gap-1">
+                        <span
+                          className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                          style={{ animationDelay: "0ms" }}
+                        />
+                        <span
+                          className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                          style={{ animationDelay: "150ms" }}
+                        />
+                        <span
+                          className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce"
+                          style={{ animationDelay: "300ms" }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
-              {isLoading && (
-                <div className="flex gap-3">
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      <Sparkles className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="bg-muted rounded-lg px-4 py-2">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </ScrollArea>
