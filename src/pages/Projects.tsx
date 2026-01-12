@@ -74,6 +74,10 @@ export default function Projects() {
   const [budgetLineOpen, setBudgetLineOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const budgetLineLabels: Record<string, string> = {
     common_areas: "Common Areas",
@@ -126,6 +130,7 @@ export default function Projects() {
     setFilterStatus(pendingStatus);
     setFilterFiscalYear(pendingFiscalYear);
     setFilterTracking(pendingTracking);
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
@@ -345,11 +350,11 @@ export default function Projects() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6">
+        <div className="mb-4">
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="mb-4"
+            className="mb-2"
           >
             Filters
             <ChevronLeft className={cn("h-4 w-4 ml-2 transition-transform", !showFilters && "-rotate-90")} />
@@ -502,20 +507,47 @@ export default function Projects() {
         <div className="border border-border rounded-lg overflow-hidden bg-card">
           {/* Pagination and actions */}
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" className="bg-primary text-primary-foreground">1</Button>
-              <Button variant="outline" size="sm">2</Button>
-              <Button variant="outline" size="sm">3</Button>
-              <Button variant="outline" size="sm">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-muted-foreground ml-2">
-                Rows 1 to {filteredProjects.length} out of {filteredProjects.length}
-              </span>
-            </div>
+            {(() => {
+              const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+              const startRow = (currentPage - 1) * itemsPerPage + 1;
+              const endRow = Math.min(currentPage * itemsPerPage, filteredProjects.length);
+              
+              return (
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <Button 
+                      key={page}
+                      variant="outline" 
+                      size="sm" 
+                      className={currentPage === page ? "bg-primary text-primary-foreground" : ""}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    {filteredProjects.length > 0 ? `Rows ${startRow} to ${endRow} out of ${filteredProjects.length}` : 'No results'}
+                  </span>
+                </div>
+              );
+            })()}
+            
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -571,7 +603,9 @@ export default function Projects() {
                   </td>
                 </tr>
               ) : (
-                filteredProjects.map((project, index) => {
+                filteredProjects
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((project, index) => {
                   const progress = getProjectProgress(project.id);
                   const progressPercent = progress.totalItems > 0 
                     ? Math.round((progress.itemsDone / progress.totalItems) * 100) 
@@ -597,6 +631,8 @@ export default function Projects() {
                     }
                   };
                   
+                  const globalIndex = (currentPage - 1) * itemsPerPage + index;
+                  
                   return (
                     <tr
                       key={project.id}
@@ -604,7 +640,7 @@ export default function Projects() {
                       onClick={() => handleProjectClick(project)}
                     >
                       <td className="py-2 px-4 text-sm text-primary font-medium">
-                        {13536 + index}
+                        {13536 + globalIndex}
                       </td>
                       <td className="py-2 px-4 text-sm text-primary font-medium">{project.name}</td>
                       <td className="py-2 px-4 text-sm text-muted-foreground">
