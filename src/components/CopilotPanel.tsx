@@ -30,10 +30,16 @@ interface CopilotPanelProps {
   onClose: () => void;
 }
 
-const suggestions = [
+const initialSuggestions = [
   "Which projects are running late?",
   "How much CAPEX have we spent so far?",
   "Do we have any savings this quarter?",
+];
+
+const followUpSuggestions = [
+  "Schedule monthly report",
+  "Compare to previous month",
+  "Suggest relevant actions",
 ];
 
 const COPILOT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/copilot`;
@@ -232,7 +238,7 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
 
               {/* Suggestions */}
               <div className="space-y-2 w-full">
-                {suggestions.map((suggestion, index) => (
+                {initialSuggestions.map((suggestion, index) => (
                   <button
                     key={index}
                     onClick={() => handleSuggestionClick(suggestion)}
@@ -294,6 +300,24 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
 
         {/* Input */}
         <div className="p-4 border-t border-border">
+          {/* Follow-up suggestions - show after AI has responded */}
+          {messages.length > 0 && messages[messages.length - 1]?.role === "assistant" && messages[messages.length - 1]?.content && !isLoading && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {followUpSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="px-3 py-1.5 text-xs rounded-full transition-colors"
+                  style={{ 
+                    backgroundColor: '#decaed',
+                    color: '#4a3d52'
+                  }}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="relative">
             <Textarea
               value={input}
