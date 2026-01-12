@@ -34,7 +34,8 @@ export default function Dashboard() {
     budgetLineMetrics,
     tenantBreakdown,
     filterOptions,
-    yoyMetrics
+    yoyMetrics,
+    projectLevelMetrics
   } = useDashboardData(filters);
   const baselineYearOptions = useMemo(() => {
     return ["Previous year", "2024", "2023", "2022", "2021", "2020"];
@@ -357,17 +358,40 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>CAPEX by {filters.country ? "Site" : "Country"}</CardTitle>
-                <CardDescription>Total budget by {filters.country ? "site" : "country"}{effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
+                <CardTitle>CAPEX by {filters.site ? "Project" : filters.country ? "Site" : "Country"}</CardTitle>
+                <CardDescription>Total budget by {filters.site ? "project" : filters.country ? "site" : "country"}{effectiveBaselineYear && !filters.site && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
               </div>
-              {effectiveBaselineYear && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapex')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
+              {effectiveBaselineYear && !filters.site && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapex')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
                   {visibleSeries.baselineCapex ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   {visibleSeries.baselineCapex ? 'Hide baseline' : 'Show baseline'}
                 </Button>}
             </div>
           </CardHeader>
           <CardContent>
-            {filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
+            {filters.site ? (
+              <ResponsiveContainer width="100%" height={Math.max(220, projectLevelMetrics.length * 40)}>
+                <BarChart data={projectLevelMetrics} layout="vertical" barCategoryGap="20%">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                  <XAxis type="number" tickFormatter={v => formatCurrency(v)} />
+                  <YAxis type="category" dataKey="projectName" width={200} tick={{ fontSize: 11 }} />
+                  <Tooltip content={({ active, payload, label }) => {
+                    if (!active || !payload || !payload.length) return null;
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+                        <div className="font-medium mb-1">{label}</div>
+                        <div className="text-sm text-muted-foreground">CAPEX: {formatCurrency(data.totalCapex)}</div>
+                      </div>
+                    );
+                  }} />
+                  <Bar dataKey="totalCapex" name="CAPEX" radius={[0, 4, 4, 0]}>
+                    {projectLevelMetrics.map((_, index) => (
+                      <Cell key={`project-${index}`} fill={COUNTRY_COLORS[index % COUNTRY_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
                 <BarChart data={siteMetrics} layout="vertical" barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={v => formatCurrency(v)} />
@@ -442,21 +466,51 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>CAPEX per m² by {filters.country ? "Site" : "Country"}</CardTitle>
+                <CardTitle>CAPEX per m² by {filters.site ? "Project" : filters.country ? "Site" : "Country"}</CardTitle>
                 <CardDescription>
-                  {filters.country ? "Cost efficiency by site" : "Average cost efficiency by country"}
+                  {filters.site ? "Cost efficiency by project" : filters.country ? "Cost efficiency by site" : "Average cost efficiency by country"}
                   <Badge variant="outline" className="ml-2 text-xs">Gross Floor Area</Badge>
-                  {effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}
+                  {effectiveBaselineYear && !filters.site && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}
                 </CardDescription>
               </div>
-              {effectiveBaselineYear && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapexPerGfa')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
+              {effectiveBaselineYear && !filters.site && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapexPerGfa')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
                   {visibleSeries.baselineCapexPerGfa ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   {visibleSeries.baselineCapexPerGfa ? 'Hide baseline' : 'Show baseline'}
                 </Button>}
             </div>
           </CardHeader>
           <CardContent>
-            {filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
+            {filters.site ? (
+              (() => {
+                const sortedByCapexPerGfa = [...projectLevelMetrics].sort((a, b) => b.capexPerGfa - a.capexPerGfa);
+                const avgCapexPerGfa = projectLevelMetrics.length > 0 
+                  ? projectLevelMetrics.reduce((sum, p) => sum + p.capexPerGfa, 0) / projectLevelMetrics.length 
+                  : 0;
+                return (
+                  <ResponsiveContainer width="100%" height={Math.max(220, sortedByCapexPerGfa.length * 40)}>
+                    <BarChart data={sortedByCapexPerGfa} layout="vertical" barCategoryGap="20%">
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                      <XAxis type="number" tickFormatter={v => `€${v.toFixed(0)}`} />
+                      <YAxis type="category" dataKey="projectName" width={200} tick={{ fontSize: 11 }} />
+                      <Tooltip 
+                        formatter={(value: number) => [`€${value.toFixed(2)}/m²`, 'CAPEX/m²']} 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }} 
+                      />
+                      <ReferenceLine x={avgCapexPerGfa} stroke="hsl(var(--muted-foreground))" strokeDasharray="8 4" strokeWidth={2} isFront={true} />
+                      <Bar dataKey="capexPerGfa" name="CAPEX/m²" radius={[0, 4, 4, 0]}>
+                        {sortedByCapexPerGfa.map((entry, index) => (
+                          <Cell key={`project-${index}`} fill={entry.capexPerGfa > 5 ? COLORS.danger : COUNTRY_COLORS[index % COUNTRY_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                );
+              })()
+            ) : filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
                 <BarChart data={siteMetrics} layout="vertical" barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={v => `€${v.toFixed(0)}`} />

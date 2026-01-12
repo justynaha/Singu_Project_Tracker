@@ -568,6 +568,18 @@ export function useDashboardData(filters: DashboardFilters) {
     return { countries, sites, buildings, fiscalYears, projects: projectList };
   }, [projectMetrics]);
 
+  // Project-level metrics for site-specific view (sorted by CAPEX desc)
+  const projectLevelMetrics = useMemo(() => {
+    return filteredMetrics
+      .map(m => ({
+        projectName: m.projectName,
+        totalCapex: m.budget,
+        capexPerGfa: m.capexPerGfa,
+        gfa: m.gfa,
+      }))
+      .sort((a, b) => b.totalCapex - a.totalCapex);
+  }, [filteredMetrics]);
+
   return {
     loading,
     projects: filteredMetrics,
@@ -578,5 +590,6 @@ export function useDashboardData(filters: DashboardFilters) {
     budgetLineMetrics,
     tenantBreakdown,
     filterOptions,
+    projectLevelMetrics,
   };
 }
