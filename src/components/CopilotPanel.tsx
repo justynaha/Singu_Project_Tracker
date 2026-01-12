@@ -1,11 +1,24 @@
 import { useState } from "react";
-import { X, MessageSquare, Send, Sparkles } from "lucide-react";
+import { X, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+const GradientSparkle = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="panelSparkleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4ECDC4" />
+        <stop offset="50%" stopColor="#A855F7" />
+        <stop offset="100%" stopColor="#8B5CF6" />
+      </linearGradient>
+    </defs>
+    <path d="M12 2L13.09 8.26L18 6L14.74 10.91L21 12L14.74 13.09L18 18L13.09 15.74L12 22L10.91 15.74L6 18L9.26 13.09L3 12L9.26 10.91L6 6L10.91 8.26L12 2Z" stroke="url(#panelSparkleGradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+  </svg>
+);
 
 interface Message {
   role: "user" | "assistant";
@@ -195,7 +208,7 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <GradientSparkle className="h-5 w-5" />
             <span className="font-semibold text-foreground">Copilot</span>
           </div>
           <Button variant="ghost" size="icon" onClick={handleClose}>
@@ -208,7 +221,7 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-12">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                <Sparkles className="h-8 w-8 text-primary" />
+                <GradientSparkle className="h-8 w-8" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
                 How can I help you?
@@ -243,8 +256,8 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
                 >
                   {message.role === "assistant" && (
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        <Sparkles className="h-4 w-4" />
+                      <AvatarFallback className="bg-primary/10">
+                        <GradientSparkle className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
                   )}
@@ -301,6 +314,9 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">
             AI-powered insights about your projects
+          </p>
+          <p className="text-xs text-muted-foreground/70 text-center">
+            AI can make mistakes. Verify results.
           </p>
         </div>
       </div>
