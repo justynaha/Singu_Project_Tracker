@@ -119,6 +119,12 @@ const detectTopic = (messages: Message[]): string => {
   return "default";
 };
 
+const defaultFollowUps = [
+  "Schedule monthly report",
+  "Compare to previous month",
+  "Suggest relevant actions",
+];
+
 const COPILOT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/copilot`;
 
 export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
@@ -126,10 +132,13 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get context-aware suggestions based on conversation
-  const currentSuggestions = messages.length > 0 
-    ? suggestionsByTopic[detectTopic(messages)] || suggestionsByTopic.default
-    : suggestionsByTopic.default;
+  // Count how many exchanges have happened (user + assistant pairs)
+  const exchangeCount = Math.floor(messages.filter(m => m.role === "assistant" && m.content).length);
+
+  // First response always shows default suggestions, then context-aware
+  const currentSuggestions = exchangeCount <= 1
+    ? defaultFollowUps
+    : (suggestionsByTopic[detectTopic(messages)] || defaultFollowUps);
 
   const handleClose = () => {
     // Reset conversation state when closing
