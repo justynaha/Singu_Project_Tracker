@@ -540,35 +540,33 @@ export default function Projects() {
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left p-4 text-sm font-medium w-16">No.</th>
-                <th className="text-left p-4 text-sm font-medium w-44">Title</th>
-                <th className="text-left p-4 text-sm font-medium w-36">Site</th>
-                <th className="text-left p-4 text-sm font-medium w-28">Status</th>
-                <th className="text-left p-4 text-sm font-medium w-36">Created by</th>
-                <th className="text-left p-4 text-sm font-medium w-52">Milestones</th>
-                <th className="text-left p-4 text-sm font-medium w-36">Progress</th>
-                <th className="text-left p-4 text-sm font-medium w-24">Fiscal year</th>
-                <th className="text-right p-4 text-sm font-medium w-44">Budget/Budget line</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-36">Site</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-36">Created by</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>
+                <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Budget line</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx} className="border-t border-border">
-                    <td className="p-4"><Skeleton className="h-4 w-12" /></td>
-                    <td className="p-4"><Skeleton className="h-4 w-32" /></td>
-                    <td className="p-4"><Skeleton className="h-4 w-24" /></td>
-                    <td className="p-4"><Skeleton className="h-4 w-20" /></td>
-                    <td className="p-4"><Skeleton className="h-8 w-24" /></td>
-                    <td className="p-4"><Skeleton className="h-8 w-40" /></td>
-                    <td className="p-4"><Skeleton className="h-8 w-28" /></td>
-                    <td className="p-4"><Skeleton className="h-4 w-12" /></td>
-                    <td className="p-4"><Skeleton className="h-8 w-32" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-4 w-32" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-6 w-24" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-6 w-40" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>
                   </tr>
                 ))
               ) : filteredProjects.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
                     No projects found. Click "Add project" to create one.
                   </td>
                 </tr>
@@ -602,22 +600,19 @@ export default function Projects() {
                   return (
                     <tr
                       key={project.id}
-                      className="border-t border-border hover:bg-muted/30 cursor-pointer transition-colors align-top"
+                      className="border-t border-border hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={() => handleProjectClick(project)}
                     >
-                      <td className="p-4 text-sm text-primary font-medium">
+                      <td className="py-2 px-4 text-sm text-primary font-medium">
                         {13536 + index}
                       </td>
-                      <td className="p-4 text-sm text-primary font-medium">{project.name}</td>
-                      <td className="p-4 text-sm text-muted-foreground">
+                      <td className="py-2 px-4 text-sm text-primary font-medium">{project.name}</td>
+                      <td className="py-2 px-4 text-sm text-muted-foreground">
                         {project.site || "-"}
                       </td>
-                      <td className="p-4 text-sm text-muted-foreground">
-                        {project.status}
-                      </td>
-                      <td className="p-4">
+                      <td className="py-2 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                             <img 
                               src={index === 1 
                                 ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
@@ -632,26 +627,17 @@ export default function Projects() {
                           </span>
                         </div>
                       </td>
-                      <td className="p-4">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 text-sm">
-                            <span className="text-muted-foreground">◇</span>
-                            <span>{progress.totalMilestones > 0 ? `Milestones achieved: ${progress.milestonesAchieved}/${progress.totalMilestones}` : "No milestones assigned"}</span>
-                          </div>
-                          {progress.lastAchieved && progress.lastAchieved !== "-" ? (
-                            <div className="flex items-center gap-1.5 text-sm text-green-600">
-                              <span>✓</span>
-                              <span>Last achieved: {progress.lastAchieved}</span>
-                            </div>
-                          ) : (
-                            <div className="text-sm text-muted-foreground">
-                              Items done: {progress.itemsDone}/{progress.totalItems}
-                            </div>
+                      <td className="py-2 px-4">
+                        <div className="flex items-center gap-1.5 text-sm">
+                          <span className="text-muted-foreground">◇</span>
+                          <span>{progress.totalMilestones > 0 ? `${progress.milestonesAchieved}/${progress.totalMilestones}` : "-"}</span>
+                          {progress.lastAchieved && progress.lastAchieved !== "-" && (
+                            <span className="text-green-600 ml-1">✓ {progress.lastAchieved}</span>
                           )}
                         </div>
                       </td>
-                      <td className="p-4">
-                        <div className="space-y-1">
+                      <td className="py-2 px-4">
+                        <div className="flex items-center gap-2">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -696,9 +682,11 @@ export default function Projects() {
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-medium">{progressPercent}%</span>
-                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden min-w-[60px]">
+                          <span className="text-xs text-muted-foreground">
+                            {progress.itemsDone}/{progress.totalItems} done
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
                               <div 
                                 className={cn(
                                   "h-full rounded-full transition-all",
@@ -707,39 +695,35 @@ export default function Projects() {
                                 style={{ width: `${progressPercent}%` }}
                               />
                             </div>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Items done: {progress.itemsDone}/{progress.totalItems}
+                            <span className="text-xs font-medium">{progressPercent}%</span>
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-sm text-muted-foreground">
-                        2025
+                      <td className="py-2 px-4 text-sm text-muted-foreground">
+                        {project.fiscal_year || "2025"}
                       </td>
-                      <td className="p-4 text-right">
-                        <div className="space-y-0.5">
-                          {project.total_budget && project.total_budget > 0 ? (
-                            <>
-                              <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
-                                {budgetLineLabels[project.budget_line || ""] || project.budget_line || "Unassigned"}
-                              </Badge>
-                              <div className="text-sm">
-                                Used: {project.currency || "EUR"} {projectSpent.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                of: {project.currency || "EUR"} {project.total_budget.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
-                              </div>
-                              <div className={cn(
-                                "text-xs font-medium",
-                                budgetUsedPercent > 100 ? "text-red-500" : "text-primary"
+                      <td className="py-2 px-4 text-right">
+                        {project.total_budget && project.total_budget > 0 ? (
+                          <div className="space-y-0.5">
+                            <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
+                              {budgetLineLabels[project.budget_line || ""] || project.budget_line || "Unassigned"}
+                            </Badge>
+                            <div className="text-sm font-medium">
+                              {project.currency || "PLN"} {project.total_budget.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              used: {project.currency || "PLN"} {projectSpent.toLocaleString('de-DE', { minimumFractionDigits: 2 })} 
+                              <span className={cn(
+                                "ml-1 font-medium",
+                                budgetUsedPercent > 100 ? "text-red-500" : ""
                               )}>
-                                {budgetUsedPercent}% used
-                              </div>
-                            </>
-                          ) : (
-                            <span className="text-sm text-muted-foreground italic">No budget line assigned</span>
-                          )}
-                        </div>
+                                ({budgetUsedPercent}%)
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground italic">No budget</span>
+                        )}
                       </td>
                     </tr>
                   );
