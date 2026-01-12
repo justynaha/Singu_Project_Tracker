@@ -357,8 +357,8 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>CAPEX by {(filters.country || filters.site) ? "Site" : "Country"}</CardTitle>
-                <CardDescription>Total budget by {(filters.country || filters.site) ? "site" : "country"}{effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
+                <CardTitle>CAPEX by {filters.country ? "Site" : "Country"}</CardTitle>
+                <CardDescription>Total budget by {filters.country ? "site" : "country"}{effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
               </div>
               {effectiveBaselineYear && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapex')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
                   {visibleSeries.baselineCapex ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
@@ -367,7 +367,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {(filters.country || filters.site) ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
+            {filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
                 <BarChart data={siteMetrics} layout="vertical" barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={v => formatCurrency(v)} />
@@ -442,9 +442,9 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>CAPEX per m² by {(filters.country || filters.site) ? "Site" : "Country"}</CardTitle>
+                <CardTitle>CAPEX per m² by {filters.country ? "Site" : "Country"}</CardTitle>
                 <CardDescription>
-                  {(filters.country || filters.site) ? "Cost efficiency by site" : "Average cost efficiency by country"}
+                  {filters.country ? "Cost efficiency by site" : "Average cost efficiency by country"}
                   <Badge variant="outline" className="ml-2 text-xs">Gross Floor Area</Badge>
                   {effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}
                 </CardDescription>
@@ -456,7 +456,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {(filters.country || filters.site) ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
+            {filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
                 <BarChart data={siteMetrics} layout="vertical" barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={v => `€${v.toFixed(0)}`} />
