@@ -88,21 +88,21 @@ export default function Dashboard() {
   // Yellow
   "hsl(340 82% 52%)" // Pink
   ];
-  const COUNTRY_COLORS_LIGHT = ["hsl(217 91% 80%)",
+  const COUNTRY_COLORS_LIGHT = ["hsl(217 91% 88%)",
   // Blue light
-  "hsl(142 76% 70%)",
+  "hsl(142 76% 82%)",
   // Green light
-  "hsl(32 95% 75%)",
+  "hsl(32 95% 85%)",
   // Orange light
-  "hsl(262 83% 78%)",
+  "hsl(262 83% 86%)",
   // Purple light
-  "hsl(0 84% 80%)",
+  "hsl(0 84% 88%)",
   // Red light
-  "hsl(199 89% 75%)",
+  "hsl(199 89% 85%)",
   // Cyan light
-  "hsl(45 93% 75%)",
+  "hsl(45 93% 85%)",
   // Yellow light
-  "hsl(340 82% 75%)" // Pink light
+  "hsl(340 82% 85%)" // Pink light
   ];
   if (loading) {
     return <div className="min-h-screen bg-background p-6">
@@ -429,18 +429,7 @@ export default function Dashboard() {
                   {effectiveBaselineYear && <Bar dataKey="baselineCapex" name={`FY${effectiveBaselineYear}`} radius={[4, 4, 0, 0]} hide={!visibleSeries.baselineCapex}>
                     {countryMetrics.map((_, index) => <Cell key={`baseline-${index}`} fill={COUNTRY_COLORS_LIGHT[index % COUNTRY_COLORS_LIGHT.length]} />)}
                   </Bar>}
-                  <Bar dataKey="totalCapex" name={`FY${filters.fiscalYear}`} radius={[4, 4, 0, 0]} hide={!visibleSeries.currentCapex} label={({
-                  x,
-                  y,
-                  width,
-                  index
-                }: any) => {
-                  if (!visibleSeries.currentCapex) return null;
-                  const data = countryMetrics[index];
-                  if (!filters.fiscalYear || data.yoyChange === null) return null;
-                  const color = data.yoyChange >= 0 ? '#ef4444' : '#22c55e';
-                  return <text x={x + width / 2} y={y - 5} fill={color} fontSize={11} fontWeight={600} textAnchor="middle">{data.yoyChange >= 0 ? '+' : ''}{data.yoyChange.toFixed(0)}%</text>;
-                }}>
+                  <Bar dataKey="totalCapex" name={`FY${filters.fiscalYear}`} radius={[4, 4, 0, 0]} hide={!visibleSeries.currentCapex}>
                     {countryMetrics.map((_, index) => <Cell key={`current-${index}`} fill={COUNTRY_COLORS[index % COUNTRY_COLORS.length]} />)}
                   </Bar>
                 </BarChart>
