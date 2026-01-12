@@ -35,7 +35,8 @@ export default function Dashboard() {
     tenantBreakdown,
     filterOptions,
     yoyMetrics,
-    projectLevelMetrics
+    projectLevelMetrics,
+    kpis
   } = useDashboardData(filters);
   const baselineYearOptions = useMemo(() => {
     return ["Previous year", "2024", "2023", "2022", "2021", "2020"];
@@ -209,7 +210,9 @@ export default function Dashboard() {
                   {yoyMetrics.totalCapexChange >= 0 ? '+' : ''}{yoyMetrics.totalCapexChange.toFixed(1)}%
                 </div>}
             </div>
-            {yoyMetrics.baselineYear && <p className="text-xs text-muted-foreground mt-1">vs FY{yoyMetrics.baselineYear}</p>}
+            <p className="text-xs text-muted-foreground mt-1">
+              {kpis.totalProjects} project{kpis.totalProjects !== 1 ? 's' : ''}{yoyMetrics.baselineYear && <span> • vs FY{yoyMetrics.baselineYear}</span>}
+            </p>
           </CardContent>
         </Card>
 
