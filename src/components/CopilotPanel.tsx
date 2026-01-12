@@ -36,11 +36,88 @@ const initialSuggestions = [
   "Do we have any savings this quarter?",
 ];
 
-const followUpSuggestions = [
-  "Schedule monthly report",
-  "Compare to previous month",
-  "Suggest relevant actions",
-];
+// Context-aware follow-up suggestions based on conversation topics
+const suggestionsByTopic: Record<string, string[]> = {
+  projects: [
+    "Show project timeline",
+    "List team members",
+    "Export project report",
+  ],
+  late: [
+    "Show delay reasons",
+    "Notify stakeholders",
+    "Suggest mitigation plan",
+  ],
+  capex: [
+    "Break down by category",
+    "Compare to last year",
+    "Forecast next quarter",
+  ],
+  budget: [
+    "Show budget variance",
+    "Identify overspending",
+    "Reallocate funds",
+  ],
+  savings: [
+    "Detail savings sources",
+    "Project annual savings",
+    "Share with finance team",
+  ],
+  report: [
+    "Add charts and graphs",
+    "Include executive summary",
+    "Schedule recurring report",
+  ],
+  compare: [
+    "Show trend analysis",
+    "Highlight key changes",
+    "Export comparison",
+  ],
+  actions: [
+    "Set reminders",
+    "Assign to team",
+    "Track progress",
+  ],
+  default: [
+    "Schedule monthly report",
+    "Compare to previous month",
+    "Suggest relevant actions",
+  ],
+};
+
+// Detect topic from user message
+const detectTopic = (messages: Message[]): string => {
+  const userMessages = messages
+    .filter((m) => m.role === "user")
+    .map((m) => m.content.toLowerCase())
+    .join(" ");
+
+  if (userMessages.includes("late") || userMessages.includes("delay") || userMessages.includes("behind")) {
+    return "late";
+  }
+  if (userMessages.includes("capex") || userMessages.includes("spent") || userMessages.includes("spending")) {
+    return "capex";
+  }
+  if (userMessages.includes("budget") || userMessages.includes("cost")) {
+    return "budget";
+  }
+  if (userMessages.includes("saving") || userMessages.includes("savings")) {
+    return "savings";
+  }
+  if (userMessages.includes("report") || userMessages.includes("schedule")) {
+    return "report";
+  }
+  if (userMessages.includes("compare") || userMessages.includes("previous") || userMessages.includes("last")) {
+    return "compare";
+  }
+  if (userMessages.includes("action") || userMessages.includes("suggest") || userMessages.includes("recommend")) {
+    return "actions";
+  }
+  if (userMessages.includes("project")) {
+    return "projects";
+  }
+  return "default";
+};
 
 const COPILOT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/copilot`;
 
@@ -48,6 +125,11 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Get context-aware suggestions based on conversation
+  const currentSuggestions = messages.length > 0 
+    ? suggestionsByTopic[detectTopic(messages)] || suggestionsByTopic.default
+    : suggestionsByTopic.default;
 
   const handleClose = () => {
     // Reset conversation state when closing
@@ -303,11 +385,11 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
           {/* Follow-up suggestions - show after AI has responded */}
           {messages.length > 0 && messages[messages.length - 1]?.role === "assistant" && messages[messages.length - 1]?.content && !isLoading && (
             <div className="flex flex-wrap gap-2 mb-3">
-              {followUpSuggestions.map((suggestion, index) => (
+              {currentSuggestions.map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-3 py-1.5 text-xs rounded-full transition-colors"
+                  className="px-3 py-1.5 text-xs rounded-full transition-colors hover:opacity-80"
                   style={{ 
                     backgroundColor: '#decaed',
                     color: '#4a3d52'
