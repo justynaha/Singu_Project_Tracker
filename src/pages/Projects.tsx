@@ -637,14 +637,31 @@ export default function Projects() {
                         </div>
                       </td>
                       <td className="py-2 px-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              {progress.itemsDone}/{progress.totalItems} done
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div 
+                                  className={cn(
+                                    "h-full rounded-full transition-all",
+                                    progressPercent === 0 ? "bg-muted-foreground/30" : "bg-blue-500"
+                                  )}
+                                  style={{ width: `${progressPercent}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium">{progressPercent}%</span>
+                            </div>
+                          </div>
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Badge 
                                   variant="outline" 
                                   className={cn(
-                                    "text-xs font-medium cursor-pointer",
+                                    "text-xs font-medium cursor-pointer w-fit",
                                     progress.onTrack 
                                       ? "bg-success/10 text-success border-success" 
                                       : "bg-destructive text-destructive-foreground border-destructive"
@@ -682,21 +699,6 @@ export default function Projects() {
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                          <span className="text-xs text-muted-foreground">
-                            {progress.itemsDone}/{progress.totalItems} done
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
-                              <div 
-                                className={cn(
-                                  "h-full rounded-full transition-all",
-                                  progressPercent === 0 ? "bg-muted-foreground/30" : "bg-blue-500"
-                                )}
-                                style={{ width: `${progressPercent}%` }}
-                              />
-                            </div>
-                            <span className="text-xs font-medium">{progressPercent}%</span>
-                          </div>
                         </div>
                       </td>
                       <td className="py-2 px-4 text-sm text-muted-foreground">
