@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { X, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +6,129 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+// Simple markdown parser for chat messages
+const parseMarkdown = (text: string): React.ReactNode[] => {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let listItems: string[] = [];
+  let listType: 'ul' | 'ol' | null = null;
+
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      const ListTag = listType === 'ul' ? 'ul' : 'ol';
+      elements.push(
+        <ListTag key={elements.length} className={listType === 'ul' ? 'list-disc pl-4 my-1' : 'list-decimal pl-4 my-1'}>
+          {listItems.map((item, i) => (
+            <li key={i}>{parseInline(item)}</li>
+          ))}
+        </ListTag>
+      );
+      listItems = [];
+      listType = null;
+    }
+  };
+
+  const parseInline = (text: string): React.ReactNode => {
+    // Handle bold (**text** or __text__)
+    const parts: React.ReactNode[] = [];
+    let remaining = text;
+    let key = 0;
+
+    while (remaining) {
+      // Bold
+      const boldMatch = remaining.match(/\*\*(.+?)\*\*|__(.+?)__/);
+      if (boldMatch) {
+        const before = remaining.slice(0, boldMatch.index);
+        if (before) parts.push(before);
+        parts.push(<strong key={key++}>{boldMatch[1] || boldMatch[2]}</strong>);
+        remaining = remaining.slice((boldMatch.index || 0) + boldMatch[0].length);
+        continue;
+      }
+
+      // Italic
+      const italicMatch = remaining.match(/\*(.+?)\*|_(.+?)_/);
+      if (italicMatch) {
+        const before = remaining.slice(0, italicMatch.index);
+        if (before) parts.push(before);
+        parts.push(<em key={key++}>{italicMatch[1] || italicMatch[2]}</em>);
+        remaining = remaining.slice((italicMatch.index || 0) + italicMatch[0].length);
+        continue;
+      }
+
+      // Code inline
+      const codeMatch = remaining.match(/`([^`]+)`/);
+      if (codeMatch) {
+        const before = remaining.slice(0, codeMatch.index);
+        if (before) parts.push(before);
+        parts.push(<code key={key++} className="bg-muted-foreground/20 px-1 rounded text-xs">{codeMatch[1]}</code>);
+        remaining = remaining.slice((codeMatch.index || 0) + codeMatch[0].length);
+        continue;
+      }
+
+      parts.push(remaining);
+      break;
+    }
+
+    return parts.length === 1 ? parts[0] : <>{parts}</>;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Headers
+    if (line.startsWith('### ')) {
+      flushList();
+      elements.push(<h4 key={elements.length} className="font-semibold text-sm mt-2 mb-1">{parseInline(line.slice(4))}</h4>);
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      flushList();
+      elements.push(<h3 key={elements.length} className="font-semibold mt-2 mb-1">{parseInline(line.slice(3))}</h3>);
+      continue;
+    }
+    if (line.startsWith('# ')) {
+      flushList();
+      elements.push(<h2 key={elements.length} className="font-bold mt-2 mb-1">{parseInline(line.slice(2))}</h2>);
+      continue;
+    }
+
+    // Unordered list
+    const ulMatch = line.match(/^[\-\*]\s+(.+)/);
+    if (ulMatch) {
+      if (listType !== 'ul') flushList();
+      listType = 'ul';
+      listItems.push(ulMatch[1]);
+      continue;
+    }
+
+    // Ordered list
+    const olMatch = line.match(/^\d+\.\s+(.+)/);
+    if (olMatch) {
+      if (listType !== 'ol') flushList();
+      listType = 'ol';
+      listItems.push(olMatch[1]);
+      continue;
+    }
+
+    // Regular paragraph or empty line
+    flushList();
+    if (line.trim() === '') {
+      elements.push(<div key={elements.length} className="h-2" />);
+    } else {
+      elements.push(<p key={elements.length} className="my-0.5">{parseInline(line)}</p>);
+    }
+  }
+
+  flushList();
+  return elements;
+};
+
+// Memoized markdown component
+const MarkdownContent = ({ content }: { content: string }) => {
+  const parsed = useMemo(() => parseMarkdown(content), [content]);
+  return <div className="space-y-0">{parsed}</div>;
+};
 
 const GradientSparkle = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -360,13 +483,19 @@ export function CopilotPanel({ isOpen, onClose }: CopilotPanelProps) {
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-lg px-4 py-2 text-sm whitespace-pre-wrap",
+                      "max-w-[80%] rounded-lg px-4 py-2 text-sm",
                       message.role === "user"
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary text-primary-foreground whitespace-pre-wrap"
                         : "bg-muted text-foreground"
                     )}
                   >
-                    {message.content || (
+                    {message.content ? (
+                      message.role === "assistant" ? (
+                        <MarkdownContent content={message.content} />
+                      ) : (
+                        message.content
+                      )
+                    ) : (
                       <div className="flex gap-1">
                         <span
                           className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce"
