@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardData, DashboardFilters } from "@/hooks/useDashboardData";
 import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine } from "recharts";
-import { TrendingUp, TrendingDown, Minus, RefreshCw, Eye, EyeOff, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Eye, EyeOff, Download } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 const formatCurrency = (value: number) => {
   if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
@@ -231,7 +231,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <CardDescription>Contract Sum / GFA</CardDescription>
               <div className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 px-2 py-1 rounded-md">
-                <RefreshCw className="h-3 w-3" />
+                
                 <span>Synchronized with ERP</span>
               </div>
             </div>
@@ -324,17 +324,10 @@ export default function Dashboard() {
                 <CardTitle>CAPEX by Trade & Services</CardTitle>
                 <CardDescription>Comparison across all budget categories{effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
               </div>
-              {effectiveBaselineYear && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => toggleSeries('baselineCapex')}
-                  className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground"
-                >
+              {effectiveBaselineYear && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapex')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
                   {visibleSeries.baselineCapex ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   {visibleSeries.baselineCapex ? 'Hide baseline' : 'Show baseline'}
-                </Button>
-              )}
+                </Button>}
             </div>
           </CardHeader>
           <CardContent>
@@ -367,39 +360,33 @@ export default function Dashboard() {
                 <CardTitle>CAPEX by {filters.country ? "Site" : "Country"}</CardTitle>
                 <CardDescription>Total budget by {filters.country ? "site" : "country"}{effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
               </div>
-              {effectiveBaselineYear && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => toggleSeries('baselineCapex')}
-                  className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground"
-                >
+              {effectiveBaselineYear && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapex')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
                   {visibleSeries.baselineCapex ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   {visibleSeries.baselineCapex ? 'Hide baseline' : 'Show baseline'}
-                </Button>
-              )}
+                </Button>}
             </div>
           </CardHeader>
           <CardContent>
-            {filters.country ? (
-              <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
+            {filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
                 <BarChart data={siteMetrics} layout="vertical" barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={v => formatCurrency(v)} />
-                  <YAxis type="category" dataKey="site" width={150} tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="site" width={150} tick={{
+                fontSize: 11
+              }} />
                   <Tooltip content={({
-                    active,
-                    payload,
-                    label
-                  }) => {
-                    if (!active || !payload || !payload.length) return null;
-                    const data = payload[0].payload;
-                    return <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+                active,
+                payload,
+                label
+              }) => {
+                if (!active || !payload || !payload.length) return null;
+                const data = payload[0].payload;
+                return <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
                           <div className="font-medium mb-1">{label}</div>
                           <div className="text-sm text-muted-foreground">FY{filters.fiscalYear}: {formatCurrency(data.totalCapex)}</div>
                           {effectiveBaselineYear && data.baselineCapex > 0 && <div className="text-sm text-muted-foreground">FY{effectiveBaselineYear}: {formatCurrency(data.baselineCapex)}</div>}
                         </div>;
-                  }} />
+              }} />
                   {effectiveBaselineYear && <Bar dataKey="baselineCapex" name={`FY${effectiveBaselineYear}`} radius={[0, 4, 4, 0]} hide={!visibleSeries.baselineCapex}>
                     {siteMetrics.map((_, index) => <Cell key={`baseline-${index}`} fill={COUNTRY_COLORS_LIGHT[index % COUNTRY_COLORS_LIGHT.length]} />)}
                   </Bar>}
@@ -407,64 +394,58 @@ export default function Dashboard() {
                     {siteMetrics.map((_, index) => <Cell key={`current-${index}`} fill={COUNTRY_COLORS[index % COUNTRY_COLORS.length]} />)}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
-            ) : (() => {
-              const avgCapex = countryMetrics.length > 0 ? countryMetrics.reduce((sum, c) => sum + c.totalCapex, 0) / countryMetrics.length : 0;
-              return (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={countryMetrics} margin={{ top: 20 }}>
+              </ResponsiveContainer> : (() => {
+            const avgCapex = countryMetrics.length > 0 ? countryMetrics.reduce((sum, c) => sum + c.totalCapex, 0) / countryMetrics.length : 0;
+            return <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={countryMetrics} margin={{
+                top: 20
+              }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="country" angle={-45} textAnchor="end" height={60} tick={{ fontSize: 11 }} interval={0} />
+                  <XAxis dataKey="country" angle={-45} textAnchor="end" height={60} tick={{
+                  fontSize: 11
+                }} interval={0} />
                   <YAxis tickFormatter={v => formatCurrency(v)} />
                   <Tooltip content={({
-                    active,
-                    payload,
-                    label
-                  }) => {
-                    if (!active || !payload || !payload.length) return null;
-                    const data = payload[0].payload;
-                    return <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+                  active,
+                  payload,
+                  label
+                }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const data = payload[0].payload;
+                  return <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
                           <div className="font-medium mb-1">{label}</div>
                           <div className="text-sm text-muted-foreground">FY{filters.fiscalYear}: {formatCurrency(data.totalCapex)}</div>
                           {effectiveBaselineYear && data.baselineCapex > 0 && <div className="text-sm text-muted-foreground">FY{effectiveBaselineYear}: {formatCurrency(data.baselineCapex)}</div>}
                           {data.yoyChange !== null && <div className={`text-sm font-medium ${data.yoyChange >= 0 ? 'text-red-500' : 'text-green-500'}`}>Change: {data.yoyChange >= 0 ? '+' : ''}{data.yoyChange.toFixed(1)}%</div>}
                         </div>;
-                  }} />
-                  <ReferenceLine 
-                    y={avgCapex} 
-                    stroke="hsl(var(--muted-foreground))" 
-                    strokeDasharray="8 4" 
-                    strokeWidth={2}
-                    isFront={true}
-                    label={{ 
-                      value: `Avg: ${formatCurrency(avgCapex)}`, 
-                      position: 'right',
-                      fill: 'hsl(var(--muted-foreground))',
-                      fontSize: 11,
-                      fontWeight: 500
-                    }}
-                  />
+                }} />
+                  <ReferenceLine y={avgCapex} stroke="hsl(var(--muted-foreground))" strokeDasharray="8 4" strokeWidth={2} isFront={true} label={{
+                  value: `Avg: ${formatCurrency(avgCapex)}`,
+                  position: 'right',
+                  fill: 'hsl(var(--muted-foreground))',
+                  fontSize: 11,
+                  fontWeight: 500
+                }} />
                   {effectiveBaselineYear && <Bar dataKey="baselineCapex" name={`FY${effectiveBaselineYear}`} radius={[4, 4, 0, 0]} hide={!visibleSeries.baselineCapex}>
                     {countryMetrics.map((_, index) => <Cell key={`baseline-${index}`} fill={COUNTRY_COLORS_LIGHT[index % COUNTRY_COLORS_LIGHT.length]} />)}
                   </Bar>}
                   <Bar dataKey="totalCapex" name={`FY${filters.fiscalYear}`} radius={[4, 4, 0, 0]} hide={!visibleSeries.currentCapex} label={({
-                    x,
-                    y,
-                    width,
-                    index
-                  }: any) => {
-                    if (!visibleSeries.currentCapex) return null;
-                    const data = countryMetrics[index];
-                    if (!filters.fiscalYear || data.yoyChange === null) return null;
-                    const color = data.yoyChange >= 0 ? '#ef4444' : '#22c55e';
-                    return <text x={x + width / 2} y={y - 5} fill={color} fontSize={11} fontWeight={600} textAnchor="middle">{data.yoyChange >= 0 ? '+' : ''}{data.yoyChange.toFixed(0)}%</text>;
-                  }}>
+                  x,
+                  y,
+                  width,
+                  index
+                }: any) => {
+                  if (!visibleSeries.currentCapex) return null;
+                  const data = countryMetrics[index];
+                  if (!filters.fiscalYear || data.yoyChange === null) return null;
+                  const color = data.yoyChange >= 0 ? '#ef4444' : '#22c55e';
+                  return <text x={x + width / 2} y={y - 5} fill={color} fontSize={11} fontWeight={600} textAnchor="middle">{data.yoyChange >= 0 ? '+' : ''}{data.yoyChange.toFixed(0)}%</text>;
+                }}>
                     {countryMetrics.map((_, index) => <Cell key={`current-${index}`} fill={COUNTRY_COLORS[index % COUNTRY_COLORS.length]} />)}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
-              );
-            })()}
+              </ResponsiveContainer>;
+          })()}
           </CardContent>
         </Card>
 
@@ -479,26 +460,20 @@ export default function Dashboard() {
                   {effectiveBaselineYear && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}
                 </CardDescription>
               </div>
-              {effectiveBaselineYear && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => toggleSeries('baselineCapexPerGfa')}
-                  className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground"
-                >
+              {effectiveBaselineYear && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapexPerGfa')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
                   {visibleSeries.baselineCapexPerGfa ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   {visibleSeries.baselineCapexPerGfa ? 'Hide baseline' : 'Show baseline'}
-                </Button>
-              )}
+                </Button>}
             </div>
           </CardHeader>
           <CardContent>
-            {filters.country ? (
-              <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
+            {filters.country ? <ResponsiveContainer width="100%" height={Math.max(220, siteMetrics.length * 40)}>
                 <BarChart data={siteMetrics} layout="vertical" barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={v => `€${v.toFixed(0)}`} />
-                  <YAxis type="category" dataKey="site" width={150} tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="site" width={150} tick={{
+                fontSize: 11
+              }} />
                   <Tooltip formatter={(value: number, name: string) => [`€${value.toFixed(2)}/m²`, name]} contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
@@ -507,48 +482,41 @@ export default function Dashboard() {
                   {effectiveBaselineYear && <Bar dataKey="baselineCapexPerGfa" name={`FY${effectiveBaselineYear}`} fill="hsl(var(--primary) / 0.4)" radius={[0, 4, 4, 0]} hide={!visibleSeries.baselineCapexPerGfa} />}
                   <Bar dataKey="capexPerGfa" name={`FY${filters.fiscalYear}`} fill={COLORS.primary} radius={[0, 4, 4, 0]} hide={!visibleSeries.currentCapexPerGfa}>{siteMetrics.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.capexPerGfa > 5 ? COLORS.danger : COLORS.primary} />)}</Bar>
                 </BarChart>
-              </ResponsiveContainer>
-            ) : (() => {
+              </ResponsiveContainer> : (() => {
             const sortedByCapexPerGfa = [...countryMetrics].sort((a, b) => b.capexPerGfa - a.capexPerGfa);
             const avgCapexPerGfa = countryMetrics.length > 0 ? countryMetrics.reduce((sum, c) => sum + c.capexPerGfa, 0) / countryMetrics.length : 0;
             // Create a color map based on original countryMetrics order
-            const countryColorMap = new Map(countryMetrics.map((c, i) => [c.country, { main: COUNTRY_COLORS[i % COUNTRY_COLORS.length], light: COUNTRY_COLORS_LIGHT[i % COUNTRY_COLORS_LIGHT.length] }]));
-            return (
-              <ResponsiveContainer width="100%" height={220}>
+            const countryColorMap = new Map(countryMetrics.map((c, i) => [c.country, {
+              main: COUNTRY_COLORS[i % COUNTRY_COLORS.length],
+              light: COUNTRY_COLORS_LIGHT[i % COUNTRY_COLORS_LIGHT.length]
+            }]));
+            return <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={sortedByCapexPerGfa}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="country" angle={-45} textAnchor="end" height={60} tick={{
-              fontSize: 11
-            }} interval={0} />
+                  fontSize: 11
+                }} interval={0} />
                   <YAxis tickFormatter={v => `€${v.toFixed(0)}`} />
                   <Tooltip formatter={(value: number, name: string) => [`€${value.toFixed(2)}/m²`, name]} contentStyle={{
-              backgroundColor: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '8px'
-            }} />
-                  <ReferenceLine 
-                    y={avgCapexPerGfa} 
-                    stroke="hsl(var(--muted-foreground))" 
-                    strokeDasharray="8 4" 
-                    strokeWidth={2}
-                    isFront={true}
-                    label={{ 
-                      value: `Avg: €${avgCapexPerGfa.toFixed(2)}/m²`, 
-                      position: 'right',
-                      fill: 'hsl(var(--muted-foreground))',
-                      fontSize: 11,
-                      fontWeight: 500
-                    }}
-                  />
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px'
+                }} />
+                  <ReferenceLine y={avgCapexPerGfa} stroke="hsl(var(--muted-foreground))" strokeDasharray="8 4" strokeWidth={2} isFront={true} label={{
+                  value: `Avg: €${avgCapexPerGfa.toFixed(2)}/m²`,
+                  position: 'right',
+                  fill: 'hsl(var(--muted-foreground))',
+                  fontSize: 11,
+                  fontWeight: 500
+                }} />
                   {effectiveBaselineYear && <Bar dataKey="baselineCapexPerGfa" name={`FY${effectiveBaselineYear}`} radius={[4, 4, 0, 0]} hide={!visibleSeries.baselineCapexPerGfa}>
-                    {sortedByCapexPerGfa.map((entry) => <Cell key={`baseline-${entry.country}`} fill={countryColorMap.get(entry.country)?.light || COUNTRY_COLORS_LIGHT[0]} />)}
+                    {sortedByCapexPerGfa.map(entry => <Cell key={`baseline-${entry.country}`} fill={countryColorMap.get(entry.country)?.light || COUNTRY_COLORS_LIGHT[0]} />)}
                   </Bar>}
                   <Bar dataKey="capexPerGfa" name={`FY${filters.fiscalYear}`} radius={[4, 4, 0, 0]} hide={!visibleSeries.currentCapexPerGfa}>
-                    {sortedByCapexPerGfa.map((entry) => <Cell key={`current-${entry.country}`} fill={countryColorMap.get(entry.country)?.main || COUNTRY_COLORS[0]} />)}
+                    {sortedByCapexPerGfa.map(entry => <Cell key={`current-${entry.country}`} fill={countryColorMap.get(entry.country)?.main || COUNTRY_COLORS[0]} />)}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
-            );
+              </ResponsiveContainer>;
           })()}
           </CardContent>
         </Card>
