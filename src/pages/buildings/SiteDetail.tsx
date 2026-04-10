@@ -3,15 +3,30 @@ import { useParams, Link } from "react-router-dom";
 import { sites } from "@/data/buildingsData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import EditSiteModal from "@/components/buildings/EditSiteModal";
+import EditSiteForm from "@/components/buildings/EditSiteForm";
 
 const SiteDetail = () => {
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const { siteId } = useParams<{ siteId: string }>();
   const site = sites.find((s) => s.id === siteId);
 
   if (!site) {
     return <div className="p-6">Site not found</div>;
+  }
+
+  if (isEditing) {
+    return (
+      <div className="p-6">
+        <div className="text-sm mb-1">
+          <Link to="/buildings/sites" className="text-primary hover:underline">Sites</Link>
+          <span className="text-muted-foreground"> / </span>
+          <button onClick={() => setIsEditing(false)} className="text-primary hover:underline">{site.name}</button>
+          <span className="text-muted-foreground"> / Edit</span>
+        </div>
+        <h1 className="text-2xl font-semibold text-foreground mb-4">Edit: {site.name}</h1>
+        <EditSiteForm site={site} onCancel={() => setIsEditing(false)} />
+      </div>
+    );
   }
 
   const infoFields = [
@@ -39,7 +54,6 @@ const SiteDetail = () => {
 
   return (
     <div className="p-6">
-      {/* Breadcrumb */}
       <div className="text-sm mb-1">
         <Link to="/buildings/sites" className="text-primary hover:underline">Sites</Link>
         <span className="text-muted-foreground"> / {site.name}</span>
@@ -68,7 +82,6 @@ const SiteDetail = () => {
 
         <TabsContent value="information">
           <div className="flex gap-8 mt-4">
-            {/* Info table */}
             <div className="flex-1">
               <div className="border border-border rounded-md overflow-hidden">
                 {infoFields.map((field, i) => (
@@ -86,11 +99,10 @@ const SiteDetail = () => {
                 ))}
               </div>
               <div className="flex justify-end mt-4">
-                <Button variant="default" size="sm" onClick={() => setIsEditOpen(true)}>Edit</Button>
+                <Button variant="default" size="sm" onClick={() => setIsEditing(true)}>Edit</Button>
               </div>
             </div>
 
-            {/* Image placeholders */}
             <div className="w-[280px] flex-shrink-0">
               <div className="grid grid-cols-3 gap-2">
                 {Array.from({ length: 9 }).map((_, i) => (
@@ -102,8 +114,6 @@ const SiteDetail = () => {
           </div>
         </TabsContent>
       </Tabs>
-
-      <EditSiteModal open={isEditOpen} onOpenChange={setIsEditOpen} site={site} />
     </div>
   );
 };
