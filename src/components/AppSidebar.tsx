@@ -1,4 +1,4 @@
-import { LayoutGrid, Ticket, BarChart3, Building2, Users, ClipboardCheck, Home, Package, Warehouse, Megaphone, CreditCard, FileText, Leaf, ChevronLeft, ChevronDown, PieChart, List, MapPin, Building, MapPinned, Shield, AlertTriangle } from "lucide-react";
+import { LayoutGrid, Ticket, BarChart3, Building2, Users, ClipboardCheck, Home, Package, Warehouse, Megaphone, CreditCard, FileText, Leaf, ChevronLeft, ChevronDown, PieChart, List, MapPin, Building, MapPinned, Shield, AlertTriangle, Database, Rocket, HelpCircle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
