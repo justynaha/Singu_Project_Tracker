@@ -16,6 +16,10 @@ export interface Site {
   theme: string;
   domain: string;
   dictionaryType: string;
+  fundId: string;
+  legalEntity: string;
+  ccCode: string;
+  areaSqm: string;
 }
 
 export interface Building {
