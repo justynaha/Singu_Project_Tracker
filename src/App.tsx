@@ -9,6 +9,10 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
+import SitesList from "./pages/buildings/SitesList";
+import SiteDetail from "./pages/buildings/SiteDetail";
+import BuildingsList from "./pages/buildings/BuildingsList";
+import BuildingDetail from "./pages/buildings/BuildingDetail";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +34,10 @@ const App = () => (
                 <Route path="/project/:id" element={<ProjectDetail />} />
                 <Route path="/start" element={<div className="p-6">Start page coming soon</div>} />
                 <Route path="/tickets" element={<div className="p-6">Tickets page coming soon</div>} />
-                <Route path="/buildings" element={<div className="p-6">Buildings page coming soon</div>} />
+                <Route path="/buildings" element={<BuildingsList />} />
+                <Route path="/buildings/sites" element={<SitesList />} />
+                <Route path="/buildings/sites/:siteId" element={<SiteDetail />} />
+                <Route path="/buildings/:buildingId" element={<BuildingDetail />} />
                 <Route path="/companies" element={<div className="p-6">Companies page coming soon</div>} />
                 <Route path="/inspections" element={<div className="p-6">Inspections page coming soon</div>} />
                 <Route path="/property-inspections" element={<div className="p-6">Property inspections page coming soon</div>} />
