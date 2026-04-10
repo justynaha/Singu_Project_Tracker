@@ -5,7 +5,24 @@ import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-const navigationItems = [{
+interface SubMenuItem {
+  title: string;
+  icon: React.ElementType;
+  path: string;
+  disabled?: boolean;
+  children?: { title: string; path: string }[];
+}
+
+interface NavItem {
+  title: string;
+  icon: React.ElementType;
+  path: string;
+  hasSubmenu?: boolean;
+  badge?: string;
+  submenu?: SubMenuItem[];
+}
+
+const navigationItems: NavItem[] = [{
   title: "Start",
   icon: LayoutGrid,
   path: "/start",
@@ -107,6 +124,39 @@ const navigationItems = [{
   icon: Leaf,
   path: "/esg",
   hasSubmenu: true
+}, {
+  title: "Master data",
+  icon: Database,
+  path: "/master-data",
+  submenu: [{
+    title: "Tickets",
+    icon: Ticket,
+    path: "/master-data/tickets"
+  }, {
+    title: "Projects",
+    icon: List,
+    path: "/master-data/projects",
+    children: [
+      { title: "Projects - list", path: "/master-data/projects-list" },
+      { title: "Categories – assignment table (Projects)", path: "/master-data/projects-categories" },
+    ]
+  }, {
+    title: "Project Tracker",
+    icon: Rocket,
+    path: "/master-data/project-tracker",
+    children: [
+      { title: "Work categories", path: "/master-data/project-types" },
+      { title: "Templates", path: "/master-data/templates" },
+    ]
+  }, {
+    title: "Warehouse",
+    icon: Warehouse,
+    path: "/master-data/warehouse"
+  }, {
+    title: "Equipment",
+    icon: Package,
+    path: "/master-data/equipment"
+  }]
 }];
 
 export const AppSidebar = () => {
