@@ -163,6 +163,32 @@ export default function Dashboard() {
         </div>
 
         <div>
+          <Label className="text-xs text-muted-foreground mb-1 block">Site group</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[180px] justify-between text-sm font-normal">
+                {filters.siteGroups.length === 0 ? "All Groups" : filters.siteGroups.join(", ")}
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[180px] p-2" align="start">
+              {SITE_GROUP_OPTIONS.map(opt => (
+                <div
+                  key={opt.value}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-sm cursor-pointer hover:bg-accent text-sm"
+                  onClick={() => toggleSiteGroup(opt.value)}
+                >
+                  <div className={cn("h-4 w-4 rounded border flex items-center justify-center", filters.siteGroups.includes(opt.value) ? "bg-primary border-primary" : "border-input")}>
+                    {filters.siteGroups.includes(opt.value) && <Check className="h-3 w-3 text-primary-foreground" />}
+                  </div>
+                  {opt.label}
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
           <Label className="text-xs text-muted-foreground mb-1 block">Country</Label>
           <Select value={filters.country || "all"} onValueChange={val => updateFilter("country", val === "all" ? "" : val)}>
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="All" /></SelectTrigger>
