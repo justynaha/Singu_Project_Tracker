@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { sites } from "@/data/buildingsData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import EditSiteModal from "@/components/buildings/EditSiteModal";
 
 const SiteDetail = () => {
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const { siteId } = useParams<{ siteId: string }>();
   const site = sites.find((s) => s.id === siteId);
 
@@ -83,7 +86,7 @@ const SiteDetail = () => {
                 ))}
               </div>
               <div className="flex justify-end mt-4">
-                <Button variant="default" size="sm">Edit</Button>
+                <Button variant="default" size="sm" onClick={() => setIsEditOpen(true)}>Edit</Button>
               </div>
             </div>
 
@@ -99,6 +102,8 @@ const SiteDetail = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <EditSiteModal open={isEditOpen} onOpenChange={setIsEditOpen} site={site} />
     </div>
   );
 };
