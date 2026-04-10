@@ -111,8 +111,16 @@ export const AppSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
 
-  // Check if current path is within Project Tracker
-  const isProjectTrackerActive = location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/");
+  // Check if current path is within a submenu group
+  const isGroupActive = (item: typeof navigationItems[0]) => {
+    if (item.title === "Project Tracker") {
+      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/");
+    }
+    if (item.title === "Buildings") {
+      return location.pathname.startsWith("/buildings");
+    }
+    return false;
+  };
   return <aside className={cn("bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col h-screen sticky top-0", isCollapsed ? "w-16" : "w-64")}>
       {/* Toggle button */}
       <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-3 top-4 bg-card border border-border rounded-full p-1 shadow-md hover:bg-secondary transition-colors z-10">
