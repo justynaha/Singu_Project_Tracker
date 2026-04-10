@@ -28,6 +28,10 @@ const SiteDetail = () => {
     { label: "Theme:", value: site.theme },
     { label: "Domain:", value: site.domain },
     { label: "Dictionary type:", value: site.dictionaryType },
+    { label: "Fund ID:", value: site.fundId },
+    { label: "Legal Entity:", value: site.legalEntity },
+    { label: "CC Code:", value: site.ccCode },
+    { label: "Area (sqm):", value: site.areaSqm },
   ];
 
   return (
