@@ -146,7 +146,7 @@ const navigationItems: NavItem[] = [{
     path: "/master-data/project-tracker",
     children: [
       { title: "Work categories", path: "/master-data/project-types" },
-      { title: "Templates", path: "/master-data/templates" },
+      { title: "Foreign Exchange", path: "/master-data/foreign-exchange" },
     ]
   }, {
     title: "Warehouse",
