@@ -8,6 +8,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ProjectTypes from "./pages/ProjectTypes";
+import ForeignExchange from "./pages/ForeignExchange";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import SitesList from "./pages/buildings/SitesList";
@@ -53,7 +54,7 @@ const App = () => (
                 <Route path="/master-data/projects-list" element={<div className="p-6">Master data – Projects list coming soon</div>} />
                 <Route path="/master-data/projects-categories" element={<div className="p-6">Master data – Categories assignment table coming soon</div>} />
                 <Route path="/master-data/project-types" element={<ProjectTypes />} />
-                <Route path="/master-data/foreign-exchange" element={<div className="p-6">Foreign Exchange coming soon</div>} />
+                <Route path="/master-data/foreign-exchange" element={<ForeignExchange />} />
                 <Route path="/master-data/warehouse" element={<div className="p-6">Master data – Warehouse coming soon</div>} />
                 <Route path="/master-data/equipment" element={<div className="p-6">Master data – Equipment coming soon</div>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
