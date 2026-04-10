@@ -377,6 +377,31 @@ export default function Projects() {
             <div className="p-4 border border-border rounded-lg bg-card space-y-4">
               <div className="flex items-end gap-4">
                 <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                        {pendingSiteGroups.length === 0 ? "All groups" : pendingSiteGroups.join(", ")}
+                        <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-2" align="start">
+                      {SITE_GROUP_OPTIONS.map(opt => (
+                        <div
+                          key={opt.value}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-sm cursor-pointer hover:bg-accent text-sm"
+                          onClick={() => togglePendingSiteGroup(opt.value)}
+                        >
+                          <div className={cn("h-4 w-4 rounded border flex items-center justify-center", pendingSiteGroups.includes(opt.value) ? "bg-primary border-primary" : "border-input")}>
+                            {pendingSiteGroups.includes(opt.value) && <Check className="h-3 w-3 text-primary-foreground" />}
+                          </div>
+                          {opt.label}
+                        </div>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Country</Label>
                   <Select value={pendingCountry || "all"} onValueChange={(val) => setPendingCountry(val === "all" ? "" : val)}>
                     <SelectTrigger>
