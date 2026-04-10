@@ -102,6 +102,8 @@ const SiteDetail = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <EditSiteModal open={isEditOpen} onOpenChange={setIsEditOpen} site={site} />
     </div>
   );
 };
