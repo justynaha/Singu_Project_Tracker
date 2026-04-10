@@ -63,6 +63,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "S13 (EU)",
+    legalEntity: "AlexandraLog PLC01 Sp. Z.o.o.",
+    ccCode: "CC9541002",
+    areaSqm: "41,795",
   },
   {
     id: "2",
@@ -82,6 +86,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "S13 (EU)",
+    legalEntity: "AlexandraLog PLC02 Sp. Z.o.o.",
+    ccCode: "CC9542001",
+    areaSqm: "35,634",
   },
   {
     id: "3",
@@ -101,6 +109,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "S13 (EU)",
+    legalEntity: "AlexandraLog PLC03 Sp. Z.o.o.",
+    ccCode: "CC9542002",
+    areaSqm: "52,108",
   },
   {
     id: "4",
@@ -120,6 +132,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "SII1 (EU)",
+    legalEntity: "AlexandraLog PLC04 Sp. Z.o.o.",
+    ccCode: "CC9543001",
+    areaSqm: "28,450",
   },
   {
     id: "5",
@@ -139,6 +155,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "SII1 (EU)",
+    legalEntity: "AlexandraLog PLIT01 S.r.l.",
+    ccCode: "CC9545001",
+    areaSqm: "63,200",
   },
   {
     id: "6",
@@ -158,6 +178,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "SII1 (EU)",
+    legalEntity: "AlexandraLog SPNE02 S.L.",
+    ccCode: "CC9548002",
+    areaSqm: "45,320",
   },
   {
     id: "7",
@@ -177,6 +201,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "S13 (EU)",
+    legalEntity: "AlexandraLog PLC05 Sp. Z.o.o.",
+    ccCode: "CC9546001",
+    areaSqm: "38,900",
   },
   {
     id: "8",
@@ -196,6 +224,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "S13 (EU)",
+    legalEntity: "AlexandraLog PLC06 Sp. Z.o.o.",
+    ccCode: "CC9547001",
+    areaSqm: "55,670",
   },
   {
     id: "9",
@@ -215,6 +247,10 @@ export const sites: Site[] = [
     theme: "",
     domain: "",
     dictionaryType: "Default",
+    fundId: "SII1 (EU)",
+    legalEntity: "AlexandraLog PLHU01 Kft.",
+    ccCode: "CC9549001",
+    areaSqm: "47,150",
   },
 ];
 
