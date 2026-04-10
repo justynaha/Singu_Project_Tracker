@@ -160,6 +160,44 @@ export type Database = {
           },
         ]
       }
+      project_types: {
+        Row: {
+          created_at: string
+          default_template_id: string | null
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          default_template_id?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          default_template_id?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_types_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "project_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           address: string | null
