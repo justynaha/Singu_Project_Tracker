@@ -293,7 +293,8 @@ export default function Projects() {
     const matchesTracking = !filterTracking || 
       (filterTracking === "on-track" && isOnTrack) || 
       (filterTracking === "off-track" && !isOnTrack);
-    return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatusFilter && matchesFiscalYear && matchesTracking;
+    const matchesSiteGroup = filterSiteGroups.length === 0 || (projectCountry && filterSiteGroups.includes(COUNTRY_TO_SITE_GROUP[projectCountry] || ""));
+    return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatusFilter && matchesFiscalYear && matchesTracking && matchesSiteGroup;
   });
 
   // Calculate progress for each project from real timeline data
