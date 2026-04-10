@@ -5,10 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDashboardData, DashboardFilters, SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
+import { useDashboardData, DashboardFilters, SITE_GROUP_OPTIONS } from "@/hooks/useDashboardData";
 import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine } from "recharts";
-import { TrendingUp, TrendingDown, Minus, Eye, EyeOff, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Eye, EyeOff, Download, Check, ChevronDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 const formatCurrency = (value: number) => {
   if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
   if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`;
