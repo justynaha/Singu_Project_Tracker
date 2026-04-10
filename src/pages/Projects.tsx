@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useProjects, CreateProjectInput } from "@/hooks/useProjects";
+import { SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
@@ -112,6 +113,7 @@ export default function Projects() {
   const [pendingStatus, setPendingStatus] = useState("");
   const [pendingFiscalYear, setPendingFiscalYear] = useState("");
   const [pendingTracking, setPendingTracking] = useState("");
+  const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
 
   // Applied filter values (after clicking Search)
   const [filterCountry, setFilterCountry] = useState("");
@@ -120,8 +122,9 @@ export default function Projects() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
   const [filterTracking, setFilterTracking] = useState("");
+  const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterTracking;
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterTracking || filterSiteGroups.length > 0;
 
   const applyFilters = () => {
     setFilterCountry(pendingCountry);
@@ -130,6 +133,7 @@ export default function Projects() {
     setFilterStatus(pendingStatus);
     setFilterFiscalYear(pendingFiscalYear);
     setFilterTracking(pendingTracking);
+    setFilterSiteGroups(pendingSiteGroups);
     setCurrentPage(1);
   };
 
@@ -140,12 +144,20 @@ export default function Projects() {
     setPendingStatus("");
     setPendingFiscalYear("");
     setPendingTracking("");
+    setPendingSiteGroups([]);
     setFilterCountry("");
     setFilterBudgetLine("");
     setFilterSite("");
     setFilterStatus("");
     setFilterFiscalYear("");
     setFilterTracking("");
+    setFilterSiteGroups([]);
+  };
+
+  const togglePendingSiteGroup = (group: string) => {
+    setPendingSiteGroups(prev =>
+      prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]
+    );
   };
 
   // Derive filter options from actual project data
