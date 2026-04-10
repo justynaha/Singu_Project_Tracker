@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDashboardData, DashboardFilters } from "@/hooks/useDashboardData";
+import { useDashboardData, DashboardFilters, SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
 import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine } from "recharts";
 import { TrendingUp, TrendingDown, Minus, Eye, EyeOff, Download } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -19,7 +19,8 @@ export default function Dashboard() {
     fiscalYear: "2026",
     country: "",
     site: "",
-    baselineYear: ""
+    baselineYear: "",
+    siteGroups: []
   });
   const [visibleSeries, setVisibleSeries] = useState({
     currentCapex: true,
@@ -53,8 +54,17 @@ export default function Dashboard() {
       fiscalYear: "2026",
       country: "",
       site: "",
-      baselineYear: ""
+      baselineYear: "",
+      siteGroups: []
     });
+  };
+  const toggleSiteGroup = (group: string) => {
+    setFilters(prev => ({
+      ...prev,
+      siteGroups: prev.siteGroups.includes(group)
+        ? prev.siteGroups.filter(g => g !== group)
+        : [...prev.siteGroups, group]
+    }));
   };
   const toggleSeries = (key: keyof typeof visibleSeries) => {
     setVisibleSeries(prev => ({
@@ -62,7 +72,7 @@ export default function Dashboard() {
       [key]: !prev[key]
     }));
   };
-  const hasFilters = filters.country || filters.site;
+  const hasFilters = filters.country || filters.site || filters.siteGroups.length > 0;
   const COLORS = {
     primary: "hsl(var(--primary))",
     success: "hsl(142 76% 36%)",
