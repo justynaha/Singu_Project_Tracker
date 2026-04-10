@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { sites } from "@/data/buildingsData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import EditSiteModal from "@/components/buildings/EditSiteModal";
 
 const SiteDetail = () => {
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const { siteId } = useParams<{ siteId: string }>();
   const site = sites.find((s) => s.id === siteId);
 
