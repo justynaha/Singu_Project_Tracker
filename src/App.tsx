@@ -8,6 +8,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ProjectTypes from "./pages/ProjectTypes";
+import ForeignExchange from "./pages/ForeignExchange";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import SitesList from "./pages/buildings/SitesList";
