@@ -493,6 +493,12 @@ export default function Projects() {
               {/* Filter chips - only show when filters are applied */}
               {hasAppliedFilters && (
                 <div className="flex items-center gap-2 flex-wrap">
+                  {filterSiteGroups.length > 0 && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      Site group: {filterSiteGroups.join(", ")}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterSiteGroups([]); setPendingSiteGroups([]); }} />
+                    </Badge>
+                  )}
                   {filterCountry && (
                     <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
                       {filterCountry}
