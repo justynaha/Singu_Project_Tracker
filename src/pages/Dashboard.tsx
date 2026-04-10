@@ -5,10 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDashboardData, DashboardFilters } from "@/hooks/useDashboardData";
+import { useDashboardData, DashboardFilters, SITE_GROUP_OPTIONS } from "@/hooks/useDashboardData";
 import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, ReferenceLine } from "recharts";
-import { TrendingUp, TrendingDown, Minus, Eye, EyeOff, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Eye, EyeOff, Download, Check, ChevronDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 const formatCurrency = (value: number) => {
   if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
   if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`;
@@ -19,7 +21,8 @@ export default function Dashboard() {
     fiscalYear: "2026",
     country: "",
     site: "",
-    baselineYear: ""
+    baselineYear: "",
+    siteGroups: []
   });
   const [visibleSeries, setVisibleSeries] = useState({
     currentCapex: true,
@@ -53,8 +56,17 @@ export default function Dashboard() {
       fiscalYear: "2026",
       country: "",
       site: "",
-      baselineYear: ""
+      baselineYear: "",
+      siteGroups: []
     });
+  };
+  const toggleSiteGroup = (group: string) => {
+    setFilters(prev => ({
+      ...prev,
+      siteGroups: prev.siteGroups.includes(group)
+        ? prev.siteGroups.filter(g => g !== group)
+        : [...prev.siteGroups, group]
+    }));
   };
   const toggleSeries = (key: keyof typeof visibleSeries) => {
     setVisibleSeries(prev => ({
@@ -62,7 +74,7 @@ export default function Dashboard() {
       [key]: !prev[key]
     }));
   };
-  const hasFilters = filters.country || filters.site;
+  const hasFilters = filters.country || filters.site || filters.siteGroups.length > 0;
   const COLORS = {
     primary: "hsl(var(--primary))",
     success: "hsl(142 76% 36%)",
@@ -153,6 +165,32 @@ export default function Dashboard() {
         </div>
 
         <div>
+          <Label className="text-xs text-muted-foreground mb-1 block">Site group</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[180px] justify-between text-sm font-normal">
+                {filters.siteGroups.length === 0 ? "All Groups" : filters.siteGroups.join(", ")}
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[180px] p-2" align="start">
+              {SITE_GROUP_OPTIONS.map(opt => (
+                <div
+                  key={opt.value}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-sm cursor-pointer hover:bg-accent text-sm"
+                  onClick={() => toggleSiteGroup(opt.value)}
+                >
+                  <div className={cn("h-4 w-4 rounded border flex items-center justify-center", filters.siteGroups.includes(opt.value) ? "bg-primary border-primary" : "border-input")}>
+                    {filters.siteGroups.includes(opt.value) && <Check className="h-3 w-3 text-primary-foreground" />}
+                  </div>
+                  {opt.label}
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
           <Label className="text-xs text-muted-foreground mb-1 block">Country</Label>
           <Select value={filters.country || "all"} onValueChange={val => updateFilter("country", val === "all" ? "" : val)}>
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="All" /></SelectTrigger>
@@ -194,6 +232,7 @@ export default function Dashboard() {
       </div>
 
       {hasFilters && <div className="flex flex-wrap gap-2 mb-4">
+          {filters.siteGroups.length > 0 && <Badge variant="secondary">Site group: {filters.siteGroups.join(", ")}</Badge>}
           {filters.country && <Badge variant="secondary">Country: {filters.country}</Badge>}
           {filters.site && <Badge variant="secondary">Site: {filters.site}</Badge>}
         </div>}

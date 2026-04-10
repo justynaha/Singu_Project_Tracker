@@ -72,11 +72,26 @@ export const SITE_TO_COUNTRY: Record<string, string> = {
   "Üllő": "Hungary",
 };
 
+// Country to site group mapping
+export const COUNTRY_TO_SITE_GROUP: Record<string, string> = {
+  "Poland": "PL",
+  "Hungary": "HU",
+  "Spain": "WE",
+  "Italy": "WE",
+};
+
+export const SITE_GROUP_OPTIONS = [
+  { value: "WE", label: "WE (Western Europe)" },
+  { value: "HU", label: "HU (Hungary)" },
+  { value: "PL", label: "PL (Poland)" },
+];
+
 export interface DashboardFilters {
   fiscalYear: string; // e.g., "2025", "2026", or "" for all
   country: string;
   site: string;
   baselineYear: string; // e.g., "2025" or "" for previous year
+  siteGroups: string[]; // e.g., ["WE", "PL"]
 }
 
 export interface ProjectMetrics {
@@ -243,6 +258,12 @@ export function useDashboardData(filters: DashboardFilters) {
     }
     if (filters.site) {
       filtered = filtered.filter(m => m.site === filters.site);
+    }
+    if (filters.siteGroups && filters.siteGroups.length > 0) {
+      filtered = filtered.filter(m => {
+        const group = COUNTRY_TO_SITE_GROUP[m.country] || "Unknown";
+        return filters.siteGroups.includes(group);
+      });
     }
 
     return filtered;

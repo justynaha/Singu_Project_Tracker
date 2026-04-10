@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useProjects, CreateProjectInput } from "@/hooks/useProjects";
+import { SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
@@ -112,6 +113,7 @@ export default function Projects() {
   const [pendingStatus, setPendingStatus] = useState("");
   const [pendingFiscalYear, setPendingFiscalYear] = useState("");
   const [pendingTracking, setPendingTracking] = useState("");
+  const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
 
   // Applied filter values (after clicking Search)
   const [filterCountry, setFilterCountry] = useState("");
@@ -120,8 +122,9 @@ export default function Projects() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
   const [filterTracking, setFilterTracking] = useState("");
+  const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterTracking;
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterTracking || filterSiteGroups.length > 0;
 
   const applyFilters = () => {
     setFilterCountry(pendingCountry);
@@ -130,6 +133,7 @@ export default function Projects() {
     setFilterStatus(pendingStatus);
     setFilterFiscalYear(pendingFiscalYear);
     setFilterTracking(pendingTracking);
+    setFilterSiteGroups(pendingSiteGroups);
     setCurrentPage(1);
   };
 
@@ -140,12 +144,20 @@ export default function Projects() {
     setPendingStatus("");
     setPendingFiscalYear("");
     setPendingTracking("");
+    setPendingSiteGroups([]);
     setFilterCountry("");
     setFilterBudgetLine("");
     setFilterSite("");
     setFilterStatus("");
     setFilterFiscalYear("");
     setFilterTracking("");
+    setFilterSiteGroups([]);
+  };
+
+  const togglePendingSiteGroup = (group: string) => {
+    setPendingSiteGroups(prev =>
+      prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]
+    );
   };
 
   // Derive filter options from actual project data
@@ -281,7 +293,8 @@ export default function Projects() {
     const matchesTracking = !filterTracking || 
       (filterTracking === "on-track" && isOnTrack) || 
       (filterTracking === "off-track" && !isOnTrack);
-    return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatusFilter && matchesFiscalYear && matchesTracking;
+    const matchesSiteGroup = filterSiteGroups.length === 0 || (projectCountry && filterSiteGroups.includes(COUNTRY_TO_SITE_GROUP[projectCountry] || ""));
+    return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatusFilter && matchesFiscalYear && matchesTracking && matchesSiteGroup;
   });
 
   // Calculate progress for each project from real timeline data
@@ -363,6 +376,31 @@ export default function Projects() {
           {showFilters && (
             <div className="p-4 border border-border rounded-lg bg-card space-y-4">
               <div className="flex items-end gap-4">
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between text-sm font-normal">
+                        {pendingSiteGroups.length === 0 ? "All groups" : pendingSiteGroups.join(", ")}
+                        <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-2" align="start">
+                      {SITE_GROUP_OPTIONS.map(opt => (
+                        <div
+                          key={opt.value}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-sm cursor-pointer hover:bg-accent text-sm"
+                          onClick={() => togglePendingSiteGroup(opt.value)}
+                        >
+                          <div className={cn("h-4 w-4 rounded border flex items-center justify-center", pendingSiteGroups.includes(opt.value) ? "bg-primary border-primary" : "border-input")}>
+                            {pendingSiteGroups.includes(opt.value) && <Check className="h-3 w-3 text-primary-foreground" />}
+                          </div>
+                          {opt.label}
+                        </div>
+                      ))}
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 <div className="flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Country</Label>
                   <Select value={pendingCountry || "all"} onValueChange={(val) => setPendingCountry(val === "all" ? "" : val)}>
@@ -455,6 +493,12 @@ export default function Projects() {
               {/* Filter chips - only show when filters are applied */}
               {hasAppliedFilters && (
                 <div className="flex items-center gap-2 flex-wrap">
+                  {filterSiteGroups.length > 0 && (
+                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                      Site group: {filterSiteGroups.join(", ")}
+                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterSiteGroups([]); setPendingSiteGroups([]); }} />
+                    </Badge>
+                  )}
                   {filterCountry && (
                     <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
                       {filterCountry}
