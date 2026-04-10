@@ -86,7 +86,7 @@ const SiteDetail = () => {
                 ))}
               </div>
               <div className="flex justify-end mt-4">
-                <Button variant="default" size="sm">Edit</Button>
+                <Button variant="default" size="sm" onClick={() => setIsEditOpen(true)}>Edit</Button>
               </div>
             </div>
 
