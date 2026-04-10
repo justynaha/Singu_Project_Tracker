@@ -232,6 +232,7 @@ export default function Dashboard() {
       </div>
 
       {hasFilters && <div className="flex flex-wrap gap-2 mb-4">
+          {filters.siteGroups.length > 0 && <Badge variant="secondary">Site group: {filters.siteGroups.join(", ")}</Badge>}
           {filters.country && <Badge variant="secondary">Country: {filters.country}</Badge>}
           {filters.site && <Badge variant="secondary">Site: {filters.site}</Badge>}
         </div>}
