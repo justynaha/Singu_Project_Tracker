@@ -1,42 +1,29 @@
 
 
-## Plan: Add Edit Site Modal
+## Plan: Add Work Categories page and Foreign Exchange page, remove Templates
 
 ### Overview
-Create a modal/dialog that opens when clicking the "Edit" button on the Site detail page. The modal mirrors the Singu FM edit form from the screenshot, with a two-step wizard header ("Site - Basic information" / "Site - Application settings"), form fields matching the current site data, and a Save button.
+Copy the Work Categories page from the reference project (with its hook and DB table), remove the "Templates" sidebar entry, and add an empty "Foreign Exchange" page under Master data > Project Tracker.
 
-### Files to Create
+### Steps
 
-**`src/components/buildings/EditSiteModal.tsx`**
-- Full-screen-style dialog using the existing `Dialog` component
-- Wizard header with two steps: "1 Site — Basic information" (active, blue) and "2 Site — Application settings" (inactive, gray) — both non-functional, just visual
-- Form fields in order matching the screenshot:
-  - **Name** — text input (required, marked with asterisk)
-  - **Short name** — text input
-  - **Address** — textarea
-  - **General e-mail (informational only)** — text input
-  - **Default person resp. for orders** — dropdown/select (placeholder "Choose or start typing")
-  - **Documentation responsible person** — dropdown/select
-  - **Default seller** — dropdown/select ("— Choose —")
-  - **Cost center** — radio buttons: YES / NO
-  - **Default tenant** — dropdown/select
-  - **Currency** — dropdown/select (e.g. PLN)
-  - **Country** — dropdown/select (e.g. Poland)
-  - **Max cost for a one-step ticket closing** — text input
-  - **Comments** — textarea with a mock rich-text toolbar (non-functional icons row)
-  - **Additional information** — textarea
-  - **Fund ID** — text input
-  - **Legal Entity** — text input
-  - **CC Code** — text input
-  - **Area (sqm)** — text input
-- All fields pre-populated with current site data via props
-- "Remove site" link (bottom-left, non-functional) and "Save" button (bottom-right, closes modal)
-- Form is non-functional (no actual state persistence)
+**1. Create database table `project_types`**
+- Migration to create `project_types` table with columns: `id` (uuid), `name` (text, unique), `description` (text nullable), `default_template_id` (uuid nullable), `status` (text default 'active'), `parent_id` (uuid nullable self-ref), `created_at` (timestamptz)
+- RLS: allow all operations for now (public-facing master data management, no auth yet)
 
-### Files to Modify
+**2. Copy `src/hooks/useProjectTypes.ts`**
+- Adapt from reference project — the hook fetches from `project_types`, builds a tree, and provides CRUD functions
+- Remove references to `project_templates` and `projects.project_type` (those tables don't exist here yet) — usage_count will just be 0
 
-**`src/pages/buildings/SiteDetail.tsx`**
-- Import `EditSiteModal` and add open/close state
-- Wire the "Edit" button to open the modal
-- Pass current `site` data to the modal
+**3. Copy `src/pages/ProjectTypes.tsx`**
+- Adapt from reference project — the full Work Categories page with tree view, expand/collapse, add/edit/delete modals
+- Remove `useViewSettings` context references (doesn't exist in this project) and the empty-state toggle logic
+
+**4. Update `src/App.tsx`**
+- Add route `/master-data/project-types` pointing to `ProjectTypes`
+- Add route `/master-data/foreign-exchange` with empty placeholder
+- Remove route `/master-data/templates`
+
+**5. Update `src/components/AppSidebar.tsx`**
+- Under Master data > Project Tracker children: keep "Work categories", remove "Templates", add "Foreign Exchange"
 
