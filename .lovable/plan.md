@@ -1,29 +1,29 @@
 
 
-## Plan: Add Work Categories page and Foreign Exchange page, remove Templates
+## Plan: Build Foreign Exchange Screen
 
 ### Overview
-Copy the Work Categories page from the reference project (with its hook and DB table), remove the "Templates" sidebar entry, and add an empty "Foreign Exchange" page under Master data > Project Tracker.
+Create a full Foreign Exchange page with a rates table and an "Add rate" modal, using mock data. Replace the placeholder route.
 
-### Steps
+### Files to Create
 
-**1. Create database table `project_types`**
-- Migration to create `project_types` table with columns: `id` (uuid), `name` (text, unique), `description` (text nullable), `default_template_id` (uuid nullable), `status` (text default 'active'), `parent_id` (uuid nullable self-ref), `created_at` (timestamptz)
-- RLS: allow all operations for now (public-facing master data management, no auth yet)
+**`src/pages/ForeignExchange.tsx`**
+- Page with heading "Foreign Exchange" and "Add rate" button (top-right)
+- Table with columns: Currency pair, Rate, Valid from, Added by, Note / source
+- Mock data with 4 existing rates (e.g. PLN→EUR twice, HUF→EUR, CZK→EUR)
+- Most recent rate per currency pair gets a "Current" badge and bold text
+- "Add FX Rate" dialog with:
+  - Currency pair dropdown (PLN → EUR, HUF → EUR, CZK → EUR)
+  - Rate numeric input (step 0.000001, required)
+  - Valid from date picker (defaults to today, required)
+  - Note / source text input (optional, placeholder "e.g. NBP rate Q1 2026")
+  - Info banner below form: "This rate will apply to new cost entries only. Existing project data will not be recalculated."
+  - Cancel and Save buttons
+- Save adds to local state (no persistence)
 
-**2. Copy `src/hooks/useProjectTypes.ts`**
-- Adapt from reference project — the hook fetches from `project_types`, builds a tree, and provides CRUD functions
-- Remove references to `project_templates` and `projects.project_type` (those tables don't exist here yet) — usage_count will just be 0
+### Files to Modify
 
-**3. Copy `src/pages/ProjectTypes.tsx`**
-- Adapt from reference project — the full Work Categories page with tree view, expand/collapse, add/edit/delete modals
-- Remove `useViewSettings` context references (doesn't exist in this project) and the empty-state toggle logic
-
-**4. Update `src/App.tsx`**
-- Add route `/master-data/project-types` pointing to `ProjectTypes`
-- Add route `/master-data/foreign-exchange` with empty placeholder
-- Remove route `/master-data/templates`
-
-**5. Update `src/components/AppSidebar.tsx`**
-- Under Master data > Project Tracker children: keep "Work categories", remove "Templates", add "Foreign Exchange"
+**`src/App.tsx`**
+- Import `ForeignExchange` component
+- Replace placeholder route at `/master-data/foreign-exchange` with `<ForeignExchange />`
 
