@@ -32,7 +32,35 @@ const navigationItems = [{
   title: "Buildings",
   icon: Building2,
   path: "/buildings",
-  hasSubmenu: true
+  submenu: [{
+    title: "Sites",
+    icon: MapPin,
+    path: "/buildings/sites"
+  }, {
+    title: "Buildings",
+    icon: Building,
+    path: "/buildings"
+  }, {
+    title: "Locations",
+    icon: MapPinned,
+    path: "/buildings/locations",
+    disabled: true
+  }, {
+    title: "Documentation",
+    icon: DocIcon,
+    path: "/buildings/documentation",
+    disabled: true
+  }, {
+    title: "Checkpoints",
+    icon: Shield,
+    path: "/buildings/checkpoints",
+    disabled: true
+  }, {
+    title: "Evacuation confirmation",
+    icon: AlertTriangle,
+    path: "/buildings/evacuation",
+    disabled: true
+  }]
 }, {
   title: "Companies",
   icon: Users,
