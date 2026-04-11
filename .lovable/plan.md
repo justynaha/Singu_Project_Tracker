@@ -1,29 +1,19 @@
 
 
-## Plan: Build Foreign Exchange Screen
+## Plan: Redesign FX Rate Display and Modal
 
-### Overview
-Create a full Foreign Exchange page with a rates table and an "Add rate" modal, using mock data. Replace the placeholder route.
-
-### Files to Create
+### Changes
 
 **`src/pages/ForeignExchange.tsx`**
-- Page with heading "Foreign Exchange" and "Add rate" button (top-right)
-- Table with columns: Currency pair, Rate, Valid from, Added by, Note / source
-- Mock data with 4 existing rates (e.g. PLN→EUR twice, HUF→EUR, CZK→EUR)
-- Most recent rate per currency pair gets a "Current" badge and bold text
-- "Add FX Rate" dialog with:
-  - Currency pair dropdown (PLN → EUR, HUF → EUR, CZK → EUR)
-  - Rate numeric input (step 0.000001, required)
-  - Valid from date picker (defaults to today, required)
-  - Note / source text input (optional, placeholder "e.g. NBP rate Q1 2026")
-  - Info banner below form: "This rate will apply to new cost entries only. Existing project data will not be recalculated."
-  - Cancel and Save buttons
-- Save adds to local state (no persistence)
 
-### Files to Modify
+1. **Table data**: Change currency pairs from "PLN → EUR" to "EUR/PLN" format. Update mock rates to represent how much 1 EUR costs in local currency (e.g. EUR/PLN = 4.2610, EUR/HUF = 403.23, EUR/CZK = 25.19).
 
-**`src/App.tsx`**
-- Import `ForeignExchange` component
-- Replace placeholder route at `/master-data/foreign-exchange` with `<ForeignExchange />`
+2. **Add Rate modal**: Replace the single "Currency pair" dropdown with a layout:
+   - Static label "1 EUR ="
+   - Numeric input for the rate value
+   - Currency dropdown (PLN, HUF, CZK)
+   
+   On save, the pair is constructed as `EUR/${selectedCurrency}`.
+
+3. **Mock data update**: 4 rows with realistic rates (e.g. EUR/PLN 4.2610, EUR/PLN 4.3750, EUR/HUF 403.23, EUR/CZK 25.19).
 
