@@ -129,18 +129,6 @@ const navigationItems: NavItem[] = [{
   icon: Database,
   path: "/master-data",
   submenu: [{
-    title: "Tickets",
-    icon: Ticket,
-    path: "/master-data/tickets"
-  }, {
-    title: "Projects",
-    icon: List,
-    path: "/master-data/projects",
-    children: [
-      { title: "Projects - list", path: "/master-data/projects-list" },
-      { title: "Categories – assignment table (Projects)", path: "/master-data/projects-categories" },
-    ]
-  }, {
     title: "Project Tracker",
     icon: Rocket,
     path: "/master-data/project-tracker",
@@ -148,14 +136,6 @@ const navigationItems: NavItem[] = [{
       { title: "Work categories", path: "/master-data/project-types" },
       { title: "Foreign Exchange", path: "/master-data/foreign-exchange" },
     ]
-  }, {
-    title: "Warehouse",
-    icon: Warehouse,
-    path: "/master-data/warehouse"
-  }, {
-    title: "Equipment",
-    icon: Package,
-    path: "/master-data/equipment"
   }]
 }];
 
