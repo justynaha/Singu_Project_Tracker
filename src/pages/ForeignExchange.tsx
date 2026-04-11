@@ -29,13 +29,13 @@ interface FxRate {
   note: string;
 }
 
-const CURRENCY_PAIRS = ["PLN → EUR", "HUF → EUR", "CZK → EUR"];
+const CURRENCIES = ["PLN", "HUF", "CZK"];
 
 const initialRates: FxRate[] = [
-  { id: "1", pair: "PLN → EUR", rate: 0.232100, validFrom: "2026-04-01", addedBy: "Anna Kowalska", note: "NBP rate Q2 2026" },
-  { id: "2", pair: "PLN → EUR", rate: 0.228500, validFrom: "2026-01-02", addedBy: "Jan Nowak", note: "NBP rate Q1 2026" },
-  { id: "3", pair: "HUF → EUR", rate: 0.002480, validFrom: "2026-03-15", addedBy: "Anna Kowalska", note: "MNB mid-market" },
-  { id: "4", pair: "CZK → EUR", rate: 0.039700, validFrom: "2026-02-10", addedBy: "Tomasz Wiśniewski", note: "CNB daily fix" },
+  { id: "1", pair: "EUR/PLN", rate: 4.2610, validFrom: "2026-04-01", addedBy: "Anna Kowalska", note: "NBP rate Q2 2026" },
+  { id: "2", pair: "EUR/PLN", rate: 4.3750, validFrom: "2026-01-02", addedBy: "Jan Nowak", note: "NBP rate Q1 2026" },
+  { id: "3", pair: "EUR/HUF", rate: 403.23, validFrom: "2026-03-15", addedBy: "Anna Kowalska", note: "MNB mid-market" },
+  { id: "4", pair: "EUR/CZK", rate: 25.19, validFrom: "2026-02-10", addedBy: "Tomasz Wiśniewski", note: "CNB daily fix" },
 ];
 
 function getMostRecentIds(rates: FxRate[]): Set<string> {
@@ -50,7 +50,7 @@ function getMostRecentIds(rates: FxRate[]): Set<string> {
 export default function ForeignExchange() {
   const [rates, setRates] = useState<FxRate[]>(initialRates);
   const [open, setOpen] = useState(false);
-  const [pair, setPair] = useState("");
+  const [currency, setCurrency] = useState("");
   const [rate, setRate] = useState("");
   const [validFrom, setValidFrom] = useState<Date | undefined>(new Date());
   const [note, setNote] = useState("");
@@ -58,11 +58,11 @@ export default function ForeignExchange() {
   const currentIds = getMostRecentIds(rates);
 
   const handleSave = () => {
-    if (!pair || !rate || !validFrom) return;
+    if (!currency || !rate || !validFrom) return;
     setRates((prev) => [
       {
         id: crypto.randomUUID(),
-        pair,
+        pair: `EUR/${currency}`,
         rate: parseFloat(rate),
         validFrom: format(validFrom, "yyyy-MM-dd"),
         addedBy: "Current User",
@@ -71,7 +71,7 @@ export default function ForeignExchange() {
       ...prev,
     ]);
     setOpen(false);
-    setPair("");
+    setCurrency("");
     setRate("");
     setValidFrom(new Date());
     setNote("");
@@ -110,7 +110,7 @@ export default function ForeignExchange() {
                         <Badge variant="secondary" className="ml-2 text-xs">Current</Badge>
                       )}
                     </TableCell>
-                    <TableCell>{r.rate.toFixed(6)}</TableCell>
+                    <TableCell>{r.rate.toFixed(4)}</TableCell>
                     <TableCell>{format(new Date(r.validFrom), "dd MMM yyyy")}</TableCell>
                     <TableCell>{r.addedBy}</TableCell>
                     <TableCell className="text-muted-foreground">{r.note}</TableCell>
@@ -128,27 +128,30 @@ export default function ForeignExchange() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Currency pair</label>
-              <Select value={pair} onValueChange={setPair}>
-                <SelectTrigger><SelectValue placeholder="Select pair" /></SelectTrigger>
-                <SelectContent>
-                  {CURRENCY_PAIRS.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
               <label className="text-sm font-medium">Rate</label>
-              <Input
-                type="number"
-                step="0.000001"
-                min="0"
-                placeholder="0.000000"
-                value={rate}
-                onChange={(e) => setRate(e.target.value)}
-                required
-              />
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium whitespace-nowrap">1 EUR =</span>
+                <Input
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  placeholder="0.0000"
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                  className="flex-1"
+                  required
+                />
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder="Currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Valid from</label>
@@ -193,7 +196,7 @@ export default function ForeignExchange() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!pair || !rate || !validFrom}>Save</Button>
+            <Button onClick={handleSave} disabled={!currency || !rate || !validFrom}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
