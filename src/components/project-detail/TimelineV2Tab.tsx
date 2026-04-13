@@ -1136,9 +1136,11 @@ export default function TimelineV2Tab({
         <BudgetWidget
           budget={budget}
           forecasted={totals.forecasted}
-          contracted={totals.contracted}
+          contracted={propContracted}
           invoiced={totals.invoiced}
           currency={currency}
+          budgetLc={budgetLc}
+          localCurrency={localCurrency}
         />
       </div>
 
