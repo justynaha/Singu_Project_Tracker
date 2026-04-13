@@ -370,6 +370,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     window.location.reload();
   };
 
+  const resetForm = () => {
     setContractNumber("");
     setContractDate(undefined);
     setAmountRaw("");
