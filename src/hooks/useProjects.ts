@@ -23,6 +23,7 @@ export interface Project {
 export interface CreateProjectInput {
   name: string;
   description?: string;
+  work_description?: string;
   status?: string;
   start_date?: string;
   end_date?: string;
@@ -63,6 +64,7 @@ export function useProjects() {
         .insert({
           name: input.name,
           description: input.description || null,
+          work_description: input.work_description || null,
           status: input.status || "Open",
           start_date: input.start_date || null,
           end_date: input.end_date || null,

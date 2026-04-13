@@ -63,6 +63,7 @@ export interface Project {
   fiscal_year: string | null;
   currency: string | null;
   address: string | null;
+  work_description: string | null;
 }
 
 export interface MilestoneCashflow {

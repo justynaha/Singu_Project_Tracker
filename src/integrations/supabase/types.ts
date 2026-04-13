@@ -246,6 +246,7 @@ export type Database = {
           tenant: string | null
           total_budget: number | null
           updated_at: string
+          work_description: string | null
         }
         Insert: {
           address?: string | null
@@ -264,6 +265,7 @@ export type Database = {
           tenant?: string | null
           total_budget?: number | null
           updated_at?: string
+          work_description?: string | null
         }
         Update: {
           address?: string | null
@@ -282,6 +284,7 @@ export type Database = {
           tenant?: string | null
           total_budget?: number | null
           updated_at?: string
+          work_description?: string | null
         }
         Relationships: []
       }
