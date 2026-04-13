@@ -55,6 +55,7 @@ export interface Contract {
   contractor: string | null;
   description: string | null;
   agreement_signed: boolean;
+  comments: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -70,6 +71,7 @@ interface ContractsTabProps {
     contractor?: string;
     description?: string;
     agreement_signed?: boolean;
+    comments?: string;
   }) => Promise<any>;
 }
 
@@ -102,6 +104,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [saving, setSaving] = useState(false);
 
   const [agreementSigned, setAgreementSigned] = useState(false);
+  const [comments, setComments] = useState("");
 
   const resetForm = () => {
     setContractNumber("");
@@ -112,6 +115,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     setContractor("");
     setDescription("");
     setAgreementSigned(false);
+    setComments("");
   };
 
   const handleSubmit = async () => {
@@ -126,6 +130,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
       contractor: contractor.trim() || undefined,
       description: description.trim() || undefined,
       agreement_signed: agreementSigned,
+      comments: comments.trim() || undefined,
     });
     setSaving(false);
     resetForm();
@@ -157,6 +162,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               <TableHead className="text-right">Contracted (EUR)</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Agreement Signed</TableHead>
+              <TableHead>Comments</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -174,6 +180,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
                 </TableCell>
                 <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
+                <TableCell className="max-w-[200px] truncate">{c.comments || "—"}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -189,6 +196,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <TableCell className="text-right font-bold">
                   {formatAmount(contracts.reduce((s, c) => s + (c.amount_eur || 0), 0))}
                 </TableCell>
+                <TableCell />
                 <TableCell />
                 <TableCell />
               </TableRow>
@@ -332,6 +340,29 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   <Label htmlFor="agreement-no" className="font-normal cursor-pointer">No</Label>
                 </div>
               </RadioGroup>
+            </div>
+
+            <div>
+              <Label htmlFor="contractComments" className="flex items-center gap-1.5">
+                Comments
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      Important: add info about phased payments
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </Label>
+              <Textarea
+                id="contractComments"
+                placeholder="e.g. phased payments details..."
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                rows={3}
+              />
             </div>
           </div>
           <DialogFooter>

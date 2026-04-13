@@ -19,6 +19,7 @@ export type Database = {
           agreement_signed: boolean
           amount_eur: number | null
           amount_lc: number | null
+          comments: string | null
           contract_date: string | null
           contract_number: string
           contractor: string | null
@@ -33,6 +34,7 @@ export type Database = {
           agreement_signed?: boolean
           amount_eur?: number | null
           amount_lc?: number | null
+          comments?: string | null
           contract_date?: string | null
           contract_number: string
           contractor?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           agreement_signed?: boolean
           amount_eur?: number | null
           amount_lc?: number | null
+          comments?: string | null
           contract_date?: string | null
           contract_number?: string
           contractor?: string | null
