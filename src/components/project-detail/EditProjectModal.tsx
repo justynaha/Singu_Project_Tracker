@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, CalendarIcon, ChevronsUpDown, Check } from "lucide-react";
+import { Plus, Trash2, CalendarIcon, ChevronsUpDown, Check, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -116,6 +116,7 @@ export default function EditProjectModal({
   const [deleting, setDeleting] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -193,38 +194,51 @@ export default function EditProjectModal({
                 onChange={(e) => setWorkDescription(e.target.value.slice(0, 500))}
                 maxLength={500}
               />
-              <p className="text-xs text-muted-foreground text-right mt-1">{workDescription.length}/500</p>
             </div>
 
-            {/* Building (optional) */}
-            <div>
-              <Label htmlFor="building">Building (optional)</Label>
-              <Select value={building} onValueChange={setBuilding}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select building" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUILDING_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full justify-between px-0 font-normal text-muted-foreground"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              Advanced
+              <ChevronDown className={cn("h-4 w-4 transition-transform", showAdvanced && "rotate-180")} />
+            </Button>
 
-            {/* Tenant (optional) */}
-            <div>
-              <Label htmlFor="tenant">Tenant (optional)</Label>
-              <Select value={tenant} onValueChange={setTenant}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select tenant" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TENANT_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {showAdvanced && (
+              <>
+                {/* Building (optional) */}
+                <div>
+                  <Label htmlFor="building">Building (optional)</Label>
+                  <Select value={building} onValueChange={setBuilding}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select building" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BUILDING_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Tenant (optional) */}
+                <div>
+                  <Label htmlFor="tenant">Tenant (optional)</Label>
+                  <Select value={tenant} onValueChange={setTenant}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tenant" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TENANT_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
 
             {/* Project Start & End Date */}
             <div className="grid grid-cols-2 gap-4">
