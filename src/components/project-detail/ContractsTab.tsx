@@ -934,12 +934,36 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               <Textarea id="editComments" value={editComments} onChange={(e) => setEditComments(e.target.value)} rows={Math.max(3, Math.ceil((editComments?.length || 0) / 80))} />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="destructive" onClick={() => setShowDeleteContractConfirm(true)} className="sm:mr-auto">
+              <Trash2 className="h-4 w-4 mr-2" />Delete contract
+            </Button>
             <Button variant="outline" onClick={() => { setShowEditModal(false); setEditingContract(null); }}>Cancel</Button>
             <Button onClick={handleEditSubmit} disabled={!editContractNumber.trim() || editSaving}>{editSaving ? "Saving..." : "Save Changes"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showDeleteContractConfirm} onOpenChange={setShowDeleteContractConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete contract?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete contract "{editingContract?.contract_number}"? This action cannot be undone and will permanently remove the contract along with all its invoices.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingContract}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteContract}
+              disabled={deletingContract}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingContract ? "Deleting..." : "Delete contract"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Add Invoice Modal */}
       <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
