@@ -94,6 +94,7 @@ export default function EditProjectModal({
   onDelete,
 }: EditProjectModalProps) {
   const [name, setName] = useState(project.name);
+  const [workDescription, setWorkDescription] = useState((project as any).work_description || "");
   const [building, setBuilding] = useState("");
   const [tenant, setTenant] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(
@@ -119,6 +120,7 @@ export default function EditProjectModal({
   useEffect(() => {
     if (open) {
       setName(project.name);
+      setWorkDescription((project as any).work_description || "");
       setTotalBudget(project.total_budget.toString());
       setStartDate(project.start_date ? new Date(project.start_date) : undefined);
       setEndDate(project.end_date ? new Date(project.end_date) : undefined);
@@ -177,6 +179,20 @@ export default function EditProjectModal({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Type the name of your project"
               />
+            </div>
+
+            {/* Work Description */}
+            <div>
+              <Label htmlFor="workDescription">Work description (optional)</Label>
+              <textarea
+                id="workDescription"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Describe the work to be done"
+                value={workDescription}
+                onChange={(e) => setWorkDescription(e.target.value.slice(0, 500))}
+                maxLength={500}
+              />
+              <p className="text-xs text-muted-foreground text-right mt-1">{workDescription.length}/500</p>
             </div>
 
             {/* Building (optional) */}
