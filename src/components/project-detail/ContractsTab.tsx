@@ -180,6 +180,41 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [editAgreementSigned, setEditAgreementSigned] = useState(false);
   const [editComments, setEditComments] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+
+  const openEditModal = (contract: Contract) => {
+    setEditingContract(contract);
+    setEditContractNumber(contract.contract_number);
+    setEditContractDate(contract.contract_date ? new Date(contract.contract_date) : undefined);
+    setEditAmountRaw(contract.amount_lc != null ? String(contract.amount_lc) : "");
+    setEditSelectedCurrency(currency);
+    setEditStatus(contract.status);
+    setEditContractor(contract.contractor || "");
+    setEditDescription(contract.description || "");
+    setEditAgreementSigned(contract.agreement_signed);
+    setEditComments(contract.comments || "");
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingContract || !onUpdateContract) return;
+    setEditSaving(true);
+    const amount = editAmountRaw ? parseFloat(editAmountRaw) : null;
+    await onUpdateContract(editingContract.id, {
+      contract_number: editContractNumber.trim(),
+      contract_date: editContractDate ? format(editContractDate, "yyyy-MM-dd") : null,
+      amount_lc: amount,
+      status: editStatus,
+      contractor: editContractor.trim() || null,
+      description: editDescription.trim() || null,
+      agreement_signed: editAgreementSigned,
+      comments: editComments.trim() || null,
+    });
+    setEditSaving(false);
+    setShowEditModal(false);
+    setEditingContract(null);
+  };
+
+  const resetForm = () => {
     setContractNumber("");
     setContractDate(undefined);
     setAmountRaw("");
