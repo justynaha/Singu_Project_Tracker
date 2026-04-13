@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -586,137 +587,142 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             </button>
           </div>
 
-          {/* Details */}
-          <div className="px-5 py-4 border-b border-border space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Details</p>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Contract ID</span>
-              <span className="text-sm font-medium">{selectedContract.contract_number}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Date</span>
-              <span className="text-sm font-medium">
-                {selectedContract.contract_date ? format(new Date(selectedContract.contract_date), "dd MMM yyyy") : "—"}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Contractor</span>
-              <span className="text-sm font-medium">{selectedContract.contractor || "—"}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Status</span>
-              <Badge variant={statusVariant(selectedContract.status)}>{selectedContract.status}</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Agreement Signed</span>
-              <span className="text-sm font-medium">{selectedContract.agreement_signed ? "Yes" : "No"}</span>
-            </div>
-            {selectedContract.description && (
-              <div>
-                <span className="text-sm text-muted-foreground">Description</span>
-                <p className="text-sm mt-1">{selectedContract.description}</p>
-              </div>
-            )}
-            {selectedContract.comments && (
-              <div>
-                <span className="text-sm text-muted-foreground">Comments</span>
-                <p className="text-sm mt-1">{selectedContract.comments}</p>
-              </div>
-            )}
-          </div>
+          <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="w-full rounded-none border-b border-border bg-transparent px-5 pt-1 pb-0 h-auto justify-start gap-0">
+              <TabsTrigger value="details" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 pb-2 text-sm">Contract Details</TabsTrigger>
+              <TabsTrigger value="invoices" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 pb-2 text-sm">Invoices ({selectedInvoices.length})</TabsTrigger>
+            </TabsList>
 
-          {/* Invoices */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Invoices ({selectedInvoices.length})
-            </p>
-
-            {selectedInvoices.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No invoices yet</p>
-            ) : (
-              <div className="space-y-1">
-                {selectedInvoices.map((inv) => {
-                  const invEur = showLcColumn ? convertToEur(inv.amount_lc) : inv.amount_lc;
-                  return (
-                    <div key={inv.id} className="flex items-start gap-2.5 py-2.5 border-b border-border last:border-0">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{inv.invoice_number}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {showLcColumn && <>{formatAmount(inv.amount_lc)} {currency} · </>}
-                          {formatAmount(invEur)} EUR
-                        </p>
-                        {inv.attachment_url && (
-                          <a
-                            href={inv.attachment_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
-                          >
-                            <Paperclip className="h-3 w-3" />
-                            {inv.attachment_name || "Attachment"}
-                          </a>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => handleDeleteInvoice(inv.id)}
-                        className="shrink-0 h-6 w-6 rounded flex items-center justify-center hover:bg-muted transition-colors text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Add invoice button */}
-            <button
-              onClick={() => openInvoiceModal(selectedContract.id)}
-              className="flex items-center gap-1.5 w-full py-2.5 text-sm font-medium text-muted-foreground border border-dashed border-muted-foreground/30 rounded-lg justify-center hover:border-primary hover:text-primary transition-colors"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add Invoice
-            </button>
-
-            {/* Financial Summary */}
-            <div className="border-t border-border pt-3 space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial Summary</p>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
-                <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_eur)}</span>
-              </div>
-              {showLcColumn && (
+            <TabsContent value="details" className="flex-1 overflow-y-auto mt-0">
+              {/* Details */}
+              <div className="px-5 py-4 border-b border-border space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Details</p>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Contracted ({currency})</span>
-                  <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
+                  <span className="text-sm text-muted-foreground">Contract ID</span>
+                  <span className="text-sm font-medium">{selectedContract.contract_number}</span>
                 </div>
-              )}
-              {selectedInvoices.length > 0 && (
-                <>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Date</span>
+                  <span className="text-sm font-medium">
+                    {selectedContract.contract_date ? format(new Date(selectedContract.contract_date), "dd MMM yyyy") : "—"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Contractor</span>
+                  <span className="text-sm font-medium">{selectedContract.contractor || "—"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <Badge variant={statusVariant(selectedContract.status)}>{selectedContract.status}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Agreement Signed</span>
+                  <span className="text-sm font-medium">{selectedContract.agreement_signed ? "Yes" : "No"}</span>
+                </div>
+                {selectedContract.description && (
+                  <div>
+                    <span className="text-sm text-muted-foreground">Description</span>
+                    <p className="text-sm mt-1">{selectedContract.description}</p>
+                  </div>
+                )}
+                {selectedContract.comments && (
+                  <div>
+                    <span className="text-sm text-muted-foreground">Comments</span>
+                    <p className="text-sm mt-1">{selectedContract.comments}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Financial Summary */}
+              <div className="px-5 py-4 space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial Summary</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
+                  <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_eur)}</span>
+                </div>
+                {showLcColumn && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Invoiced (EUR)</span>
-                    <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced)}</span>
+                    <span className="text-sm text-muted-foreground">Contracted ({currency})</span>
+                    <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
                   </div>
-                  {showLcColumn && (
+                )}
+                {selectedInvoices.length > 0 && (
+                  <>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Invoiced ({currency})</span>
-                      <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoiced)}</span>
+                      <span className="text-sm text-muted-foreground">Invoiced (EUR)</span>
+                      <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced)}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between items-center pt-1 border-t border-border">
-                    <span className="text-sm font-semibold">Balance (EUR)</span>
-                    <span className="text-sm font-semibold">{formatAmount((selectedContract?.amount_eur || 0) - (showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced))}</span>
+                    {showLcColumn && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Invoiced ({currency})</span>
+                        <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoiced)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-1 border-t border-border">
+                      <span className="text-sm font-semibold">Balance (EUR)</span>
+                      <span className="text-sm font-semibold">{formatAmount((selectedContract?.amount_eur || 0) - (showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced))}</span>
+                    </div>
+                    {showLcColumn && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Balance ({currency})</span>
+                        <span className="text-sm font-semibold">{formatAmount(selectedBalance)}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="invoices" className="flex-1 overflow-y-auto mt-0">
+              <div className="px-5 py-4 space-y-3">
+                {selectedInvoices.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No invoices yet</p>
+                ) : (
+                  <div className="space-y-1">
+                    {selectedInvoices.map((inv) => {
+                      const invEur = showLcColumn ? convertToEur(inv.amount_lc) : inv.amount_lc;
+                      return (
+                        <div key={inv.id} className="flex items-start gap-2.5 py-2.5 border-b border-border last:border-0">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium">{inv.invoice_number}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {showLcColumn && <>{formatAmount(inv.amount_lc)} {currency} · </>}
+                              {formatAmount(invEur)} EUR
+                            </p>
+                            {inv.attachment_url && (
+                              <a
+                                href={inv.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                              >
+                                <Paperclip className="h-3 w-3" />
+                                {inv.attachment_name || "Attachment"}
+                              </a>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleDeleteInvoice(inv.id)}
+                            className="shrink-0 h-6 w-6 rounded flex items-center justify-center hover:bg-muted transition-colors text-destructive"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
-                  {showLcColumn && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Balance ({currency})</span>
-                      <span className="text-sm font-semibold">{formatAmount(selectedBalance)}</span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
+                )}
+
+                <button
+                  onClick={() => openInvoiceModal(selectedContract.id)}
+                  className="flex items-center gap-1.5 w-full py-2.5 text-sm font-medium text-muted-foreground border border-dashed border-muted-foreground/30 rounded-lg justify-center hover:border-primary hover:text-primary transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Invoice
+                </button>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
 
