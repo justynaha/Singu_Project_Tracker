@@ -88,7 +88,7 @@ export default function ProjectDetail() {
   };
 
   const tabs = [
-    { id: "project-plan", label: "Overview", icon: ListTodo },
+    { id: "project-plan", label: "Project Plan", icon: ListTodo },
     { id: "contracts", label: "Contracts", icon: FileSignature },
     { id: "monthly", label: "Monthly Breakdown", icon: CalendarRange },
     { id: "files", label: "Files", icon: FileText, badge: `(${files.length})` },
