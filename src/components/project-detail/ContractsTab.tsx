@@ -213,9 +213,31 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     if (data) setInvoices(data as Invoice[]);
   };
 
+  // Fetch FX rate for currency -> EUR conversion
+  const [fxRate, setFxRate] = useState<number | null>(null);
+
   useEffect(() => {
     fetchInvoices();
   }, [contracts]);
+
+  useEffect(() => {
+    if (showLcColumn) {
+      supabase
+        .from("fx_rates")
+        .select("rate")
+        .eq("currency", currency)
+        .order("valid_from", { ascending: false })
+        .limit(1)
+        .then(({ data }) => {
+          if (data && data.length > 0) setFxRate(data[0].rate);
+        });
+    }
+  }, [currency, showLcColumn]);
+
+  const convertToEur = (amountLc: number) => {
+    if (!fxRate || fxRate === 0) return amountLc;
+    return amountLc / fxRate;
+  };
 
   const invoicesByContract = invoices.reduce<Record<string, Invoice[]>>((acc, inv) => {
     if (!acc[inv.contract_id]) acc[inv.contract_id] = [];
