@@ -922,6 +922,59 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add Invoice Modal */}
+      <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Invoice</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="invoiceNumber">Invoice Number</Label>
+              <Input
+                id="invoiceNumber"
+                placeholder="e.g. INV-001"
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="invoiceAmount">Amount ({currency})</Label>
+              <Input
+                id="invoiceAmount"
+                type="number"
+                placeholder="0.00"
+                value={invoiceAmountRaw}
+                onChange={(e) => setInvoiceAmountRaw(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Attachment (optional)</Label>
+              <input
+                ref={invoiceFileRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)}
+              />
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => invoiceFileRef.current?.click()}
+              >
+                <Paperclip className="h-4 w-4 mr-2" />
+                {invoiceFile ? invoiceFile.name : "Choose file..."}
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
+            <Button onClick={handleInvoiceSubmit} disabled={!invoiceNumber.trim() || invoiceSaving}>
+              {invoiceSaving ? "Saving..." : "Add Invoice"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
