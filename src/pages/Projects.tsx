@@ -1036,7 +1036,7 @@ export default function Projects() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="budget">Budget (Estimated spend)</Label>
+                <Label htmlFor="budget" className="flex items-center gap-1.5">Budget (Estimated spend)</Label>
                 <Input
                   id="budget"
                   type="text"

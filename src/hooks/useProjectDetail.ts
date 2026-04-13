@@ -460,6 +460,36 @@ export function useProjectDetail(projectId: string | undefined) {
     { budget: 0, forecasted: 0, contracted: 0, invoiced: 0 }
   );
 
+  // Contracts CRUD
+  const createContract = async (input: {
+    contract_number: string;
+    contract_date?: string;
+    amount_lc?: number;
+    status?: string;
+  }) => {
+    if (!projectId) return null;
+    try {
+      const { data, error } = await supabase
+        .from("contracts")
+        .insert({
+          project_id: projectId,
+          contract_number: input.contract_number,
+          contract_date: input.contract_date || null,
+          amount_lc: input.amount_lc ?? null,
+          status: input.status || "Draft",
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      setContracts((prev) => [data, ...prev]);
+      toast.success("Contract added");
+      return data;
+    } catch (error: any) {
+      toast.error("Failed to add contract: " + error.message);
+      return null;
+    }
+  };
+
   return {
     project,
     timelineItems,
@@ -478,6 +508,7 @@ export function useProjectDetail(projectId: string | undefined) {
     reorderTimelineItems,
     createFile,
     deleteFile,
+    createContract,
     createCost,
     updateCost,
     deleteCost,
