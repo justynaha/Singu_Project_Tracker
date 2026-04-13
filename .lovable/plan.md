@@ -1,18 +1,51 @@
 
 
-## Plan: Fix Add Contract button layout, editable currency, radio statuses
+## Plan: Global Contracts page + Add contractor/description fields
 
-### 1. `src/components/project-detail/ContractsTab.tsx`
+### Database migration
 
-**Button layout** — Match FilesTab pattern: wrap in `<div className="p-4">` and place button in `<div className="mb-4">` without the counter/justify-between layout.
+Add two new columns to the `contracts` table:
+- `contractor` text, nullable
+- `description` text, nullable
 
-**Local Currency field** — Change from disabled `Input` to an editable `Select` dropdown (same currency options as in the New Project modal), defaulting to the project's currency prop.
+### 1. Database migration — add columns
 
-**Status field** — Replace the `Select` dropdown with `RadioGroup`/`RadioGroupItem` components. Only two options: `Ongoing` and `Completed`. Default to `Ongoing`.
+```sql
+ALTER TABLE public.contracts ADD COLUMN contractor text;
+ALTER TABLE public.contracts ADD COLUMN description text;
+```
 
-**Status badge mapping** — Update `statusVariant` to handle `ongoing` and `completed` instead of draft/signed/active/closed.
+### 2. `src/components/project-detail/ContractsTab.tsx` — Update form and table
 
-**Default status in state** — Change from `"Draft"` to `"Ongoing"`.
+**Add Contract modal**: Add two new fields:
+- **Contractor** — text input
+- **Contract Description** — textarea
 
-### No other file changes needed.
+**Table columns**: Add `Contractor` and `Description` columns to the table. Rename `Amount ({currency})` → `Contracted ({currency})` and `Amount (EUR)` → `Contracted (EUR)`.
+
+**Props**: Update `onCreateContract` to accept `contractor` and `description` fields.
+
+### 3. `src/hooks/useProjectDetail.ts` — Update Contract interface and createContract
+
+- Add `contractor` and `description` to the Contract-related types.
+- Pass new fields in the insert call.
+
+### 4. `src/pages/ContractsList.tsx` — New global Contracts page
+
+Create a new page that fetches all contracts joined with project data (project name, site). Display a table with columns:
+- Contract ID, Project ID, Project Title, Site, Date, Contracted LC, Contracted EUR, Status, Contractor, Contract Description
+
+Use the same table styling and layout patterns as `Projects.tsx` (search, pagination).
+
+### 5. `src/components/AppSidebar.tsx` — Add "Contracts" submenu item
+
+Add a `Contracts` entry under the "Project Tracker" submenu (after "Projects"), using the `FileSignature` icon, linking to `/contracts`.
+
+### 6. `src/App.tsx` — Add route
+
+Add `<Route path="/contracts" element={<ContractsList />} />`.
+
+### 7. Update sidebar active detection
+
+Update `isGroupActive` for "Project Tracker" to also match `/contracts`.
 
