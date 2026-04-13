@@ -81,6 +81,7 @@ export function useProjectDetail(projectId: string | undefined) {
   const [files, setFiles] = useState<ProjectFile[]>([]);
   const [costs, setCosts] = useState<ProjectCost[]>([]);
   const [cashflowData, setCashflowData] = useState<MilestoneCashflow[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProject = useCallback(async () => {
@@ -128,6 +129,21 @@ export function useProjectDetail(projectId: string | undefined) {
     }
   }, [projectId]);
 
+  const fetchContracts = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      const { data, error } = await supabase
+        .from("contracts")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("contract_date", { ascending: false });
+      if (error) throw error;
+      setContracts(data || []);
+    } catch (error: any) {
+      toast.error("Failed to fetch contracts: " + error.message);
+    }
+  }, [projectId]);
+
   const fetchCosts = useCallback(async () => {
     if (!projectId) return;
     try {
@@ -163,9 +179,9 @@ export function useProjectDetail(projectId: string | undefined) {
   const fetchAll = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
-    await Promise.all([fetchProject(), fetchTimelineItems(), fetchFiles(), fetchCosts()]);
+    await Promise.all([fetchProject(), fetchTimelineItems(), fetchFiles(), fetchCosts(), fetchContracts()]);
     setLoading(false);
-  }, [projectId, fetchProject, fetchTimelineItems, fetchFiles, fetchCosts]);
+  }, [projectId, fetchProject, fetchTimelineItems, fetchFiles, fetchCosts, fetchContracts]);
 
   // Timeline Items CRUD
   const createTimelineItem = async (input: {
@@ -449,6 +465,7 @@ export function useProjectDetail(projectId: string | undefined) {
     timelineItems,
     files,
     costs,
+    contracts,
     cashflowData,
     cashflowTotals,
     loading,
