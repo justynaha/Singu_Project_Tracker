@@ -167,7 +167,7 @@ export default function ProjectDetail() {
     );
   }
 
-  const hasSidePanel = !!(commentsPanelItem || filesPanelItem);
+  
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-background">
