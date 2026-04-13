@@ -105,9 +105,9 @@ export default function EditProjectModal({
   );
   const [budgetLine, setBudgetLine] = useState("");
   const [budgetLineOpen, setBudgetLineOpen] = useState(false);
-  const [fiscalYear, setFiscalYear] = useState("2025");
+  const [fiscalYear, setFiscalYear] = useState("2026");
   const [totalBudget, setTotalBudget] = useState(project.total_budget.toString());
-  const [currency, setCurrency] = useState("PLN");
+  const [currency, setCurrency] = useState("EUR");
   const [contributors, setContributors] = useState<Contributor[]>([
     { id: "1", name: "", permission: "" }
   ]);
@@ -199,7 +199,7 @@ export default function EditProjectModal({
             <Button
               type="button"
               variant="ghost"
-              className="w-full justify-between px-0 font-normal text-muted-foreground"
+              className="w-full justify-between px-0 font-normal text-primary"
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
               Advanced
