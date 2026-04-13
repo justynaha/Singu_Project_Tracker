@@ -71,9 +71,9 @@ export default function Projects() {
     building: "",
     tenant: "",
     budgetLine: "",
-    fiscalYear: "2025",
+    fiscalYear: "2026",
     budget: "",
-    currency: "PLN",
+    currency: "EUR",
     startDate: new Date(),
     endDate: null as Date | null,
     budgetType: "",
@@ -265,9 +265,9 @@ export default function Projects() {
         building: "",
         tenant: "",
         budgetLine: "",
-        fiscalYear: "2025",
+        fiscalYear: "2026",
         budget: "",
-        currency: "PLN",
+        currency: "EUR",
         startDate: new Date(),
         endDate: null,
         budgetType: "",
@@ -880,7 +880,7 @@ export default function Projects() {
             <Button
               type="button"
               variant="ghost"
-              className="w-full justify-between px-0 font-normal text-muted-foreground"
+              className="w-full justify-between px-0 font-normal text-primary"
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
               Advanced
