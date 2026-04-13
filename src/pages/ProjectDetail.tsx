@@ -244,6 +244,26 @@ export default function ProjectDetail() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Side Panels */}
+      {commentsPanelItem && (
+        <CommentsPanel
+          timelineItemId={commentsPanelItem.id}
+          timelineItemName={commentsPanelItem.name}
+          onClose={() => setCommentsPanelItem(null)}
+          onCountChange={handleCommentCountChange}
+        />
+      )}
+      {filesPanelItem && project && (
+        <FilesPanelComponent
+          timelineItemId={filesPanelItem.id}
+          timelineItemName={filesPanelItem.name}
+          projectId={project.id}
+          onClose={() => setFilesPanelItem(null)}
+          onCountChange={handleFileCountChange}
+        />
+      )}
 
       {/* Global File Preview Modal */}
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
