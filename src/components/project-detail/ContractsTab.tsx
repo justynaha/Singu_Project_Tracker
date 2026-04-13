@@ -446,7 +446,9 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <TableHead>Contractor</TableHead>
                 {showLcColumn && <TableHead className="text-right">Contracted ({currency})</TableHead>}
                 <TableHead className="text-right">Contracted (EUR)</TableHead>
+                {hasAnyInvoices && showLcColumn && <TableHead className="text-right">Invoiced ({currency})</TableHead>}
                 {hasAnyInvoices && <TableHead className="text-right">Invoiced (EUR)</TableHead>}
+                {hasAnyInvoices && showLcColumn && <TableHead className="text-right">Balance ({currency})</TableHead>}
                 {hasAnyInvoices && <TableHead className="text-right">Balance (EUR)</TableHead>}
               </TableRow>
             </TableHeader>
@@ -490,9 +492,19 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                     <TableCell>{c.contractor || "—"}</TableCell>
                     {showLcColumn && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
                     <TableCell className="text-right">{formatAmount(c.amount_eur)}</TableCell>
+                    {hasAnyInvoices && showLcColumn && (
+                      <TableCell className="text-right">
+                        {contractInvoices.length > 0 ? formatAmount(totalInvoicedLc) : "—"}
+                      </TableCell>
+                    )}
                     {hasAnyInvoices && (
                       <TableCell className="text-right">
                         {contractInvoices.length > 0 ? formatAmount(totalInvoicedEur) : "—"}
+                      </TableCell>
+                    )}
+                    {hasAnyInvoices && showLcColumn && (
+                      <TableCell className="text-right">
+                        {contractInvoices.length > 0 ? formatAmount(balanceLc) : "—"}
                       </TableCell>
                     )}
                     {hasAnyInvoices && (
@@ -520,12 +532,25 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   <TableCell className="text-right font-bold">
                     {formatAmount(contracts.reduce((s, c) => s + (c.amount_eur || 0), 0))}
                   </TableCell>
+                  {hasAnyInvoices && showLcColumn && (
+                    <TableCell className="text-right font-bold">
+                      {formatAmount(invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0))}
+                    </TableCell>
+                  )}
                   {hasAnyInvoices && (
                     <TableCell className="text-right font-bold">
                       {formatAmount(
                         showLcColumn
                           ? convertToEur(invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0))
                           : invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0)
+                      )}
+                    </TableCell>
+                  )}
+                  {hasAnyInvoices && showLcColumn && (
+                    <TableCell className="text-right font-bold">
+                      {formatAmount(
+                        contracts.reduce((s, c) => s + (c.amount_lc || 0), 0) -
+                        invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0)
                       )}
                     </TableCell>
                   )}
@@ -548,12 +573,12 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
 
       {/* Side Detail Panel */}
       {selectedContract && (
-        <div className="w-[380px] border-l border-border bg-card flex flex-col shrink-0 animate-in slide-in-from-right duration-200">
+        <div className="fixed top-16 right-0 bottom-0 w-[380px] border-l border-border bg-card flex flex-col z-40 animate-in slide-in-from-right duration-200">
           {/* Header */}
           <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Contract</p>
-              <h3 className="text-base font-semibold mt-1 leading-snug">{selectedContract.contract_number}</h3>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Contract Details</p>
+              <h3 className="text-base font-semibold mt-1 leading-snug">{selectedContract.contractor || "—"}</h3>
             </div>
             <button
               onClick={() => setSelectedContract(null)}
@@ -567,18 +592,22 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           <div className="px-5 py-4 border-b border-border space-y-3">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Details</p>
             <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Contract ID</span>
+              <span className="text-sm font-medium">{selectedContract.contract_number}</span>
+            </div>
+            <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Date</span>
               <span className="text-sm font-medium">
                 {selectedContract.contract_date ? format(new Date(selectedContract.contract_date), "dd MMM yyyy") : "—"}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Status</span>
-              <Badge variant={statusVariant(selectedContract.status)}>{selectedContract.status}</Badge>
-            </div>
-            <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Contractor</span>
               <span className="text-sm font-medium">{selectedContract.contractor || "—"}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Status</span>
+              <Badge variant={statusVariant(selectedContract.status)}>{selectedContract.status}</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Agreement Signed</span>
