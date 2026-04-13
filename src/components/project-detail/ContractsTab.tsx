@@ -54,6 +54,7 @@ export interface Contract {
   status: string;
   contractor: string | null;
   description: string | null;
+  agreement_signed: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -68,6 +69,7 @@ interface ContractsTabProps {
     status?: string;
     contractor?: string;
     description?: string;
+    agreement_signed?: boolean;
   }) => Promise<any>;
 }
 
@@ -99,6 +101,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [agreementSigned, setAgreementSigned] = useState(false);
+
   const resetForm = () => {
     setContractNumber("");
     setContractDate(undefined);
@@ -107,6 +111,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     setStatus("Ongoing");
     setContractor("");
     setDescription("");
+    setAgreementSigned(false);
   };
 
   const handleSubmit = async () => {
@@ -120,6 +125,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
       status,
       contractor: contractor.trim() || undefined,
       description: description.trim() || undefined,
+      agreement_signed: agreementSigned,
     });
     setSaving(false);
     resetForm();
@@ -150,6 +156,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               {showLcColumn && <TableHead className="text-right">Contracted ({currency})</TableHead>}
               <TableHead className="text-right">Contracted (EUR)</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Agreement Signed</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,6 +173,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <TableCell>
                   <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
                 </TableCell>
+                <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -181,6 +189,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <TableCell className="text-right font-bold">
                   {formatAmount(contracts.reduce((s, c) => s + (c.amount_eur || 0), 0))}
                 </TableCell>
+                <TableCell />
                 <TableCell />
               </TableRow>
             </TableFooter>
@@ -307,6 +316,20 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Completed" id="status-completed" />
                   <Label htmlFor="status-completed" className="font-normal cursor-pointer">Completed</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>Agreement Signed</Label>
+              <RadioGroup value={agreementSigned ? "yes" : "no"} onValueChange={(v) => setAgreementSigned(v === "yes")} className="flex gap-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="agreement-yes" />
+                  <Label htmlFor="agreement-yes" className="font-normal cursor-pointer">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="agreement-no" />
+                  <Label htmlFor="agreement-no" className="font-normal cursor-pointer">No</Label>
                 </div>
               </RadioGroup>
             </div>

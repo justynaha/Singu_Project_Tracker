@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       contracts: {
         Row: {
+          agreement_signed: boolean
           amount_eur: number | null
           amount_lc: number | null
           contract_date: string | null
@@ -29,6 +30,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agreement_signed?: boolean
           amount_eur?: number | null
           amount_lc?: number | null
           contract_date?: string | null
@@ -42,6 +44,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agreement_signed?: boolean
           amount_eur?: number | null
           amount_lc?: number | null
           contract_date?: string | null
