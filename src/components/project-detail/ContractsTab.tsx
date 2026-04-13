@@ -325,6 +325,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10" />
               <TableHead>Contract ID</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Contractor</TableHead>
@@ -339,6 +340,11 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           <TableBody>
             {contracts.map((c) => (
               <TableRow key={c.id}>
+                <TableCell className="w-10 p-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditModal(c)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </TableCell>
                 <TableCell className="font-medium">{c.contract_number}</TableCell>
                 <TableCell>
                   {c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}
@@ -358,6 +364,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           {contracts.length > 0 && (
             <TableFooter>
               <TableRow>
+                <TableCell />
                 <TableCell colSpan={4} className="font-bold text-right">Total</TableCell>
                 {showLcColumn && (
                   <TableCell className="text-right font-bold">
