@@ -1,21 +1,16 @@
 
 
-## Plan: Clean up New Project and Edit Project modals
+## Plan: Update Budget field — formatting and label
 
-### Changes to `src/pages/Projects.tsx` (New Project modal)
+### Changes to both `src/pages/Projects.tsx` and `src/components/project-detail/EditProjectModal.tsx`
 
-1. **Remove the character counter** (`{formData.workDescription.length}/500`) below the Work Description textarea.
+1. **Rename label** from `Project budget` to `Budget (Estimated spend)`.
 
-2. **Wrap Building and Tenant fields** inside a collapsible "Advanced" section:
-   - Add a `showAdvanced` state toggle (default `false`).
-   - Render a `<Button variant="ghost">` labeled "Advanced" with a chevron icon that toggles `showAdvanced`.
-   - When expanded, show the Building and Tenant select fields.
-
-### Changes to `src/components/project-detail/EditProjectModal.tsx` (Edit Project modal)
-
-Apply the same two changes:
-1. Remove the `{workDescription.length}/500` counter line.
-2. Wrap Building and Tenant fields under an "Advanced" toggle button.
+2. **Replace `type="number"` with `type="text"`** and add formatting logic:
+   - On display: format the value with thousand separators (e.g. `1 000 000.00` or `1,000,000.00`).
+   - On change: strip non-numeric characters (except decimal point), store raw number in state.
+   - This removes the browser's native up/down spinner arrows.
+   - Add `inputMode="decimal"` for mobile numeric keyboard.
 
 ### No database or hook changes needed.
 
