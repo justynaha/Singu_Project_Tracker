@@ -462,6 +462,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               const contractInvoices = invoicesByContract[c.id] || [];
               const totalInvoiced = contractInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
               const balance = (c.amount_lc || 0) - totalInvoiced;
+              const balanceEur = showLcColumn ? convertToEur(balance) : balance;
               const colCount = showLcColumn ? 10 : 9;
 
               return (
@@ -490,7 +491,11 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   {/* Invoice sub-rows */}
                   {contractInvoices.map((inv) => (
                     <TableRow key={inv.id} className="bg-muted/30">
-                      <TableCell />
+                      <TableCell className="w-10 p-1">
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDeleteInvoice(inv.id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </TableCell>
                       <TableCell className="pl-8 text-xs text-muted-foreground">
                         Invoice
                       </TableCell>
@@ -505,14 +510,10 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                         ) : "—"}
                       </TableCell>
                       {showLcColumn && <TableCell className="text-right text-xs">{formatAmount(inv.amount_lc)}</TableCell>}
-                      <TableCell className="text-right text-xs">{formatAmount(inv.amount_lc)}</TableCell>
+                      <TableCell className="text-right text-xs">{formatAmount(showLcColumn ? convertToEur(inv.amount_lc) : inv.amount_lc)}</TableCell>
                       <TableCell />
                       <TableCell />
-                      <TableCell className="p-1">
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDeleteInvoice(inv.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </TableCell>
+                      <TableCell />
                     </TableRow>
                   ))}
 
@@ -525,7 +526,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                       <TableCell />
                       <TableCell />
                       {showLcColumn && <TableCell className="text-right text-xs font-semibold">{formatAmount(balance)}</TableCell>}
-                      <TableCell className="text-right text-xs font-semibold">{formatAmount(balance)}</TableCell>
+                      <TableCell className="text-right text-xs font-semibold">{formatAmount(showLcColumn ? balanceEur : balance)}</TableCell>
                       <TableCell />
                       <TableCell />
                       <TableCell />
@@ -534,9 +535,9 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
 
                   {/* Add Invoice button row */}
                   <TableRow key={`add-inv-${c.id}`} className="border-b-2">
-                    <TableCell />
-                    <TableCell colSpan={colCount - 1}>
-                      <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => openInvoiceModal(c.id)}>
+                    <TableCell className="py-0.5" />
+                    <TableCell colSpan={colCount - 1} className="py-0.5">
+                      <Button variant="ghost" size="sm" className="text-xs h-6 text-primary hover:text-primary" onClick={() => openInvoiceModal(c.id)}>
                         <Plus className="h-3 w-3 mr-1" />
                         Add Invoice
                       </Button>
@@ -550,7 +551,10 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             <TableFooter>
               <TableRow>
                 <TableCell />
-                <TableCell colSpan={4} className="font-bold text-right">Total</TableCell>
+                <TableCell className="font-bold">Total</TableCell>
+                <TableCell />
+                <TableCell />
+                <TableCell />
                 {showLcColumn && (
                   <TableCell className="text-right font-bold">
                     {formatAmount(contracts.reduce((s, c) => s + (c.amount_lc || 0), 0))}
