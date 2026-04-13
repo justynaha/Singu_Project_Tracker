@@ -1077,6 +1077,30 @@ export default function TimelineV2Tab({
             onChange={(status) => handleStatusChange(item.id, status)}
           />
         );
+      case "responsible":
+        return (
+          <EditableTextCell
+            value={item.responsible}
+            onChange={(val) => handleResponsibleChange(item.id, val)}
+            placeholder="Responsible"
+          />
+        );
+      case "start_date":
+        return (
+          <DatePickerCell
+            value={item.start_date}
+            onChange={(date) => handleStartDateChange(item.id, date)}
+            status={item.status}
+          />
+        );
+      case "comments":
+        return (
+          <EditableTextCell
+            value={item.comments}
+            onChange={(val) => handleCommentsChange(item.id, val)}
+            placeholder="Add comment"
+          />
+        );
       case "due_date":
         return (
           <DatePickerCell
