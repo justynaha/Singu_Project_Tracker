@@ -1,33 +1,52 @@
 
 
-## Plan: Fix Contracted column to use amount_lc (converted to EUR) instead of amount_eur
+## Plan: Fixed full-height side panels for Comments and Files
 
 ### Problem
-The "Contract amount" field in the add/edit modal saves to `amount_lc`, but the table's "Contracted (EUR)" column reads from `amount_eur`, which is never set. This causes the Contracted column to show 0 or stale values.
+Side panels (Comments, Files) currently render inline within the page content area. They should instead span the full viewport height (below the top app bar), be fixed-width, pinned to the right edge, and responsively compress the main content area. The sidebar menu should remain untouched.
 
-### Solution
-Replace all references to `c.amount_eur` with `convertToEur(c.amount_lc)` (when `showLcColumn` is true) or `c.amount_lc` (when currency is EUR). This ensures the displayed value matches what the user enters in the modal.
+### Approach
+Move the side panels out of the inner `flex` container and make them fixed-position overlays that shrink the main content area.
 
-### Changes to `src/components/project-detail/ContractsTab.tsx`
+### Changes to `src/pages/ProjectDetail.tsx`
 
-1. **Table rows** (line ~494): Change `c.amount_eur` → `showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0)`
+1. **Move panels outside the tab flex container** — Currently panels sit inside `<div className="flex">` alongside tab content. Move them to a higher level in the component tree.
 
-2. **Balance EUR calculation** (line ~461): Change `(c.amount_eur || 0) - totalInvoicedEur` → `(showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0)) - totalInvoicedEur`
+2. **Use a layout wrapper**: Wrap the entire page content in a flex row. The main content area gets `flex-1 min-w-0` and the side panel gets a fixed width (e.g. `w-[400px] flex-shrink-0`).
 
-3. **Total footer — Contracted EUR** (line ~532): Replace `contracts.reduce((s, c) => s + (c.amount_eur || 0), 0)` with `contracts.reduce((s, c) => s + (showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0)), 0)`
+3. **Full viewport height**: The outer wrapper uses `h-[calc(100vh-64px)]` (64px = header height) so both the main content and side panel fill the available viewport below the app bar.
 
-4. **Total footer — Balance EUR** (lines ~559): Same pattern for the balance total
+4. **Structure**:
+```text
+<div className="flex h-[calc(100vh-64px)]">
+  <!-- Main scrollable content -->
+  <div className="flex-1 min-w-0 overflow-y-auto">
+    <div className="p-6">
+      <ProjectHeader ... />
+      <div className="bg-card border ...">
+        <!-- tabs + tab content -->
+      </div>
+    </div>
+    <!-- modals -->
+  </div>
 
-5. **Side panel — Financial Summary "Contracted (EUR)"** (line ~641): Change `selectedContract.amount_eur` → `showLcColumn ? convertToEur(selectedContract.amount_lc || 0) : (selectedContract.amount_lc || 0)`
+  <!-- Side panel (fixed width, full height, pinned right) -->
+  {commentsPanelItem && <CommentsPanel ... />}
+  {filesPanelItem && <FilesPanelComponent ... />}
+</div>
+```
 
-6. **Side panel — Balance (EUR)** (line ~663): Same fix
+5. **Remove old `hasSidePanel` border adjustments** — no longer needed since panels are separate from the tab card.
 
-### Also in `src/pages/ProjectDetail.tsx`
-The `totalContracted` calculation (line using `contracts.reduce(... c.amount_eur ...)`) should also use `amount_lc` to stay consistent.
+### Changes to `src/components/project-detail/CommentsPanel.tsx` and `FilesPanel.tsx`
+
+- Ensure root element uses `h-full` (not a fixed `h-full` from parent) and `w-[400px] flex-shrink-0 border-l border-border bg-card`.
+- Both panels already have similar structure; just ensure consistent sizing and `overflow-y-auto` on the scroll area.
 
 ### No database changes needed
 
 ### Files to edit
-- `src/components/project-detail/ContractsTab.tsx`
 - `src/pages/ProjectDetail.tsx`
+- `src/components/project-detail/CommentsPanel.tsx`
+- `src/components/project-detail/FilesPanel.tsx`
 
