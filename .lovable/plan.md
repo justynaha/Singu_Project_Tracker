@@ -1,36 +1,44 @@
 
 
-## Plan: Global "Monthly Breakdown" page
+## Plan: Add Invoices to Contracts
 
 ### Overview
-Create a new page at `/monthly-breakdown` accessible from the sidebar under "Contracts" in the Project Tracker group. It displays a cross-project table with all projects' monthly breakdown data, project number, project name, month columns (Apr 2026–Mar 2027), row totals, and a Grand Total row. Filters match those on the Projects page.
+Each contract can have invoices. Below each contract row, show its invoices and a "+ Add Invoice" button. An "Add Invoice" modal collects Amount (LC), Invoice Number, and optional attachment. A "Balance" row shows the difference between contracted amount and total invoiced.
 
-### Changes
+### 1. Database migration
+Create `invoices` table:
+```sql
+CREATE TABLE public.invoices (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  contract_id uuid NOT NULL,
+  invoice_number text NOT NULL,
+  amount_lc numeric NOT NULL DEFAULT 0,
+  attachment_name text,
+  attachment_url text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read" ON public.invoices FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert" ON public.invoices FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update" ON public.invoices FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public delete" ON public.invoices FOR DELETE TO public USING (true);
+```
 
-#### 1. `src/components/AppSidebar.tsx`
-- Add a new submenu item `{ title: "Monthly Breakdown", icon: CalendarRange, path: "/monthly-breakdown" }` after the "Contracts" entry in the Project Tracker group
-- Import `CalendarRange` from lucide-react
-- Update `isGroupActive` to include `/monthly-breakdown`
+### 2. `src/components/project-detail/ContractsTab.tsx`
+- Fetch invoices for all contract IDs on mount (grouped by `contract_id`)
+- Replace flat `contracts.map` with an expanded layout: for each contract, render:
+  1. The existing contract row
+  2. Sub-rows for each invoice (indented, showing invoice number, amount LC, attachment link)
+  3. A **Balance** row: `contracted amount_lc - sum(invoice amounts)`
+  4. A `+ Add Invoice` button row
+- Add an "Add Invoice" modal with fields: Invoice Number (text, required), Amount LC (number, required), Attachment (file input, optional)
+- On submit, insert into `invoices` table and refresh local state
+- Attachment: upload to a storage bucket or store as base64 — since the user said "optional attachment", we'll create a `contract-attachments` storage bucket for file uploads
 
-#### 2. `src/pages/MonthlyBreakdownList.tsx` (new file)
-- Fetch all projects via `useProjects()` hook
-- Fetch all rows from `monthly_breakdown` table (joined by `project_id`)
-- Generate project numbers using the same `13536 + index` logic as ContractsList
-- **Filters section**: Replicate the same filter UI from Projects page (Site group, Country, Site, Budget line, Status, Fiscal year, Tracking) with pending/applied pattern
-- **Table**: Columns: `#` (project number, clickable link), `Project Name`, then 12 month columns (Apr 2026–Mar 2027), then `Total`
-- Each cell shows the monthly value from the breakdown row for that project (read-only display, not editable)
-- **Grand Total row**: Last row sums all values per column across all filtered projects
-- Project number links to `/project/:id`
-
-#### 3. `src/App.tsx`
-- Import `MonthlyBreakdownList` and add route `<Route path="/monthly-breakdown" element={<MonthlyBreakdownList />} />`
-
-### Technical notes
-- Month columns are hardcoded to FY2026 headers (Apr 2026–Mar 2027) matching the current data; each project's row uses its `monthly_breakdown` record
-- Reuses `useProjects`, `siteToCountry`, `SITE_GROUP_OPTIONS`, `COUNTRY_TO_SITE_GROUP` from existing code
-- The filter logic is copied from Projects page for consistency
+### 3. Storage bucket (for attachments)
+Create a public storage bucket `contract-attachments` via migration for invoice file uploads.
 
 ### Files to create/edit
-- **Create**: `src/pages/MonthlyBreakdownList.tsx`
-- **Edit**: `src/components/AppSidebar.tsx`, `src/App.tsx`
+- **Migration**: new `invoices` table + `contract-attachments` storage bucket
+- **Edit**: `src/components/project-detail/ContractsTab.tsx`
 
