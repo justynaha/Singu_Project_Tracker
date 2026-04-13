@@ -10,6 +10,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableFooter,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
