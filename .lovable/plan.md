@@ -1,27 +1,27 @@
 
 
-## Plan: Sync BudgetCard "Contracted" with actual contracts total + show LC budget
+## Plan: Add "Agreement Signed" column
 
-### Problem
-The BudgetCard widget on the Overview tab uses `cashflowTotals.contracted` from the milestone_cashflow table, not the actual sum of contracts. The user wants the "Contracted" value in BudgetCard to always equal the Total from the Contracts tab (sum of `amount_eur`). Additionally, the Budget line in BudgetCard should show the local currency amount below the EUR amount.
+### 1. Database migration
+Add a new column to the `contracts` table:
+```sql
+ALTER TABLE public.contracts ADD COLUMN agreement_signed boolean NOT NULL DEFAULT false;
+```
 
-### Changes
+### 2. `src/components/project-detail/ContractsTab.tsx`
+- Add `agreement_signed` to the `Contract` interface (`agreement_signed: boolean`)
+- Add "Agreement Signed" column to the table (after Status), displaying "Yes" or "No"
+- Add `agreementSigned` state (default `false`) and a radio group (Yes/No) at the bottom of the Add Contract modal, below the Status field
+- Pass `agreement_signed` in `onCreateContract` payload
+- Update the `onCreateContract` type to include `agreement_signed?: boolean`
+- Add "Agreement Signed" cell to the footer row (empty cell for alignment)
 
-#### 1. `src/pages/ProjectDetail.tsx`
-- Compute `totalContracted` from `contracts` array: `contracts.reduce((s, c) => s + (c.amount_eur || 0), 0)` instead of `cashflowTotals.contracted`.
-- Pass `budgetLc` (project's `total_budget`) and `localCurrency` (project's `currency`) to `BudgetCard` so it can display the local currency value below EUR.
-- The budget in EUR needs to be derived — if the project currency is already EUR, `budgetLc` equals budget; otherwise we need the EUR equivalent. Since `total_budget` is stored in local currency, we'll pass both `total_budget` and `currency` to BudgetCard.
+### 3. `src/pages/ContractsList.tsx`
+- Add `agreement_signed` to the `ContractWithProject` interface
+- Add "Agreement Signed" column header (after Status)
+- Display "Yes" or "No" in each row
+- Update `colSpan` in empty-state row from 10 to 11
 
-#### 2. `src/components/project-detail/BudgetCard.tsx`
-- Add props: `budgetLc?: number`, `localCurrency?: string`.
-- Below the Budget EUR value (line 43), render a smaller line showing the local currency amount (only if `localCurrency` differs from "EUR").
-- The `contracted` prop will now receive the contracts total (EUR) from ProjectDetail.
-
-#### 3. `src/components/project-detail/TimelineV2Tab.tsx`
-- Update the `contracted` prop it receives — no changes needed in this file since ProjectDetail already passes the value.
-
-### Technical detail
-- `totalContracted` = `contracts.reduce((sum, c) => sum + Number(c.amount_eur || 0), 0)`
-- BudgetCard gets new optional props `budgetLc` and `localCurrency`
-- Local currency line rendered with `text-xs text-muted-foreground` below the EUR budget value
+### 4. `src/pages/ProjectDetail.tsx`
+- Pass `agreement_signed` when calling the contract insert to Supabase
 
