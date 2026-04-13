@@ -779,6 +779,8 @@ export default function TimelineV2Tab({
   contracted: propContracted,
   invoiced: propInvoiced,
   currency,
+  budgetLc,
+  localCurrency,
   trackingStatus,
   offTrackMessage,
   onCreateItem,
