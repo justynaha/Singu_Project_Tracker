@@ -73,7 +73,8 @@ export default function OverviewTab({ project }: OverviewTabProps) {
     }
   };
 
-  const matchedSite = project.site ? sites.find(s => s.name === project.site) : null;
+  const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const matchedSite = project.site ? sites.find(s => normalize(s.name) === normalize(project.site!)) : null;
 
   return (
     <div className="p-6">
