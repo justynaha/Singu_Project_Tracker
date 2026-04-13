@@ -146,7 +146,7 @@ const AiLabel = ({ field }: { field?: ExtractedField<any> }) => {
   );
 };
 
-export default function ContractsTab({ contracts, currency = "EUR", onCreateContract }: ContractsTabProps) {
+export default function ContractsTab({ contracts, currency = "EUR", onCreateContract, onUpdateContract }: ContractsTabProps) {
   const showLcColumn = currency.toUpperCase() !== "EUR";
   const [showModal, setShowModal] = useState(false);
   const [contractNumber, setContractNumber] = useState("");
@@ -167,7 +167,19 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [uploadedFileName, setUploadedFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const resetForm = () => {
+  // Edit state
+  const [editingContract, setEditingContract] = useState<Contract | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editContractNumber, setEditContractNumber] = useState("");
+  const [editContractDate, setEditContractDate] = useState<Date | undefined>();
+  const [editAmountRaw, setEditAmountRaw] = useState("");
+  const [editSelectedCurrency, setEditSelectedCurrency] = useState(currency);
+  const [editStatus, setEditStatus] = useState("Ongoing");
+  const [editContractor, setEditContractor] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editAgreementSigned, setEditAgreementSigned] = useState(false);
+  const [editComments, setEditComments] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
     setContractNumber("");
     setContractDate(undefined);
     setAmountRaw("");
