@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { FileText, Info, Clock, ArrowLeft, ListTodo, FileSignature } from "lucide-react";
+import { FileText, Info, Clock, ArrowLeft, ListTodo, FileSignature, CalendarRange } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import ProjectHeader from "@/components/project-detail/ProjectHeader";
@@ -7,6 +7,7 @@ import TimelineV2Tab from "@/components/project-detail/TimelineV2Tab";
 import OverviewTab from "@/components/project-detail/OverviewTab";
 import FilesTab from "@/components/project-detail/FilesTab";
 import ContractsTab from "@/components/project-detail/ContractsTab";
+import MonthlyBreakdownTab from "@/components/project-detail/MonthlyBreakdownTab";
 import ActualVsBudgetTab from "@/components/project-detail/ActualVsBudgetTab";
 import EditProjectModal from "@/components/project-detail/EditProjectModal";
 import { useProjectDetail } from "@/hooks/useProjectDetail";
@@ -89,6 +90,7 @@ export default function ProjectDetail() {
   const tabs = [
     { id: "project-plan", label: "Overview", icon: ListTodo },
     { id: "contracts", label: "Contracts", icon: FileSignature },
+    { id: "monthly", label: "Monthly Breakdown", icon: CalendarRange },
     { id: "files", label: "Files", icon: FileText, badge: `(${files.length})` },
     { id: "details", label: "Details", icon: Info },
     { id: "history", label: "History", icon: Clock },
@@ -168,6 +170,9 @@ export default function ProjectDetail() {
           )}
           {activeTab === "contracts" && (
             <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} onCreateContract={createContract} onUpdateContract={updateContract} />
+          )}
+          {activeTab === "monthly" && (
+            <MonthlyBreakdownTab projectId={project.id} fiscalYear={project.fiscal_year} />
           )}
           {activeTab === "files" && (
             <FilesTab

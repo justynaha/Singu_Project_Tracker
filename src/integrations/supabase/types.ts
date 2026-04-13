@@ -141,6 +141,69 @@ export type Database = {
           },
         ]
       }
+      monthly_breakdown: {
+        Row: {
+          apr: number | null
+          aug: number | null
+          created_at: string
+          dec: number | null
+          feb: number | null
+          id: string
+          jan: number | null
+          jul: number | null
+          jun: number | null
+          label: string
+          mar: number | null
+          may: number | null
+          nov: number | null
+          oct: number | null
+          project_id: string
+          sep: number | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          apr?: number | null
+          aug?: number | null
+          created_at?: string
+          dec?: number | null
+          feb?: number | null
+          id?: string
+          jan?: number | null
+          jul?: number | null
+          jun?: number | null
+          label?: string
+          mar?: number | null
+          may?: number | null
+          nov?: number | null
+          oct?: number | null
+          project_id: string
+          sep?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          apr?: number | null
+          aug?: number | null
+          created_at?: string
+          dec?: number | null
+          feb?: number | null
+          id?: string
+          jan?: number | null
+          jul?: number | null
+          jun?: number | null
+          label?: string
+          mar?: number | null
+          may?: number | null
+          nov?: number | null
+          oct?: number | null
+          project_id?: string
+          sep?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_costs: {
         Row: {
           amount: number
