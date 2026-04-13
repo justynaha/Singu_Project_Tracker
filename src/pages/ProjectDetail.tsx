@@ -16,7 +16,6 @@ import FilesPanelComponent from "@/components/project-detail/FilesPanel";
 import { useProjectDetail, TimelineItem } from "@/hooks/useProjectDetail";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
