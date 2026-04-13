@@ -54,9 +54,28 @@ export default function ContractsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const [projectNumberMap, setProjectNumberMap] = useState<Map<string, number>>(new Map());
+
   useEffect(() => {
     const fetchContracts = async () => {
       setLoading(true);
+
+      // Fetch all projects ordered by created_at to build project number map
+      const { data: allProjects } = await supabase
+        .from("projects")
+        .select("id, name, site, created_at")
+        .order("created_at", { ascending: true });
+
+      const numMap = new Map<string, number>();
+      (allProjects || []).forEach((p, idx) => {
+        numMap.set(p.id, 13536 + idx);
+      });
+      setProjectNumberMap(numMap);
+
+      const projectMap = new Map(
+        (allProjects || []).map((p) => [p.id, { name: p.name, site: p.site }])
+      );
+
       const { data: contractsData, error: contractsError } = await supabase
         .from("contracts")
         .select("*")
@@ -67,17 +86,6 @@ export default function ContractsList() {
         setLoading(false);
         return;
       }
-
-      // Fetch project data for all unique project_ids
-      const projectIds = [...new Set((contractsData || []).map((c) => c.project_id))];
-      const { data: projectsData } = await supabase
-        .from("projects")
-        .select("id, name, site")
-        .in("id", projectIds);
-
-      const projectMap = new Map(
-        (projectsData || []).map((p) => [p.id, { name: p.name, site: p.site }])
-      );
 
       const merged: ContractWithProject[] = (contractsData || []).map((c) => {
         const proj = projectMap.get(c.project_id);
