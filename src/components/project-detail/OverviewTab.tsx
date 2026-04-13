@@ -17,6 +17,7 @@ interface Project {
   fiscal_year?: string | null;
   currency?: string | null;
   address?: string | null;
+  work_description?: string | null;
 }
 
 interface OverviewTabProps {
@@ -72,6 +73,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
     <div className="p-6">
       <DetailRow label="Added on" value={formatDateTime(project.created_at)} />
       <DetailRow label="Name" value={project.name} />
+      <DetailRow label="Work description" value={project.work_description} />
       <DetailRow label="Site" value={project.site} />
       <DetailRow label="Address" value={project.address} />
       <DetailRow label="Building" value={project.building} />

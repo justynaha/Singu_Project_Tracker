@@ -62,6 +62,7 @@ export default function Projects() {
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
   const [formData, setFormData] = useState({
     name: "",
+    workDescription: "",
     site: "",
     building: "",
     tenant: "",
@@ -221,6 +222,7 @@ export default function Projects() {
   const handleFormSubmit = async () => {
     const input: CreateProjectInput = {
       name: formData.name,
+      work_description: formData.workDescription || undefined,
       total_budget: formData.budget ? parseFloat(formData.budget) : 0,
       status: "Open",
       start_date: formData.startDate ? format(formData.startDate, "yyyy-MM-dd") : undefined,
@@ -249,6 +251,7 @@ export default function Projects() {
       setShowNewProject(false);
       setFormData({
         name: "",
+        workDescription: "",
         site: "",
         building: "",
         tenant: "",
@@ -833,6 +836,19 @@ export default function Projects() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="workDescription">Work description (optional)</Label>
+              <textarea
+                id="workDescription"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Describe the work to be done"
+                value={formData.workDescription}
+                onChange={(e) => setFormData({ ...formData, workDescription: e.target.value.slice(0, 500) })}
+                maxLength={500}
+              />
+              <p className="text-xs text-muted-foreground text-right mt-1">{formData.workDescription.length}/500</p>
             </div>
 
             <div>
