@@ -1,0 +1,1 @@
+ALTER TABLE public.contracts ADD COLUMN agreement_signed boolean NOT NULL DEFAULT false;
