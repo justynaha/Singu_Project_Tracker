@@ -1216,7 +1216,10 @@ export default function TimelineV2Tab({
                     cellBorder,
                     colId === "name" && "min-w-[300px]",
                     colId === "status" && "min-w-[120px]",
+                    colId === "responsible" && "min-w-[120px]",
+                    colId === "start_date" && "min-w-[140px]",
                     colId === "due_date" && "min-w-[140px]",
+                    colId === "comments" && "min-w-[150px]",
                     ["forecasted", "contracted", "invoiced", "remaining"].includes(colId) && "min-w-[100px] text-right"
                   )}
                 >
