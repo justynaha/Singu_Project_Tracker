@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { FileText, Info, Clock, ArrowLeft, ListTodo, FileSignature, CalendarRange } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import ProjectHeader from "@/components/project-detail/ProjectHeader";
 import TimelineV2Tab from "@/components/project-detail/TimelineV2Tab";
 import OverviewTab from "@/components/project-detail/OverviewTab";
@@ -10,7 +11,9 @@ import ContractsTab from "@/components/project-detail/ContractsTab";
 import MonthlyBreakdownTab from "@/components/project-detail/MonthlyBreakdownTab";
 import ActualVsBudgetTab from "@/components/project-detail/ActualVsBudgetTab";
 import EditProjectModal from "@/components/project-detail/EditProjectModal";
-import { useProjectDetail } from "@/hooks/useProjectDetail";
+import CommentsPanel from "@/components/project-detail/CommentsPanel";
+import FilesPanelComponent from "@/components/project-detail/FilesPanel";
+import { useProjectDetail, TimelineItem } from "@/hooks/useProjectDetail";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,6 +70,49 @@ export default function ProjectDetail() {
     ? `${overdueItems.length} item${overdueItems.length > 1 ? "s have" : " has"} missed ${overdueItems.length > 1 ? "their" : "its"} due date`
     : undefined;
 
+  // Side panel state
+  const [commentsPanelItem, setCommentsPanelItem] = useState<TimelineItem | null>(null);
+  const [filesPanelItem, setFilesPanelItem] = useState<TimelineItem | null>(null);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+  const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
+
+  // Fetch comment counts
+  useEffect(() => {
+    if (!id || timelineItems.length === 0) return;
+    const itemIds = timelineItems.map(i => i.id);
+    supabase
+      .from("timeline_item_comments")
+      .select("timeline_item_id")
+      .in("timeline_item_id", itemIds)
+      .then(({ data }) => {
+        if (!data) return;
+        const counts: Record<string, number> = {};
+        data.forEach(row => {
+          counts[row.timeline_item_id] = (counts[row.timeline_item_id] || 0) + 1;
+        });
+        setCommentCounts(counts);
+      });
+  }, [id, timelineItems]);
+
+  // Build file counts from files array
+  useEffect(() => {
+    const counts: Record<string, number> = {};
+    files.forEach(f => {
+      if (f.timeline_item_id) {
+        counts[f.timeline_item_id] = (counts[f.timeline_item_id] || 0) + 1;
+      }
+    });
+    setFileCounts(counts);
+  }, [files]);
+
+  const handleCommentCountChange = useCallback((itemId: string, count: number) => {
+    setCommentCounts(prev => ({ ...prev, [itemId]: count }));
+  }, []);
+
+  const handleFileCountChange = useCallback((itemId: string, count: number) => {
+    setFileCounts(prev => ({ ...prev, [itemId]: count }));
+  }, []);
+
   // File preview modal state
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewFile, setPreviewFile] = useState<{ name: string; url: string; type: string } | null>(null);
@@ -121,72 +167,99 @@ export default function ProjectDetail() {
     );
   }
 
+  const hasSidePanel = !!(commentsPanelItem || filesPanelItem);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="p-6">
         <ProjectHeader projectNo={project.id.slice(0, 8)} projectName={project.name} site={project.site} address={project.address} onEdit={() => setShowEditModal(true)} />
 
         {/* Tabs */}
-        <div className="bg-card border border-border rounded-lg">
-          <div className="border-b border-border flex gap-1 px-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 border-b-2 -mb-px",
-                    activeTab === tab.id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                  {tab.badge && <span className="text-muted-foreground">{tab.badge}</span>}
-                </button>
-              );
-            })}
+        <div className="flex">
+          <div className={cn("bg-card border border-border rounded-lg flex-1 min-w-0", hasSidePanel && "border-r-0 rounded-r-none")}>
+            <div className="border-b border-border flex gap-1 px-2">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 border-b-2 -mb-px",
+                      activeTab === tab.id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                    {tab.badge && <span className="text-muted-foreground">{tab.badge}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === "project-plan" && (
+              <TimelineV2Tab
+                items={timelineItems}
+                files={files}
+                budget={totalBudget}
+                contracted={totalContracted}
+                invoiced={totalInvoiced}
+                currency={costs[0]?.currency || "EUR"}
+                budgetLc={project?.total_budget || 0}
+                localCurrency={project?.currency || "EUR"}
+                trackingStatus={trackingStatus}
+                offTrackMessage={offTrackMessage}
+                commentCounts={commentCounts}
+                fileCounts={fileCounts}
+                onOpenComments={(item) => { setFilesPanelItem(null); setCommentsPanelItem(item); }}
+                onOpenFiles={(item) => { setCommentsPanelItem(null); setFilesPanelItem(item); }}
+                onCreateItem={createTimelineItem}
+                onUpdateItem={updateTimelineItem}
+                onDeleteItem={deleteTimelineItem}
+              />
+            )}
+            {activeTab === "contracts" && (
+              <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} onCreateContract={createContract} onUpdateContract={updateContract} />
+            )}
+            {activeTab === "monthly" && (
+              <MonthlyBreakdownTab projectId={project.id} fiscalYear={project.fiscal_year} />
+            )}
+            {activeTab === "files" && (
+              <FilesTab
+                files={files}
+                timelineItems={timelineItems}
+                onCreateFile={createFile}
+                onDeleteFile={deleteFile}
+              />
+            )}
+            {activeTab === "details" && <OverviewTab project={project} />}
+            {activeTab === "history" && (
+              <div className="p-6 text-center text-muted-foreground">
+                History tab content coming soon
+              </div>
+            )}
           </div>
 
-          {/* Tab Content */}
-          {activeTab === "project-plan" && (
-            <TimelineV2Tab
-              items={timelineItems}
-              files={files}
-              budget={totalBudget}
-              contracted={totalContracted}
-              invoiced={totalInvoiced}
-              currency={costs[0]?.currency || "EUR"}
-              budgetLc={project?.total_budget || 0}
-              localCurrency={project?.currency || "EUR"}
-              trackingStatus={trackingStatus}
-              offTrackMessage={offTrackMessage}
-              onCreateItem={createTimelineItem}
-              onUpdateItem={updateTimelineItem}
-              onDeleteItem={deleteTimelineItem}
+          {/* Side Panels */}
+          {commentsPanelItem && (
+            <CommentsPanel
+              timelineItemId={commentsPanelItem.id}
+              timelineItemName={commentsPanelItem.name}
+              onClose={() => setCommentsPanelItem(null)}
+              onCountChange={handleCommentCountChange}
             />
           )}
-          {activeTab === "contracts" && (
-            <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} onCreateContract={createContract} onUpdateContract={updateContract} />
-          )}
-          {activeTab === "monthly" && (
-            <MonthlyBreakdownTab projectId={project.id} fiscalYear={project.fiscal_year} />
-          )}
-          {activeTab === "files" && (
-            <FilesTab
-              files={files}
-              timelineItems={timelineItems}
-              onCreateFile={createFile}
-              onDeleteFile={deleteFile}
+          {filesPanelItem && project && (
+            <FilesPanelComponent
+              timelineItemId={filesPanelItem.id}
+              timelineItemName={filesPanelItem.name}
+              projectId={project.id}
+              onClose={() => setFilesPanelItem(null)}
+              onCountChange={handleFileCountChange}
             />
-          )}
-          {activeTab === "details" && <OverviewTab project={project} />}
-          {activeTab === "history" && (
-            <div className="p-6 text-center text-muted-foreground">
-              History tab content coming soon
-            </div>
           )}
         </div>
       </div>
