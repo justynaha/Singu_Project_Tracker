@@ -6,6 +6,7 @@ import ProjectHeader from "@/components/project-detail/ProjectHeader";
 import TimelineV2Tab from "@/components/project-detail/TimelineV2Tab";
 import OverviewTab from "@/components/project-detail/OverviewTab";
 import FilesTab from "@/components/project-detail/FilesTab";
+import ContractsTab from "@/components/project-detail/ContractsTab";
 import ActualVsBudgetTab from "@/components/project-detail/ActualVsBudgetTab";
 import EditProjectModal from "@/components/project-detail/EditProjectModal";
 import { useProjectDetail } from "@/hooks/useProjectDetail";
@@ -28,6 +29,7 @@ export default function ProjectDetail() {
     project,
     timelineItems,
     files,
+    contracts,
     costs,
     cashflowTotals,
     loading,
@@ -84,6 +86,7 @@ export default function ProjectDetail() {
 
   const tabs = [
     { id: "project-plan", label: "Overview", icon: ListTodo },
+    { id: "contracts", label: "Contracts", icon: FileSignature },
     { id: "files", label: "Files", icon: FileText, badge: `(${files.length})` },
     { id: "details", label: "Details", icon: Info },
     { id: "history", label: "History", icon: Clock },
@@ -158,6 +161,9 @@ export default function ProjectDetail() {
               onUpdateItem={updateTimelineItem}
               onDeleteItem={deleteTimelineItem}
             />
+          )}
+          {activeTab === "contracts" && (
+            <ContractsTab contracts={contracts} />
           )}
           {activeTab === "files" && (
             <FilesTab
