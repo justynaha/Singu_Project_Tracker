@@ -59,7 +59,10 @@ interface ColumnConfig {
 const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: "name", label: "Name", visible: true },
   { id: "status", label: "Status", visible: true },
+  { id: "responsible", label: "Responsible", visible: true },
+  { id: "start_date", label: "Start Date", visible: true },
   { id: "due_date", label: "Due Date", visible: true },
+  { id: "comments", label: "Comments", visible: true },
   { id: "files", label: "Files", visible: true },
   { 
     id: "cashflow", 
