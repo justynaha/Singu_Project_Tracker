@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Info, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,60 +24,74 @@ import {
 
 interface FxRate {
   id: string;
-  pair: string;
+  currency: string;
   rate: number;
-  validFrom: string;
-  addedBy: string;
-  note: string;
+  valid_from: string;
+  added_by: string | null;
+  note: string | null;
+  created_at: string;
 }
 
 const CURRENCIES = ["PLN", "HUF", "CZK"];
 
-const initialRates: FxRate[] = [
-  { id: "1", pair: "EUR/PLN", rate: 4.2610, validFrom: "2026-04-01", addedBy: "Anna Kowalska", note: "NBP rate Q2 2026" },
-  { id: "2", pair: "EUR/PLN", rate: 4.3750, validFrom: "2026-01-02", addedBy: "Jan Nowak", note: "NBP rate Q1 2026" },
-  { id: "3", pair: "EUR/HUF", rate: 403.23, validFrom: "2026-03-15", addedBy: "Anna Kowalska", note: "MNB mid-market" },
-  { id: "4", pair: "EUR/CZK", rate: 25.19, validFrom: "2026-02-10", addedBy: "Tomasz Wiśniewski", note: "CNB daily fix" },
-];
-
 function getMostRecentIds(rates: FxRate[]): Set<string> {
   const latest = new Map<string, FxRate>();
   for (const r of rates) {
-    const cur = latest.get(r.pair);
-    if (!cur || r.validFrom > cur.validFrom) latest.set(r.pair, r);
+    const cur = latest.get(r.currency);
+    if (!cur || r.valid_from > cur.valid_from) latest.set(r.currency, r);
   }
   return new Set([...latest.values()].map((r) => r.id));
 }
 
 export default function ForeignExchange() {
-  const [rates, setRates] = useState<FxRate[]>(initialRates);
+  const [rates, setRates] = useState<FxRate[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState("");
   const [rate, setRate] = useState("");
   const [validFrom, setValidFrom] = useState<Date | undefined>(new Date());
   const [note, setNote] = useState("");
 
-  const currentIds = getMostRecentIds(rates);
+  const fetchRates = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("fx_rates")
+      .select("*")
+      .order("valid_from", { ascending: false });
+    if (error) {
+      toast.error("Failed to load FX rates");
+      return;
+    }
+    setRates(data || []);
+    setLoading(false);
+  }, []);
 
-  const handleSave = () => {
+  useEffect(() => {
+    fetchRates();
+  }, [fetchRates]);
+
+  const handleSave = async () => {
     if (!currency || !rate || !validFrom) return;
-    setRates((prev) => [
-      {
-        id: crypto.randomUUID(),
-        pair: `EUR/${currency}`,
-        rate: parseFloat(rate),
-        validFrom: format(validFrom, "yyyy-MM-dd"),
-        addedBy: "Current User",
-        note,
-      },
-      ...prev,
-    ]);
+    const { error } = await supabase.from("fx_rates").insert({
+      currency,
+      rate: parseFloat(rate),
+      valid_from: format(validFrom, "yyyy-MM-dd"),
+      added_by: "Current User",
+      note: note || null,
+    });
+    if (error) {
+      toast.error("Failed to save FX rate");
+      return;
+    }
+    toast.success("FX rate saved");
     setOpen(false);
     setCurrency("");
     setRate("");
     setValidFrom(new Date());
     setNote("");
+    fetchRates();
   };
+
+  const currentIds = getMostRecentIds(rates);
 
   return (
     <div className="p-6 space-y-4">
@@ -98,25 +114,33 @@ export default function ForeignExchange() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rates
-              .sort((a, b) => b.validFrom.localeCompare(a.validFrom))
-              .map((r) => {
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-muted-foreground">Loading…</TableCell>
+              </TableRow>
+            ) : rates.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-muted-foreground">No rates yet</TableCell>
+              </TableRow>
+            ) : (
+              rates.map((r) => {
                 const isCurrent = currentIds.has(r.id);
                 return (
                   <TableRow key={r.id} className={isCurrent ? "font-semibold" : ""}>
                     <TableCell>
-                      {r.pair}
+                      EUR/{r.currency}
                       {isCurrent && (
                         <Badge variant="secondary" className="ml-2 text-xs">Current</Badge>
                       )}
                     </TableCell>
                     <TableCell>{r.rate.toFixed(4)}</TableCell>
-                    <TableCell>{format(new Date(r.validFrom), "dd MMM yyyy")}</TableCell>
-                    <TableCell>{r.addedBy}</TableCell>
-                    <TableCell className="text-muted-foreground">{r.note}</TableCell>
+                    <TableCell>{format(new Date(r.valid_from), "dd MMM yyyy")}</TableCell>
+                    <TableCell>{r.added_by || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{r.note || "—"}</TableCell>
                   </TableRow>
                 );
-              })}
+              })
+            )}
           </TableBody>
         </Table>
       </div>
