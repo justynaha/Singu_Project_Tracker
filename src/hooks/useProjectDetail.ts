@@ -498,6 +498,33 @@ export function useProjectDetail(projectId: string | undefined) {
     }
   };
 
+  const updateContract = async (id: string, input: {
+    contract_number?: string;
+    contract_date?: string | null;
+    amount_lc?: number | null;
+    status?: string;
+    contractor?: string | null;
+    description?: string | null;
+    agreement_signed?: boolean;
+    comments?: string | null;
+  }) => {
+    try {
+      const { data, error } = await supabase
+        .from("contracts")
+        .update(input as any)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      setContracts((prev) => prev.map((c) => (c.id === id ? data : c)));
+      toast.success("Contract updated");
+      return data;
+    } catch (error: any) {
+      toast.error("Failed to update contract: " + error.message);
+      return null;
+    }
+  };
+
   return {
     project,
     timelineItems,
@@ -517,6 +544,7 @@ export function useProjectDetail(projectId: string | undefined) {
     createFile,
     deleteFile,
     createContract,
+    updateContract,
     createCost,
     updateCost,
     deleteCost,
