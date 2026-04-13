@@ -7,6 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2, MoreVertical, X, FileSignature } from "lucide-react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -192,6 +202,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [editAgreementSigned, setEditAgreementSigned] = useState(false);
   const [editComments, setEditComments] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const [showDeleteContractConfirm, setShowDeleteContractConfirm] = useState(false);
+  const [deletingContract, setDeletingContract] = useState(false);
 
   // Invoice state
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -336,6 +348,26 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     setEditSaving(false);
     setShowEditModal(false);
     setEditingContract(null);
+  };
+
+  const handleDeleteContract = async () => {
+    if (!editingContract) return;
+    setDeletingContract(true);
+    // Delete related invoices first
+    await supabase.from("invoices").delete().eq("contract_id", editingContract.id);
+    const { error } = await supabase.from("contracts").delete().eq("id", editingContract.id);
+    setDeletingContract(false);
+    if (error) {
+      toast.error("Failed to delete contract");
+      return;
+    }
+    toast.success("Contract deleted");
+    setShowDeleteContractConfirm(false);
+    setShowEditModal(false);
+    setEditingContract(null);
+    if (selectedContract?.id === editingContract.id) setSelectedContract(null);
+    // Force reload by triggering a re-fetch — contracts come from parent, so we reload
+    window.location.reload();
   };
 
   const resetForm = () => {
@@ -903,12 +935,36 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               <Textarea id="editComments" value={editComments} onChange={(e) => setEditComments(e.target.value)} rows={Math.max(3, Math.ceil((editComments?.length || 0) / 80))} />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="destructive" onClick={() => setShowDeleteContractConfirm(true)} className="sm:mr-auto">
+              <Trash2 className="h-4 w-4 mr-2" />Delete contract
+            </Button>
             <Button variant="outline" onClick={() => { setShowEditModal(false); setEditingContract(null); }}>Cancel</Button>
             <Button onClick={handleEditSubmit} disabled={!editContractNumber.trim() || editSaving}>{editSaving ? "Saving..." : "Save Changes"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showDeleteContractConfirm} onOpenChange={setShowDeleteContractConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete contract?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete contract "{editingContract?.contract_number}"? This action cannot be undone and will permanently remove the contract along with all its invoices.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingContract}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteContract}
+              disabled={deletingContract}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingContract ? "Deleting..." : "Delete contract"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Add Invoice Modal */}
       <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
