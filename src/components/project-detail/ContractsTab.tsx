@@ -146,6 +146,16 @@ const AiLabel = ({ field }: { field?: ExtractedField<any> }) => {
   );
 };
 
+interface Invoice {
+  id: string;
+  contract_id: string;
+  invoice_number: string;
+  amount_lc: number;
+  attachment_name: string | null;
+  attachment_url: string | null;
+  created_at: string;
+}
+
 export default function ContractsTab({ contracts, currency = "EUR", onCreateContract, onUpdateContract }: ContractsTabProps) {
   const showLcColumn = currency.toUpperCase() !== "EUR";
   const [showModal, setShowModal] = useState(false);
