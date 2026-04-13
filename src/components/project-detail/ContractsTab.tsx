@@ -202,6 +202,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [editAgreementSigned, setEditAgreementSigned] = useState(false);
   const [editComments, setEditComments] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const [showDeleteContractConfirm, setShowDeleteContractConfirm] = useState(false);
+  const [deletingContract, setDeletingContract] = useState(false);
 
   // Invoice state
   const [invoices, setInvoices] = useState<Invoice[]>([]);
