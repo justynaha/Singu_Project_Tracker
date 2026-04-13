@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ProjectTypes from "./pages/ProjectTypes";
 import ForeignExchange from "./pages/ForeignExchange";
+import ContractsList from "./pages/ContractsList";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import SitesList from "./pages/buildings/SitesList";
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="/project/:id" element={<ProjectDetail />} />
                 <Route path="/start" element={<div className="p-6">Start page coming soon</div>} />
                 <Route path="/tickets" element={<div className="p-6">Tickets page coming soon</div>} />
+                <Route path="/contracts" element={<ContractsList />} />
                 <Route path="/buildings" element={<BuildingsList />} />
                 <Route path="/buildings/sites" element={<SitesList />} />
                 <Route path="/buildings/sites/:siteId" element={<SiteDetail />} />

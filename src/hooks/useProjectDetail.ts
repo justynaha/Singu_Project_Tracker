@@ -466,6 +466,8 @@ export function useProjectDetail(projectId: string | undefined) {
     contract_date?: string;
     amount_lc?: number;
     status?: string;
+    contractor?: string;
+    description?: string;
   }) => {
     if (!projectId) return null;
     try {
@@ -476,7 +478,9 @@ export function useProjectDetail(projectId: string | undefined) {
           contract_number: input.contract_number,
           contract_date: input.contract_date || null,
           amount_lc: input.amount_lc ?? null,
-          status: input.status || "Draft",
+          status: input.status || "Ongoing",
+          contractor: input.contractor || null,
+          description: input.description || null,
         })
         .select()
         .single();
