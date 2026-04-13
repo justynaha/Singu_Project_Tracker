@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2 } from "lucide-react";
+import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2, MoreVertical, X, FileSignature } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -39,10 +39,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -105,12 +111,9 @@ interface ExtractedData {
 
 const statusVariant = (status: string) => {
   switch (status.toLowerCase()) {
-    case "completed":
-      return "default";
-    case "ongoing":
-      return "secondary";
-    default:
-      return "secondary";
+    case "completed": return "default";
+    case "ongoing": return "secondary";
+    default: return "secondary";
   }
 };
 
@@ -121,14 +124,10 @@ const formatAmount = (amount: number | null) => {
 
 const confidenceColor = (confidence: string) => {
   switch (confidence) {
-    case "high":
-      return "border-green-400 text-green-700 bg-green-50";
-    case "medium":
-      return "border-yellow-400 text-yellow-700 bg-yellow-50";
-    case "low":
-      return "border-red-400 text-red-700 bg-red-50";
-    default:
-      return "";
+    case "high": return "border-green-400 text-green-700 bg-green-50";
+    case "medium": return "border-yellow-400 text-yellow-700 bg-yellow-50";
+    case "low": return "border-red-400 text-red-700 bg-red-50";
+    default: return "";
   }
 };
 
@@ -158,6 +157,8 @@ interface Invoice {
 
 export default function ContractsTab({ contracts, currency = "EUR", onCreateContract, onUpdateContract }: ContractsTabProps) {
   const showLcColumn = currency.toUpperCase() !== "EUR";
+
+  // Create/Add contract modal state
   const [showModal, setShowModal] = useState(false);
   const [contractNumber, setContractNumber] = useState("");
   const [contractDate, setContractDate] = useState<Date | undefined>();
@@ -170,7 +171,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [agreementSigned, setAgreementSigned] = useState(false);
   const [comments, setComments] = useState("");
 
-  // V2 state
+  // V2 AI extraction state
   const [version, setVersion] = useState<"V1" | "V2">("V1");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -201,7 +202,12 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [invoiceSaving, setInvoiceSaving] = useState(false);
   const invoiceFileRef = useRef<HTMLInputElement>(null);
 
-  // Fetch invoices
+  // Side panel state
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+
+  // FX rate
+  const [fxRate, setFxRate] = useState<number | null>(null);
+
   const fetchInvoices = async () => {
     if (contracts.length === 0) return;
     const contractIds = contracts.map(c => c.id);
@@ -213,12 +219,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     if (data) setInvoices(data as Invoice[]);
   };
 
-  // Fetch FX rate for currency -> EUR conversion
-  const [fxRate, setFxRate] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetchInvoices();
-  }, [contracts]);
+  useEffect(() => { fetchInvoices(); }, [contracts]);
 
   useEffect(() => {
     if (showLcColumn) {
@@ -244,6 +245,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     acc[inv.contract_id].push(inv);
     return acc;
   }, {});
+
+  const hasAnyInvoices = invoices.length > 0;
 
   const openInvoiceModal = (contractId: string) => {
     setInvoiceContractId(contractId);
@@ -349,25 +352,17 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   };
 
   const handleModalClose = (open: boolean) => {
-    if (!open) {
-      resetForm();
-      setVersion("V1");
-    }
+    if (!open) { resetForm(); setVersion("V1"); }
     setShowModal(open);
   };
 
   const handleFileUpload = async (file: File) => {
     setAnalyzing(true);
     setUploadedFileName(file.name);
-
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          const base64Data = result.split(",")[1];
-          resolve(base64Data);
-        };
+        reader.onload = () => { const result = reader.result as string; resolve(result.split(",")[1]); };
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
@@ -375,20 +370,14 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
       const { data, error } = await supabase.functions.invoke("analyze-contract", {
         body: { fileBase64: base64, fileName: file.name },
       });
-
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       const extracted: ExtractedData = data.data;
       setExtractedData(extracted);
 
-      // Pre-fill form
       if (extracted.contract_number?.value) setContractNumber(extracted.contract_number.value);
-      if (extracted.contract_date?.value) {
-        try {
-          setContractDate(new Date(extracted.contract_date.value));
-        } catch { /* ignore parse error */ }
-      }
+      if (extracted.contract_date?.value) { try { setContractDate(new Date(extracted.contract_date.value)); } catch {} }
       if (extracted.amount?.value != null) setAmountRaw(String(extracted.amount.value));
       if (extracted.currency?.value) setSelectedCurrency(extracted.currency.value);
       if (extracted.contractor?.value) setContractor(extracted.contractor.value);
@@ -428,148 +417,271 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const showUpload = version === "V2" && extractedData === null && !analyzing;
   const showAnalyzing = version === "V2" && analyzing;
 
+  // Side panel data
+  const selectedInvoices = selectedContract ? (invoicesByContract[selectedContract.id] || []) : [];
+  const selectedTotalInvoiced = selectedInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
+  const selectedBalance = selectedContract ? (selectedContract.amount_lc || 0) - selectedTotalInvoiced : 0;
+
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <Button size="sm" onClick={() => setShowModal(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add contract
-        </Button>
-      </div>
-
-      {contracts.length === 0 ? (
-        <div className="text-center text-muted-foreground py-12">
-          No contracts yet
+    <div className="flex h-full">
+      {/* Main table area */}
+      <div className="flex-1 min-w-0 p-4">
+        <div className="mb-4">
+          <Button size="sm" onClick={() => setShowModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add contract
+          </Button>
         </div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10" />
-              <TableHead>Contract ID</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Contractor</TableHead>
-              <TableHead>Description</TableHead>
-              {showLcColumn && <TableHead className="text-right">Contracted ({currency})</TableHead>}
-              <TableHead className="text-right">Contracted (EUR)</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Agreement Signed</TableHead>
-              <TableHead>Comments</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {contracts.map((c) => {
-              const contractInvoices = invoicesByContract[c.id] || [];
-              const totalInvoiced = contractInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
-              const balance = (c.amount_lc || 0) - totalInvoiced;
-              const balanceEur = showLcColumn ? convertToEur(balance) : balance;
-              const colCount = showLcColumn ? 10 : 9;
 
-              return (
-                <>
-                  <TableRow key={c.id}>
-                    <TableCell className="w-10 p-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditModal(c)}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
+        {contracts.length === 0 ? (
+          <div className="text-center text-muted-foreground py-12">No contracts yet</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10" />
+                <TableHead>Contract ID</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Contractor</TableHead>
+                {showLcColumn && <TableHead className="text-right">Contracted ({currency})</TableHead>}
+                <TableHead className="text-right">Contracted (EUR)</TableHead>
+                {hasAnyInvoices && <TableHead className="text-right">Invoiced (EUR)</TableHead>}
+                {hasAnyInvoices && <TableHead className="text-right">Balance (EUR)</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {contracts.map((c) => {
+                const contractInvoices = invoicesByContract[c.id] || [];
+                const totalInvoicedLc = contractInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
+                const totalInvoicedEur = showLcColumn ? convertToEur(totalInvoicedLc) : totalInvoicedLc;
+                const balanceLc = (c.amount_lc || 0) - totalInvoicedLc;
+                const balanceEur = showLcColumn ? convertToEur(balanceLc) : balanceLc;
+                const isSelected = selectedContract?.id === c.id;
+
+                return (
+                  <TableRow
+                    key={c.id}
+                    className={cn("cursor-pointer", isSelected && "bg-muted/50")}
+                    onClick={() => setSelectedContract(isSelected ? null : c)}
+                  >
+                    <TableCell className="w-10 p-1" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem onClick={() => openEditModal(c)}>
+                            <Pencil className="h-3.5 w-3.5 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openInvoiceModal(c.id)}>
+                            <Plus className="h-3.5 w-3.5 mr-2" />
+                            Add Invoice
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                     <TableCell className="font-medium">{c.contract_number}</TableCell>
-                    <TableCell>
-                      {c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}
-                    </TableCell>
+                    <TableCell>{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>
+                    <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
                     <TableCell>{c.contractor || "—"}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{c.description || "—"}</TableCell>
                     {showLcColumn && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
                     <TableCell className="text-right">{formatAmount(c.amount_eur)}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
-                    </TableCell>
-                    <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{c.comments || "—"}</TableCell>
+                    {hasAnyInvoices && (
+                      <TableCell className="text-right">
+                        {contractInvoices.length > 0 ? formatAmount(totalInvoicedEur) : "—"}
+                      </TableCell>
+                    )}
+                    {hasAnyInvoices && (
+                      <TableCell className="text-right">
+                        {contractInvoices.length > 0 ? formatAmount(balanceEur) : "—"}
+                      </TableCell>
+                    )}
                   </TableRow>
+                );
+              })}
+            </TableBody>
+            {contracts.length > 0 && (
+              <TableFooter>
+                <TableRow>
+                  <TableCell />
+                  <TableCell className="font-bold">Total</TableCell>
+                  <TableCell />
+                  <TableCell />
+                  <TableCell />
+                  {showLcColumn && (
+                    <TableCell className="text-right font-bold">
+                      {formatAmount(contracts.reduce((s, c) => s + (c.amount_lc || 0), 0))}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-right font-bold">
+                    {formatAmount(contracts.reduce((s, c) => s + (c.amount_eur || 0), 0))}
+                  </TableCell>
+                  {hasAnyInvoices && (
+                    <TableCell className="text-right font-bold">
+                      {formatAmount(
+                        showLcColumn
+                          ? convertToEur(invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0))
+                          : invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0)
+                      )}
+                    </TableCell>
+                  )}
+                  {hasAnyInvoices && (
+                    <TableCell className="text-right font-bold">
+                      {formatAmount(
+                        contracts.reduce((s, c) => s + (c.amount_eur || 0), 0) -
+                        (showLcColumn
+                          ? convertToEur(invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0))
+                          : invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0))
+                      )}
+                    </TableCell>
+                  )}
+                </TableRow>
+              </TableFooter>
+            )}
+          </Table>
+        )}
+      </div>
 
-                  {/* Invoice sub-rows */}
-                  {contractInvoices.map((inv) => (
-                    <TableRow key={inv.id} className="bg-muted/30">
-                      <TableCell className="w-10 p-1">
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDeleteInvoice(inv.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </TableCell>
-                      <TableCell className="pl-8 text-xs text-muted-foreground">
-                        Invoice
-                      </TableCell>
-                      <TableCell className="text-xs">{inv.invoice_number}</TableCell>
-                      <TableCell />
-                      <TableCell className="text-xs">
-                        {inv.attachment_url ? (
-                          <a href={inv.attachment_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+      {/* Side Detail Panel */}
+      {selectedContract && (
+        <div className="w-[380px] border-l border-border bg-card flex flex-col shrink-0 animate-in slide-in-from-right duration-200">
+          {/* Header */}
+          <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Contract</p>
+              <h3 className="text-base font-semibold mt-1 leading-snug">{selectedContract.contract_number}</h3>
+            </div>
+            <button
+              onClick={() => setSelectedContract(null)}
+              className="shrink-0 h-7 w-7 rounded flex items-center justify-center hover:bg-muted transition-colors mt-0.5"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Details */}
+          <div className="px-5 py-4 border-b border-border space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Details</p>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Date</span>
+              <span className="text-sm font-medium">
+                {selectedContract.contract_date ? format(new Date(selectedContract.contract_date), "dd MMM yyyy") : "—"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Status</span>
+              <Badge variant={statusVariant(selectedContract.status)}>{selectedContract.status}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Contractor</span>
+              <span className="text-sm font-medium">{selectedContract.contractor || "—"}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Agreement Signed</span>
+              <span className="text-sm font-medium">{selectedContract.agreement_signed ? "Yes" : "No"}</span>
+            </div>
+            {selectedContract.description && (
+              <div>
+                <span className="text-sm text-muted-foreground">Description</span>
+                <p className="text-sm mt-1">{selectedContract.description}</p>
+              </div>
+            )}
+            {selectedContract.comments && (
+              <div>
+                <span className="text-sm text-muted-foreground">Comments</span>
+                <p className="text-sm mt-1">{selectedContract.comments}</p>
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-1 border-t border-border">
+              {showLcColumn && (
+                <>
+                  <span className="text-sm text-muted-foreground">Contracted ({currency})</span>
+                  <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
+                </>
+              )}
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
+              <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_eur)}</span>
+            </div>
+          </div>
+
+          {/* Invoices */}
+          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Invoices ({selectedInvoices.length})
+            </p>
+
+            {selectedInvoices.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No invoices yet</p>
+            ) : (
+              <div className="space-y-1">
+                {selectedInvoices.map((inv) => {
+                  const invEur = showLcColumn ? convertToEur(inv.amount_lc) : inv.amount_lc;
+                  return (
+                    <div key={inv.id} className="flex items-start gap-2.5 py-2.5 border-b border-border last:border-0">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{inv.invoice_number}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {showLcColumn && <>{formatAmount(inv.amount_lc)} {currency} · </>}
+                          {formatAmount(invEur)} EUR
+                        </p>
+                        {inv.attachment_url && (
+                          <a
+                            href={inv.attachment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                          >
                             <Paperclip className="h-3 w-3" />
                             {inv.attachment_name || "Attachment"}
                           </a>
-                        ) : "—"}
-                      </TableCell>
-                      {showLcColumn && <TableCell className="text-right text-xs">{formatAmount(inv.amount_lc)}</TableCell>}
-                      <TableCell className="text-right text-xs">{formatAmount(showLcColumn ? convertToEur(inv.amount_lc) : inv.amount_lc)}</TableCell>
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                    </TableRow>
-                  ))}
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteInvoice(inv.id)}
+                        className="shrink-0 h-6 w-6 rounded flex items-center justify-center hover:bg-muted transition-colors text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
-                  {/* Balance row */}
-                  {contractInvoices.length > 0 && (
-                    <TableRow key={`balance-${c.id}`} className="bg-muted/10">
-                      <TableCell />
-                      <TableCell className="pl-8 text-xs font-semibold">Balance</TableCell>
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      {showLcColumn && <TableCell className="text-right text-xs font-semibold">{formatAmount(balance)}</TableCell>}
-                      <TableCell className="text-right text-xs font-semibold">{formatAmount(showLcColumn ? balanceEur : balance)}</TableCell>
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                    </TableRow>
-                  )}
-
-                  {/* Add Invoice button row */}
-                  <TableRow key={`add-inv-${c.id}`} className="border-b-2">
-                    <TableCell className="py-0.5" />
-                    <TableCell colSpan={colCount - 1} className="py-0.5">
-                      <Button variant="ghost" size="sm" className="text-xs h-6 text-primary hover:text-primary" onClick={() => openInvoiceModal(c.id)}>
-                        <Plus className="h-3 w-3 mr-1" />
-                        Add Invoice
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                </>
-              );
-            })}
-          </TableBody>
-          {contracts.length > 0 && (
-            <TableFooter>
-              <TableRow>
-                <TableCell />
-                <TableCell className="font-bold">Total</TableCell>
-                <TableCell />
-                <TableCell />
-                <TableCell />
+            {/* Balance */}
+            {selectedInvoices.length > 0 && (
+              <div className="border-t border-border pt-3 space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold">Balance</span>
+                  <span className="text-sm font-semibold">
+                    {formatAmount(showLcColumn ? convertToEur(selectedBalance) : selectedBalance)} EUR
+                  </span>
+                </div>
                 {showLcColumn && (
-                  <TableCell className="text-right font-bold">
-                    {formatAmount(contracts.reduce((s, c) => s + (c.amount_lc || 0), 0))}
-                  </TableCell>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Balance ({currency})</span>
+                    <span className="text-xs text-muted-foreground">{formatAmount(selectedBalance)}</span>
+                  </div>
                 )}
-                <TableCell className="text-right font-bold">
-                  {formatAmount(contracts.reduce((s, c) => s + (c.amount_eur || 0), 0))}
-                </TableCell>
-                <TableCell />
-                <TableCell />
-                <TableCell />
-              </TableRow>
-            </TableFooter>
-          )}
-        </Table>
+              </div>
+            )}
+
+            {/* Add invoice button */}
+            <button
+              onClick={() => openInvoiceModal(selectedContract.id)}
+              className="flex items-center gap-1.5 w-full py-2.5 text-sm font-medium text-muted-foreground border border-dashed border-muted-foreground/30 rounded-lg justify-center hover:border-primary hover:text-primary transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Invoice
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Add Contract Modal */}
@@ -590,40 +702,22 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             </div>
           </DialogHeader>
 
-          {/* V2 Upload Step */}
           {showUpload && (
             <div className="py-8">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleFileUpload(file);
-                }}
-              />
+              <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); }} />
               <div
                 className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const file = e.dataTransfer.files?.[0];
-                  if (file) handleFileUpload(file);
-                }}
+                onDrop={(e) => { e.preventDefault(); e.stopPropagation(); const file = e.dataTransfer.files?.[0]; if (file) handleFileUpload(file); }}
               >
                 <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
                 <p className="text-sm font-medium">Upload contract document</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Drag & drop a PDF or click to browse
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Drag & drop a PDF or click to browse</p>
               </div>
             </div>
           )}
 
-          {/* V2 Analyzing */}
           {showAnalyzing && (
             <div className="py-12 text-center">
               <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary mb-3" />
@@ -632,190 +726,74 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             </div>
           )}
 
-          {/* Form (V1 always, V2 after extraction) */}
           {showForm && (
             <div className="space-y-4 py-2">
               <div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="contractNumber">Contract ID</Label>
-                  <AiLabel field={extractedData?.contract_number} />
-                </div>
-                <Input
-                  id="contractNumber"
-                  placeholder="e.g. 280141"
-                  value={contractNumber}
-                  onChange={(e) => setContractNumber(e.target.value)}
-                  className={cn(extractedData?.contract_number && "border-primary/30 bg-blue-50")}
-                />
+                <div className="flex items-center justify-between"><Label htmlFor="contractNumber">Contract ID</Label><AiLabel field={extractedData?.contract_number} /></div>
+                <Input id="contractNumber" placeholder="e.g. 280141" value={contractNumber} onChange={(e) => setContractNumber(e.target.value)} className={cn(extractedData?.contract_number && "border-primary/30 bg-blue-50")} />
               </div>
-
               <div>
-                <div className="flex items-center justify-between">
-                  <Label>Date</Label>
-                  <AiLabel field={extractedData?.contract_date} />
-                </div>
+                <div className="flex items-center justify-between"><Label>Date</Label><AiLabel field={extractedData?.contract_date} /></div>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !contractDate && "text-muted-foreground",
-                        extractedData?.contract_date && "border-primary/30 bg-blue-50"
-                      )}
-                    >
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !contractDate && "text-muted-foreground", extractedData?.contract_date && "border-primary/30 bg-blue-50")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {contractDate ? format(contractDate, "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={contractDate}
-                      onSelect={setContractDate}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
+                    <Calendar mode="single" selected={contractDate} onSelect={setContractDate} initialFocus className="p-3 pointer-events-auto" />
                   </PopoverContent>
                 </Popover>
               </div>
-
               <div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="contractor">Contractor</Label>
-                  <AiLabel field={extractedData?.contractor} />
-                </div>
-                <Input
-                  id="contractor"
-                  placeholder="e.g. ABC Construction Ltd."
-                  value={contractor}
-                  onChange={(e) => setContractor(e.target.value)}
-                  className={cn(extractedData?.contractor && "border-primary/30 bg-blue-50")}
-                />
+                <div className="flex items-center justify-between"><Label htmlFor="contractor">Contractor</Label><AiLabel field={extractedData?.contractor} /></div>
+                <Input id="contractor" placeholder="e.g. ABC Construction Ltd." value={contractor} onChange={(e) => setContractor(e.target.value)} className={cn(extractedData?.contractor && "border-primary/30 bg-blue-50")} />
               </div>
-
               <div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="contractDescription">Contract Description</Label>
-                  <AiLabel field={extractedData?.description} />
-                </div>
-                <Textarea
-                  id="contractDescription"
-                  placeholder="Describe the contract scope..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={Math.max(3, Math.ceil((description?.length || 0) / 80))}
-                  className={cn(extractedData?.description && "border-primary/30 bg-blue-50")}
-                />
+                <div className="flex items-center justify-between"><Label htmlFor="contractDescription">Contract Description</Label><AiLabel field={extractedData?.description} /></div>
+                <Textarea id="contractDescription" placeholder="Describe the contract scope..." value={description} onChange={(e) => setDescription(e.target.value)} rows={Math.max(3, Math.ceil((description?.length || 0) / 80))} className={cn(extractedData?.description && "border-primary/30 bg-blue-50")} />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="contractAmount" className="flex items-center gap-1.5">
-                      Contract amount ({selectedCurrency})
-                    </Label>
-                    <AiLabel field={extractedData?.amount} />
-                  </div>
-                  <Input
-                    id="contractAmount"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={amountRaw ? Number(amountRaw).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^0-9.]/g, "");
-                      setAmountRaw(raw);
-                    }}
-                    className={cn(extractedData?.amount && "border-primary/30 bg-blue-50")}
-                  />
+                  <div className="flex items-center justify-between"><Label htmlFor="contractAmount" className="flex items-center gap-1.5">Contract amount ({selectedCurrency})</Label><AiLabel field={extractedData?.amount} /></div>
+                  <Input id="contractAmount" type="text" inputMode="decimal" placeholder="0.00" value={amountRaw ? Number(amountRaw).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.]/g, ""); setAmountRaw(raw); }} className={cn(extractedData?.amount && "border-primary/30 bg-blue-50")} />
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-1.5">
-                      Local Currency
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs">
-                            Local currency will be converted to EUR based on foreign exchange rates defined in the system.
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                    <Label className="flex items-center gap-1.5">Local Currency
+                      <TooltipProvider><Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent side="top" className="max-w-xs">Local currency will be converted to EUR based on foreign exchange rates defined in the system.</TooltipContent></Tooltip></TooltipProvider>
                     </Label>
                     <AiLabel field={extractedData?.currency} />
                   </div>
                   <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                    <SelectTrigger className={cn(extractedData?.currency && "border-primary/30 bg-blue-50")}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PLN">PLN</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                    </SelectContent>
+                    <SelectTrigger className={cn(extractedData?.currency && "border-primary/30 bg-blue-50")}><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="PLN">PLN</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="EUR">EUR</SelectItem></SelectContent>
                   </Select>
                 </div>
               </div>
-
               <div>
-                <div className="flex items-center justify-between">
-                  <Label>Status</Label>
-                  <AiLabel field={extractedData?.status} />
-                </div>
+                <div className="flex items-center justify-between"><Label>Status</Label><AiLabel field={extractedData?.status} /></div>
                 <RadioGroup value={status} onValueChange={setStatus} className="flex gap-4 mt-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Ongoing" id="status-ongoing" />
-                    <Label htmlFor="status-ongoing" className="font-normal cursor-pointer">Ongoing</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Completed" id="status-completed" />
-                    <Label htmlFor="status-completed" className="font-normal cursor-pointer">Completed</Label>
-                  </div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="Ongoing" id="status-ongoing" /><Label htmlFor="status-ongoing" className="font-normal cursor-pointer">Ongoing</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="Completed" id="status-completed" /><Label htmlFor="status-completed" className="font-normal cursor-pointer">Completed</Label></div>
                 </RadioGroup>
               </div>
-
               <div>
                 <Label>Agreement Signed</Label>
                 <RadioGroup value={agreementSigned ? "yes" : "no"} onValueChange={(v) => setAgreementSigned(v === "yes")} className="flex gap-4 mt-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="agreement-yes" />
-                    <Label htmlFor="agreement-yes" className="font-normal cursor-pointer">Yes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="agreement-no" />
-                    <Label htmlFor="agreement-no" className="font-normal cursor-pointer">No</Label>
-                  </div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="agreement-yes" /><Label htmlFor="agreement-yes" className="font-normal cursor-pointer">Yes</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="agreement-no" /><Label htmlFor="agreement-no" className="font-normal cursor-pointer">No</Label></div>
                 </RadioGroup>
               </div>
-
               <div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="contractComments" className="flex items-center gap-1.5">
-                    Comments
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-xs">
-                          Important: add info about phased payments
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                  <Label htmlFor="contractComments" className="flex items-center gap-1.5">Comments
+                    <TooltipProvider><Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent side="top" className="max-w-xs">Important: add info about phased payments</TooltipContent></Tooltip></TooltipProvider>
                   </Label>
                   <AiLabel field={extractedData?.comments} />
                 </div>
-                <Textarea
-                  id="contractComments"
-                  placeholder="e.g. phased payments details..."
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  rows={Math.max(3, Math.ceil((comments?.length || 0) / 80))}
-                  className={cn(extractedData?.comments && "border-primary/30 bg-blue-50")}
-                />
+                <Textarea id="contractComments" placeholder="e.g. phased payments details..." value={comments} onChange={(e) => setComments(e.target.value)} rows={Math.max(3, Math.ceil((comments?.length || 0) / 80))} className={cn(extractedData?.comments && "border-primary/30 bg-blue-50")} />
               </div>
             </div>
           )}
@@ -823,9 +801,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           {showForm && (
             <DialogFooter>
               <Button variant="outline" onClick={() => handleModalClose(false)}>Cancel</Button>
-              <Button onClick={handleSubmit} disabled={!contractNumber.trim() || saving}>
-                {saving ? "Adding..." : "Add Contract"}
-              </Button>
+              <Button onClick={handleSubmit} disabled={!contractNumber.trim() || saving}>{saving ? "Adding..." : "Add Contract"}</Button>
             </DialogFooter>
           )}
         </DialogContent>
@@ -834,117 +810,59 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
       {/* Edit Contract Modal */}
       <Dialog open={showEditModal} onOpenChange={(open) => { if (!open) { setShowEditModal(false); setEditingContract(null); } }}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Contract</DialogTitle>
-          </DialogHeader>
-
+          <DialogHeader><DialogTitle>Edit Contract</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
-            <div>
-              <Label htmlFor="editContractNumber">Contract ID</Label>
-              <Input id="editContractNumber" value={editContractNumber} onChange={(e) => setEditContractNumber(e.target.value)} />
-            </div>
-
+            <div><Label htmlFor="editContractNumber">Contract ID</Label><Input id="editContractNumber" value={editContractNumber} onChange={(e) => setEditContractNumber(e.target.value)} /></div>
             <div>
               <Label>Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !editContractDate && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {editContractDate ? format(editContractDate, "PPP") : "Pick a date"}
+                    <CalendarIcon className="mr-2 h-4 w-4" />{editContractDate ? format(editContractDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={editContractDate} onSelect={setEditContractDate} initialFocus className="p-3 pointer-events-auto" />
-                </PopoverContent>
+                <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={editContractDate} onSelect={setEditContractDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
               </Popover>
             </div>
-
-            <div>
-              <Label htmlFor="editContractor">Contractor</Label>
-              <Input id="editContractor" value={editContractor} onChange={(e) => setEditContractor(e.target.value)} />
-            </div>
-
-            <div>
-              <Label htmlFor="editDescription">Contract Description</Label>
-              <Textarea id="editDescription" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={Math.max(3, Math.ceil((editDescription?.length || 0) / 80))} />
-            </div>
-
+            <div><Label htmlFor="editContractor">Contractor</Label><Input id="editContractor" value={editContractor} onChange={(e) => setEditContractor(e.target.value)} /></div>
+            <div><Label htmlFor="editDescription">Contract Description</Label><Textarea id="editDescription" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={Math.max(3, Math.ceil((editDescription?.length || 0) / 80))} /></div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="editAmount">Contract amount ({editSelectedCurrency})</Label>
-                <Input
-                  id="editAmount"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  value={editAmountRaw ? Number(editAmountRaw).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""}
-                  onChange={(e) => { const raw = e.target.value.replace(/[^0-9.]/g, ""); setEditAmountRaw(raw); }}
-                />
+                <Input id="editAmount" type="text" inputMode="decimal" placeholder="0.00" value={editAmountRaw ? Number(editAmountRaw).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""} onChange={(e) => { const raw = e.target.value.replace(/[^0-9.]/g, ""); setEditAmountRaw(raw); }} />
               </div>
               <div>
                 <Label>Local Currency</Label>
                 <Select value={editSelectedCurrency} onValueChange={setEditSelectedCurrency}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PLN">PLN</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                  </SelectContent>
+                  <SelectContent><SelectItem value="PLN">PLN</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="EUR">EUR</SelectItem></SelectContent>
                 </Select>
               </div>
             </div>
-
             <div>
               <Label>Status</Label>
               <RadioGroup value={editStatus} onValueChange={setEditStatus} className="flex gap-4 mt-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Ongoing" id="edit-status-ongoing" />
-                  <Label htmlFor="edit-status-ongoing" className="font-normal cursor-pointer">Ongoing</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Completed" id="edit-status-completed" />
-                  <Label htmlFor="edit-status-completed" className="font-normal cursor-pointer">Completed</Label>
-                </div>
+                <div className="flex items-center space-x-2"><RadioGroupItem value="Ongoing" id="edit-status-ongoing" /><Label htmlFor="edit-status-ongoing" className="font-normal cursor-pointer">Ongoing</Label></div>
+                <div className="flex items-center space-x-2"><RadioGroupItem value="Completed" id="edit-status-completed" /><Label htmlFor="edit-status-completed" className="font-normal cursor-pointer">Completed</Label></div>
               </RadioGroup>
             </div>
-
             <div>
               <Label>Agreement Signed</Label>
               <RadioGroup value={editAgreementSigned ? "yes" : "no"} onValueChange={(v) => setEditAgreementSigned(v === "yes")} className="flex gap-4 mt-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="yes" id="edit-agreement-yes" />
-                  <Label htmlFor="edit-agreement-yes" className="font-normal cursor-pointer">Yes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="no" id="edit-agreement-no" />
-                  <Label htmlFor="edit-agreement-no" className="font-normal cursor-pointer">No</Label>
-                </div>
+                <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="edit-agreement-yes" /><Label htmlFor="edit-agreement-yes" className="font-normal cursor-pointer">Yes</Label></div>
+                <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="edit-agreement-no" /><Label htmlFor="edit-agreement-no" className="font-normal cursor-pointer">No</Label></div>
               </RadioGroup>
             </div>
-
             <div>
-              <Label htmlFor="editComments" className="flex items-center gap-1.5">
-                Comments
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs">
-                      Important: add info about phased payments
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <Label htmlFor="editComments" className="flex items-center gap-1.5">Comments
+                <TooltipProvider><Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent side="top" className="max-w-xs">Important: add info about phased payments</TooltipContent></Tooltip></TooltipProvider>
               </Label>
               <Textarea id="editComments" value={editComments} onChange={(e) => setEditComments(e.target.value)} rows={Math.max(3, Math.ceil((editComments?.length || 0) / 80))} />
             </div>
           </div>
-
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowEditModal(false); setEditingContract(null); }}>Cancel</Button>
-            <Button onClick={handleEditSubmit} disabled={!editContractNumber.trim() || editSaving}>
-              {editSaving ? "Saving..." : "Save Changes"}
-            </Button>
+            <Button onClick={handleEditSubmit} disabled={!editContractNumber.trim() || editSaving}>{editSaving ? "Saving..." : "Save Changes"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -952,52 +870,21 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
       {/* Add Invoice Modal */}
       <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Invoice</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Add Invoice</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
-            <div>
-              <Label htmlFor="invoiceNumber">Invoice Number</Label>
-              <Input
-                id="invoiceNumber"
-                placeholder="e.g. INV-001"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="invoiceAmount">Amount ({currency})</Label>
-              <Input
-                id="invoiceAmount"
-                type="number"
-                placeholder="0.00"
-                value={invoiceAmountRaw}
-                onChange={(e) => setInvoiceAmountRaw(e.target.value)}
-              />
-            </div>
+            <div><Label htmlFor="invoiceNumber">Invoice Number</Label><Input id="invoiceNumber" placeholder="e.g. INV-001" value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} /></div>
+            <div><Label htmlFor="invoiceAmount">Amount ({currency})</Label><Input id="invoiceAmount" type="number" placeholder="0.00" value={invoiceAmountRaw} onChange={(e) => setInvoiceAmountRaw(e.target.value)} /></div>
             <div>
               <Label>Attachment (optional)</Label>
-              <input
-                ref={invoiceFileRef}
-                type="file"
-                className="hidden"
-                onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)}
-              />
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => invoiceFileRef.current?.click()}
-              >
-                <Paperclip className="h-4 w-4 mr-2" />
-                {invoiceFile ? invoiceFile.name : "Choose file..."}
+              <input ref={invoiceFileRef} type="file" className="hidden" onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)} />
+              <Button variant="outline" className="w-full justify-start" onClick={() => invoiceFileRef.current?.click()}>
+                <Paperclip className="h-4 w-4 mr-2" />{invoiceFile ? invoiceFile.name : "Choose file..."}
               </Button>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
-            <Button onClick={handleInvoiceSubmit} disabled={!invoiceNumber.trim() || invoiceSaving}>
-              {invoiceSaving ? "Saving..." : "Add Invoice"}
-            </Button>
+            <Button onClick={handleInvoiceSubmit} disabled={!invoiceNumber.trim() || invoiceSaving}>{invoiceSaving ? "Saving..." : "Add Invoice"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
