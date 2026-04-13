@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X } from "lucide-react";
+import { useProjectTypes } from "@/hooks/useProjectTypes";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,8 @@ export default function Projects() {
   const [searchQuery, setSearchQuery] = useState("");
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
+  const { projectTypes } = useProjectTypes();
+  const activeProjectTypes = useMemo(() => projectTypes.filter(pt => pt.status === "active"), [projectTypes]);
   const [formData, setFormData] = useState({
     name: "",
     workDescription: "",
@@ -72,6 +76,8 @@ export default function Projects() {
     currency: "PLN",
     startDate: new Date(),
     endDate: null as Date | null,
+    budgetType: "",
+    budgetClassification: "",
   });
   const [budgetLineOpen, setBudgetLineOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
@@ -232,6 +238,8 @@ export default function Projects() {
       tenant: formData.tenant || undefined,
       budget_line: formData.budgetLine || undefined,
       fiscal_year: formData.fiscalYear || undefined,
+      budget_type: formData.budgetType || undefined,
+      budget_classification: formData.budgetClassification || undefined,
       currency: formData.currency || "PLN",
     };
     const result = await createProject(input);
@@ -261,6 +269,8 @@ export default function Projects() {
         currency: "PLN",
         startDate: new Date(),
         endDate: null,
+        budgetType: "",
+        budgetClassification: "",
       });
       // Navigate to newly created project
       navigate(`/project/${result.id}`);
@@ -961,55 +971,17 @@ export default function Projects() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="budgetLine">Budget line</Label>
-                <Popover open={budgetLineOpen} onOpenChange={setBudgetLineOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={budgetLineOpen}
-                      className="w-full justify-between font-normal"
-                    >
-                      {formData.budgetLine
-                        ? budgetLineLabels[formData.budgetLine] || formData.budgetLine
-                        : "Choose or type"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Search or type..." 
-                        onValueChange={(val) => setFormData({ ...formData, budgetLine: val })}
-                      />
-                      <CommandList>
-                        <CommandEmpty>
-                          <span className="text-muted-foreground text-sm">Press enter to use "{formData.budgetLine}"</span>
-                        </CommandEmpty>
-                        <CommandGroup>
-                          {filterOptions.budgetLines.map((bl) => (
-                            <CommandItem
-                              key={bl}
-                              value={bl}
-                              onSelect={(currentValue) => {
-                                setFormData({ ...formData, budgetLine: currentValue });
-                                setBudgetLineOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.budgetLine === bl ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {budgetLineLabels[bl] || bl}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <Label htmlFor="budgetLine">Work category</Label>
+                <Select value={formData.budgetLine} onValueChange={(val) => setFormData({ ...formData, budgetLine: val })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select work category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeProjectTypes.map((pt) => (
+                      <SelectItem key={pt.id} value={pt.name}>{pt.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="fiscalYear">Fiscal year</Label>
@@ -1071,6 +1043,42 @@ export default function Projects() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div>
+              <Label>Budget type</Label>
+              <RadioGroup
+                value={formData.budgetType}
+                onValueChange={(val) => setFormData({ ...formData, budgetType: val })}
+                className="flex gap-6 mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="IC" id="budget-type-ic" />
+                  <Label htmlFor="budget-type-ic" className="font-normal cursor-pointer">IC</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Ad Hoc" id="budget-type-adhoc" />
+                  <Label htmlFor="budget-type-adhoc" className="font-normal cursor-pointer">Ad Hoc</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>Budget classification</Label>
+              <RadioGroup
+                value={formData.budgetClassification}
+                onValueChange={(val) => setFormData({ ...formData, budgetClassification: val })}
+                className="flex gap-6 mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Mandatory" id="budget-class-mandatory" />
+                  <Label htmlFor="budget-class-mandatory" className="font-normal cursor-pointer">Mandatory</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Speculative" id="budget-class-speculative" />
+                  <Label htmlFor="budget-class-speculative" className="font-normal cursor-pointer">Speculative</Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
           <DialogFooter>
