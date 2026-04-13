@@ -28,6 +28,8 @@ interface TimelineV2TabProps {
   contracted: number;
   invoiced: number;
   currency: string;
+  budgetLc?: number;
+  localCurrency?: string;
   trackingStatus: "on-track" | "off-track";
   offTrackMessage?: string;
   onCreateItem: (input: {
@@ -668,12 +670,16 @@ function BudgetWidget({
   contracted,
   invoiced,
   currency,
+  budgetLc,
+  localCurrency,
 }: {
   budget: number;
   forecasted: number;
   contracted: number;
   invoiced: number;
   currency: string;
+  budgetLc?: number;
+  localCurrency?: string;
 }) {
   // Budget Variance = Budget - max(Forecast, Contracted)
   const remaining = budget - Math.max(forecasted, contracted);
@@ -688,14 +694,29 @@ function BudgetWidget({
     }).replace(/,/g, ' ')}`;
   };
 
+  const formatLc = (amount: number) => {
+    return `${localCurrency} ${amount.toLocaleString("en-US", { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    }).replace(/,/g, ' ')}`;
+  };
+
+  const showLc = localCurrency && localCurrency !== "EUR" && budgetLc != null;
+
   return (
     <div className="w-80 border-l border-border pl-6">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-1">
         <h3 className="font-semibold text-foreground">
           Budget ({(100).toFixed(2).replace('.', ',')}%)
         </h3>
         <span className="text-lg font-bold text-foreground">{formatCurrency(budget)}</span>
       </div>
+      {showLc && (
+        <div className="flex justify-end mb-4">
+          <span className="text-xs text-muted-foreground">{formatLc(budgetLc)}</span>
+        </div>
+      )}
+      {!showLc && <div className="mb-4" />}
 
       {/* Contracted row */}
       <div className="flex items-center gap-2 mb-2">
@@ -758,6 +779,8 @@ export default function TimelineV2Tab({
   contracted: propContracted,
   invoiced: propInvoiced,
   currency,
+  budgetLc,
+  localCurrency,
   trackingStatus,
   offTrackMessage,
   onCreateItem,
@@ -1113,9 +1136,11 @@ export default function TimelineV2Tab({
         <BudgetWidget
           budget={budget}
           forecasted={totals.forecasted}
-          contracted={totals.contracted}
+          contracted={propContracted}
           invoiced={totals.invoiced}
           currency={currency}
+          budgetLc={budgetLc}
+          localCurrency={localCurrency}
         />
       </div>
 
