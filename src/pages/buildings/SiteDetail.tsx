@@ -101,8 +101,27 @@ const SiteDetail = () => {
                   </div>
                 ))}
               </div>
+
+              <h2 className="text-lg font-semibold text-foreground mt-6 mb-3">Project Tracker</h2>
+              <div className="border border-border rounded-md overflow-hidden">
+                {projectTrackerFields.map((field, i) => (
+                  <div
+                    key={i}
+                    className="flex border-b border-border last:border-b-0 min-h-[44px]"
+                  >
+                    <div className="w-[350px] px-4 py-3 text-sm font-medium text-foreground flex-shrink-0">
+                      {field.label}
+                    </div>
+                    <div className="flex-1 px-4 py-3 text-sm text-muted-foreground">
+                      {field.value || ""}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="flex justify-end mt-4">
                 <Button variant="default" size="sm" onClick={() => setIsEditing(true)}>Edit</Button>
+              </div>
               </div>
             </div>
 
