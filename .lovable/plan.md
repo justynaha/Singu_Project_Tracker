@@ -1,19 +1,17 @@
 
+## Plan: Seed Work Categories from Screenshot
 
-## Plan: Redesign FX Rate Display and Modal
+Insert the following 8 work categories into the `project_types` table via a database migration:
 
-### Changes
+1. LIFE SAFETY & FIRE PROTECTION SYSTEMS
+2. STRUCTURAL FRAME & BUILDING ENVELOPE
+3. HEATING, VENTILATION & AIR CONDITIONING (HVAC)
+4. ESG
+5. SITE
+6. MECHANICAL & ELECTRICAL SYSTEMS
+7. ELECTRICAL SYSTEMS
+8. INTERIOR ELEMENTS, EQUIPMENT
 
-**`src/pages/ForeignExchange.tsx`**
-
-1. **Table data**: Change currency pairs from "PLN → EUR" to "EUR/PLN" format. Update mock rates to represent how much 1 EUR costs in local currency (e.g. EUR/PLN = 4.2610, EUR/HUF = 403.23, EUR/CZK = 25.19).
-
-2. **Add Rate modal**: Replace the single "Currency pair" dropdown with a layout:
-   - Static label "1 EUR ="
-   - Numeric input for the rate value
-   - Currency dropdown (PLN, HUF, CZK)
-   
-   On save, the pair is constructed as `EUR/${selectedCurrency}`.
-
-3. **Mock data update**: 4 rows with realistic rates (e.g. EUR/PLN 4.2610, EUR/PLN 4.3750, EUR/HUF 403.23, EUR/CZK 25.19).
-
+### Technical Details
+- Single SQL migration with 8 `INSERT` statements into `project_types`
+- All entries: top-level (no `parent_id`), status `active`, no description or template
