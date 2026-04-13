@@ -1,36 +1,28 @@
 
 
-## Plan: Add Contracts tab to Project Detail
+## Plan: Dynamic currency column, label rename, and tooltip
 
-### Database
+### 1. `src/components/project-detail/ContractsTab.tsx`
 
-- Create `contracts` table via migration:
-  - `id` uuid PK (default `gen_random_uuid()`)
-  - `project_id` uuid NOT NULL
-  - `contract_number` text NOT NULL
-  - `contract_date` date
-  - `amount_lc` numeric (local currency value)
-  - `amount_eur` numeric (EUR value)
-  - `status` text NOT NULL DEFAULT 'Draft'
-  - `created_at` timestamptz DEFAULT now()
-  - `updated_at` timestamptz DEFAULT now()
-- Enable RLS with public access policies (matching existing pattern).
-- Insert sample data for the current project (contract_number like `280141`, `280142`, etc.).
+- Add `currency` prop (string, e.g. "PLN", "EUR").
+- Rename column header from `Amount (LC)` to `Amount ({currency})`.
+- If `currency === "EUR"`, hide the `Amount (LC)` column entirely (header + cells), since it would duplicate Amount (EUR).
 
-### New file: `src/components/project-detail/ContractsTab.tsx`
+### 2. `src/pages/ProjectDetail.tsx`
 
-- Table with columns: Contract ID, Date, Amount (LC), Amount (EUR), Status.
-- Status rendered as a badge.
-- Simple read-only list for now.
+- Pass `project.currency` (or fallback "EUR") to `ContractsTab`:
+  ```
+  <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} />
+  ```
 
-### `src/hooks/useProjectDetail.ts`
+### 3. `src/pages/Projects.tsx` — New Project modal
 
-- Fetch contracts from the `contracts` table filtered by `project_id`.
-- Return `contracts` array.
+- Change label from `Currency` to `Local Currency`.
+- Add an `Info` icon (from lucide) next to the label, wrapped in a `Tooltip` that shows: *"Local currency will be converted to EUR based on foreign exchange rates defined in the system."*
 
-### `src/pages/ProjectDetail.tsx`
+### 4. `src/components/project-detail/EditProjectModal.tsx`
 
-- Import `ContractsTab` and add a `FileSignature` icon from lucide.
-- Insert `{ id: "contracts", label: "Contracts", icon: FileSignature }` as the second tab (after Overview).
-- Render `ContractsTab` when active, passing contracts data.
+- Same label change: `Currency` → `Local Currency` with the same tooltip.
+
+### No database changes needed.
 
