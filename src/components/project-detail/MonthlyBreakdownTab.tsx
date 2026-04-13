@@ -1,21 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Download, Lock, LockOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableFooter,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const MONTH_KEYS = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"] as const;
 const MONTH_LABELS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
 
-type MonthKey = typeof MONTH_KEYS[number];
+type MonthKey = (typeof MONTH_KEYS)[number];
+type Currency = "local" | "EUR";
 
 interface BreakdownRow {
   id: string;
@@ -31,7 +30,8 @@ interface BreakdownRow {
 function getMonthHeaders(fiscalYear: number) {
   return MONTH_LABELS.map((m, i) => {
     const year = i < 9 ? fiscalYear : fiscalYear + 1;
-    return `${m} ${year}`;
+    const shortYear = String(year).slice(2);
+    return `${m} ${shortYear}`;
   });
 }
 
@@ -42,11 +42,59 @@ function rowTotal(row: BreakdownRow) {
 interface Props {
   projectId: string;
   fiscalYear: string | null;
+  projectCurrency?: string;
+  totalContracted?: number;
+  totalInvoiced?: number;
 }
 
-export default function MonthlyBreakdownTab({ projectId, fiscalYear }: Props) {
+// Hardcoded FX rate for demo — in production, fetch from fx_rates table
+const EUR_RATE = 0.23;
+
+function fmt(value: number): string {
+  return value.toLocaleString("pl-PL");
+}
+
+function convertValue(value: number, currency: Currency): number {
+  return currency === "EUR" ? Math.round(value * EUR_RATE) : value;
+}
+
+function SummaryRow({
+  label,
+  value,
+  total,
+  currency,
+  currencyLabel,
+  colCount,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  currency: Currency;
+  currencyLabel: string;
+  colCount: number;
+}) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  return (
+    <tr className="border-t border-border bg-muted/30">
+      <td className="sticky left-0 z-10 bg-muted/30 px-3 py-1.5 text-sm font-medium text-muted-foreground border-r border-border">
+        {label}
+      </td>
+      <td colSpan={colCount} className="px-3 py-1.5 text-right text-sm text-muted-foreground">
+        <span className="text-muted-foreground/60">({pct}% total)</span>{" "}
+        {fmt(convertValue(value, currency))} {currencyLabel}
+      </td>
+    </tr>
+  );
+}
+
+export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurrency, totalContracted, totalInvoiced }: Props) {
   const [row, setRow] = useState<BreakdownRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currency, setCurrency] = useState<Currency>("local");
+  const [locked, setLocked] = useState(false);
+
+  const localCurrencyCode = projectCurrency || "PLN";
+  const currencyLabel = currency === "EUR" ? "EUR" : localCurrencyCode;
 
   const fy = parseInt(fiscalYear || new Date().getFullYear().toString(), 10);
   const headers = getMonthHeaders(fy);
@@ -69,7 +117,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear }: Props) {
     if (data && data.length > 0) {
       setRow(data[0] as unknown as BreakdownRow);
     } else {
-      // Auto-create the single row
       const { data: newRow, error: insertError } = await supabase
         .from("monthly_breakdown")
         .insert({ project_id: projectId, label: "", sort_order: 0 } as any)
@@ -84,7 +131,9 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear }: Props) {
     setLoading(false);
   }, [projectId]);
 
-  useEffect(() => { fetchOrCreateRow(); }, [fetchOrCreateRow]);
+  useEffect(() => {
+    fetchOrCreateRow();
+  }, [fetchOrCreateRow]);
 
   const updateField = async (field: string, value: number) => {
     if (!row) return;
@@ -95,59 +144,208 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear }: Props) {
     if (error) toast.error("Failed to save");
   };
 
-  const handleChange = (field: MonthKey, value: string) => {
+  const handleChange = (field: MonthKey, rawValue: string) => {
     if (!row) return;
-    setRow({ ...row, [field]: parseFloat(value) || 0 });
+    const num = parseInt(rawValue.replace(/\s/g, "").replace(/,/g, ""), 10);
+    const val = isNaN(num) ? 0 : num;
+    // If viewing EUR, convert back to local
+    const localVal = currency === "EUR" ? Math.round(val / EUR_RATE) : val;
+    setRow({ ...row, [field]: localVal });
   };
 
-  const handleBlur = (field: MonthKey, value: string) => {
-    updateField(field, parseFloat(value) || 0);
+  const handleBlur = (field: MonthKey) => {
+    if (!row) return;
+    updateField(field, row[field]);
   };
 
-  const formatNum = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const total = useMemo(() => (row ? rowTotal(row) : 0), [row]);
+  const planned3M = useMemo(
+    () => (row ? MONTH_KEYS.slice(0, 3).reduce((s, k) => s + Number(row[k] || 0), 0) : 0),
+    [row]
+  );
+  const contracted = totalContracted ?? Math.round(total * 0.75);
+  const invoiced = totalInvoiced ?? Math.round(total * 0.5);
+
+  const handleExport = () => {
+    if (!row) return;
+    const csvHeaders = ["", ...headers.map(h => `${h} (${currencyLabel})`)].join(",");
+    const csvValues = [
+      "Amount",
+      ...MONTH_KEYS.map(k => String(convertValue(row[k] || 0, currency))),
+    ].join(",");
+    const csvTotal = ["Total", ...Array(headers.length - 1).fill(""), `${fmt(convertValue(total, currency))} ${currencyLabel}`].join(",");
+    const csv = [csvHeaders, csvValues, csvTotal].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `monthly_breakdown_FY${fy}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="p-4">
-      <h3 className="text-lg font-semibold mb-4">Monthly Breakdown — FY {fy}</h3>
+    <div className="p-4 md:p-6">
+      {/* Header */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <h2 className="text-xl font-bold text-foreground">Monthly Breakdown</h2>
+        <div className="flex rounded-md border border-input overflow-hidden">
+          <button
+            onClick={() => setCurrency("local")}
+            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+              currency === "local"
+                ? "bg-primary text-primary-foreground"
+                : "bg-background text-foreground hover:bg-accent"
+            }`}
+          >
+            Local currency
+          </button>
+          <button
+            onClick={() => setCurrency("EUR")}
+            className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+              currency === "EUR"
+                ? "bg-primary text-primary-foreground"
+                : "bg-background text-foreground hover:bg-accent"
+            }`}
+          >
+            EUR
+          </button>
+        </div>
+      </div>
 
-      <div className="border border-border rounded-lg overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {headers.map((h) => (
-                <TableHead key={h} className="min-w-[100px] text-right">{h}</TableHead>
-              ))}
-              <TableHead className="min-w-[110px] text-right font-bold">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading || !row ? (
-              <TableRow>
-                <TableCell colSpan={13} className="text-center text-muted-foreground py-8">
-                  {loading ? "Loading…" : "Error loading data"}
-                </TableCell>
-              </TableRow>
-            ) : (
-              <TableRow>
-                {MONTH_KEYS.map((k) => (
-                  <TableCell key={k} className="p-1">
-                    <Input
-                      type="number"
-                      value={row[k] || ""}
-                      onChange={(e) => handleChange(k, e.target.value)}
-                      onBlur={(e) => handleBlur(k, e.target.value)}
-                      className="h-8 text-sm text-right"
-                      placeholder="0"
-                    />
-                  </TableCell>
+      {/* Export */}
+      <div className="mb-4 flex justify-end">
+        <Button variant="ghost" size="sm" onClick={handleExport}>
+          <Download className="mr-1 h-4 w-4" />
+          Export
+        </Button>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse min-w-[900px]">
+            <thead>
+              <tr className="bg-muted">
+                <th className="sticky left-0 z-20 bg-muted px-3 py-2 text-left font-semibold text-foreground w-[120px] min-w-[120px] border-r border-border" />
+                {headers.map((h) => (
+                  <th
+                    key={h}
+                    className="px-3 py-2 text-right font-semibold text-foreground min-w-[90px] border-r border-border last:border-r-0"
+                  >
+                    {h}
+                    <br />
+                    <span className="font-normal text-muted-foreground">({currencyLabel})</span>
+                  </th>
                 ))}
-                <TableCell className="text-right font-bold pr-4">
-                  {formatNum(rowTotal(row))}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              </tr>
+            </thead>
+            <tbody>
+              {loading || !row ? (
+                <tr>
+                  <td
+                    colSpan={headers.length + 1}
+                    className="text-center text-muted-foreground py-8"
+                  >
+                    {loading ? "Loading…" : "Error loading data"}
+                  </td>
+                </tr>
+              ) : (
+                <>
+                  {/* Amount row */}
+                  <tr className="border-t border-border">
+                    <td className="sticky left-0 z-10 bg-background px-3 py-1.5 font-medium text-foreground border-r border-border">
+                      <span className="flex items-center gap-1.5">
+                        Amount
+                        <button
+                          onClick={() => setLocked((l) => !l)}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {locked ? (
+                            <Lock className="h-3.5 w-3.5" />
+                          ) : (
+                            <LockOpen className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      </span>
+                    </td>
+                    {MONTH_KEYS.map((k) => (
+                      <td key={k} className="px-0 py-0 border-r border-border last:border-r-0">
+                        {locked ? (
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <input
+                                  type="text"
+                                  readOnly
+                                  className="w-full h-full px-2 py-1.5 text-right text-sm bg-muted/40 text-foreground border-0 outline-none cursor-not-allowed"
+                                  value={fmt(convertValue(row[k] || 0, currency))}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>Unlock to edit</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <input
+                            type="text"
+                            className="w-full h-full px-2 py-1.5 text-right text-sm bg-muted/40 text-foreground border-0 outline-none focus:bg-accent focus:ring-1 focus:ring-ring"
+                            value={fmt(convertValue(row[k] || 0, currency))}
+                            onChange={(e) => handleChange(k, e.target.value)}
+                            onFocus={(e) => {
+                              const v = convertValue(row[k] || 0, currency);
+                              e.target.value = String(v);
+                              e.target.select();
+                            }}
+                            onBlur={() => handleBlur(k)}
+                          />
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Total row */}
+                  <tr className="border-t-2 border-border">
+                    <td className="sticky left-0 z-10 bg-background px-3 py-3 font-bold text-foreground text-lg border-r border-border">
+                      Total
+                    </td>
+                    <td
+                      colSpan={headers.length}
+                      className="px-3 py-3 text-right font-bold text-foreground text-lg"
+                    >
+                      {fmt(convertValue(total, currency))} {currencyLabel}
+                    </td>
+                  </tr>
+
+                  {/* Summary rows */}
+                  <SummaryRow
+                    label="Planned 3M"
+                    value={planned3M}
+                    total={total}
+                    currency={currency}
+                    currencyLabel={currencyLabel}
+                    colCount={headers.length}
+                  />
+                  <SummaryRow
+                    label="Contracted"
+                    value={contracted}
+                    total={total}
+                    currency={currency}
+                    currencyLabel={currencyLabel}
+                    colCount={headers.length}
+                  />
+                  <SummaryRow
+                    label="Invoiced"
+                    value={invoiced}
+                    total={total}
+                    currency={currency}
+                    currencyLabel={currencyLabel}
+                    colCount={headers.length}
+                  />
+                </>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
