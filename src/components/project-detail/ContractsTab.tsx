@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil } from "lucide-react";
+import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -146,6 +146,16 @@ const AiLabel = ({ field }: { field?: ExtractedField<any> }) => {
   );
 };
 
+interface Invoice {
+  id: string;
+  contract_id: string;
+  invoice_number: string;
+  amount_lc: number;
+  attachment_name: string | null;
+  attachment_url: string | null;
+  created_at: string;
+}
+
 export default function ContractsTab({ contracts, currency = "EUR", onCreateContract, onUpdateContract }: ContractsTabProps) {
   const showLcColumn = currency.toUpperCase() !== "EUR";
   const [showModal, setShowModal] = useState(false);
@@ -180,6 +190,94 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [editAgreementSigned, setEditAgreementSigned] = useState(false);
   const [editComments, setEditComments] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+
+  // Invoice state
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceContractId, setInvoiceContractId] = useState<string | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [invoiceAmountRaw, setInvoiceAmountRaw] = useState("");
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
+  const [invoiceSaving, setInvoiceSaving] = useState(false);
+  const invoiceFileRef = useRef<HTMLInputElement>(null);
+
+  // Fetch invoices
+  const fetchInvoices = async () => {
+    if (contracts.length === 0) return;
+    const contractIds = contracts.map(c => c.id);
+    const { data } = await supabase
+      .from("invoices")
+      .select("*")
+      .in("contract_id", contractIds)
+      .order("created_at", { ascending: true });
+    if (data) setInvoices(data as Invoice[]);
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [contracts]);
+
+  const invoicesByContract = invoices.reduce<Record<string, Invoice[]>>((acc, inv) => {
+    if (!acc[inv.contract_id]) acc[inv.contract_id] = [];
+    acc[inv.contract_id].push(inv);
+    return acc;
+  }, {});
+
+  const openInvoiceModal = (contractId: string) => {
+    setInvoiceContractId(contractId);
+    setInvoiceNumber("");
+    setInvoiceAmountRaw("");
+    setInvoiceFile(null);
+    setShowInvoiceModal(true);
+  };
+
+  const handleInvoiceSubmit = async () => {
+    if (!invoiceContractId || !invoiceNumber.trim()) return;
+    setInvoiceSaving(true);
+    try {
+      let attachmentUrl: string | null = null;
+      let attachmentName: string | null = null;
+
+      if (invoiceFile) {
+        const filePath = `${invoiceContractId}/${Date.now()}_${invoiceFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("contract-attachments")
+          .upload(filePath, invoiceFile);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from("contract-attachments")
+          .getPublicUrl(filePath);
+        attachmentUrl = urlData.publicUrl;
+        attachmentName = invoiceFile.name;
+      }
+
+      const { error } = await supabase.from("invoices").insert({
+        contract_id: invoiceContractId,
+        invoice_number: invoiceNumber.trim(),
+        amount_lc: parseFloat(invoiceAmountRaw) || 0,
+        attachment_name: attachmentName,
+        attachment_url: attachmentUrl,
+      });
+      if (error) throw error;
+      toast.success("Invoice added");
+      setShowInvoiceModal(false);
+      fetchInvoices();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to add invoice");
+    } finally {
+      setInvoiceSaving(false);
+    }
+  };
+
+  const handleDeleteInvoice = async (invoiceId: string) => {
+    const { error } = await supabase.from("invoices").delete().eq("id", invoiceId);
+    if (error) {
+      toast.error("Failed to delete invoice");
+    } else {
+      toast.success("Invoice deleted");
+      fetchInvoices();
+    }
+  };
 
   const openEditModal = (contract: Contract) => {
     setEditingContract(contract);
@@ -338,28 +436,93 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             </TableRow>
           </TableHeader>
           <TableBody>
-            {contracts.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="w-10 p-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditModal(c)}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                </TableCell>
-                <TableCell className="font-medium">{c.contract_number}</TableCell>
-                <TableCell>
-                  {c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}
-                </TableCell>
-                <TableCell>{c.contractor || "—"}</TableCell>
-                <TableCell className="max-w-[200px] truncate">{c.description || "—"}</TableCell>
-                {showLcColumn && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
-                <TableCell className="text-right">{formatAmount(c.amount_eur)}</TableCell>
-                <TableCell>
-                  <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
-                </TableCell>
-                <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
-                <TableCell className="max-w-[200px] truncate">{c.comments || "—"}</TableCell>
-              </TableRow>
-            ))}
+            {contracts.map((c) => {
+              const contractInvoices = invoicesByContract[c.id] || [];
+              const totalInvoiced = contractInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
+              const balance = (c.amount_lc || 0) - totalInvoiced;
+              const colCount = showLcColumn ? 10 : 9;
+
+              return (
+                <>
+                  <TableRow key={c.id}>
+                    <TableCell className="w-10 p-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditModal(c)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="font-medium">{c.contract_number}</TableCell>
+                    <TableCell>
+                      {c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}
+                    </TableCell>
+                    <TableCell>{c.contractor || "—"}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{c.description || "—"}</TableCell>
+                    {showLcColumn && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
+                    <TableCell className="text-right">{formatAmount(c.amount_eur)}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
+                    </TableCell>
+                    <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{c.comments || "—"}</TableCell>
+                  </TableRow>
+
+                  {/* Invoice sub-rows */}
+                  {contractInvoices.map((inv) => (
+                    <TableRow key={inv.id} className="bg-muted/30">
+                      <TableCell />
+                      <TableCell className="pl-8 text-xs text-muted-foreground">
+                        Invoice
+                      </TableCell>
+                      <TableCell className="text-xs">{inv.invoice_number}</TableCell>
+                      <TableCell />
+                      <TableCell className="text-xs">
+                        {inv.attachment_url ? (
+                          <a href={inv.attachment_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                            <Paperclip className="h-3 w-3" />
+                            {inv.attachment_name || "Attachment"}
+                          </a>
+                        ) : "—"}
+                      </TableCell>
+                      {showLcColumn && <TableCell className="text-right text-xs">{formatAmount(inv.amount_lc)}</TableCell>}
+                      <TableCell className="text-right text-xs">{formatAmount(inv.amount_lc)}</TableCell>
+                      <TableCell />
+                      <TableCell />
+                      <TableCell className="p-1">
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDeleteInvoice(inv.id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+
+                  {/* Balance row */}
+                  {contractInvoices.length > 0 && (
+                    <TableRow key={`balance-${c.id}`} className="bg-muted/10">
+                      <TableCell />
+                      <TableCell className="pl-8 text-xs font-semibold">Balance</TableCell>
+                      <TableCell />
+                      <TableCell />
+                      <TableCell />
+                      {showLcColumn && <TableCell className="text-right text-xs font-semibold">{formatAmount(balance)}</TableCell>}
+                      <TableCell className="text-right text-xs font-semibold">{formatAmount(balance)}</TableCell>
+                      <TableCell />
+                      <TableCell />
+                      <TableCell />
+                    </TableRow>
+                  )}
+
+                  {/* Add Invoice button row */}
+                  <TableRow key={`add-inv-${c.id}`} className="border-b-2">
+                    <TableCell />
+                    <TableCell colSpan={colCount - 1}>
+                      <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => openInvoiceModal(c.id)}>
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add Invoice
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </>
+              );
+            })}
           </TableBody>
           {contracts.length > 0 && (
             <TableFooter>
@@ -755,6 +918,59 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             <Button variant="outline" onClick={() => { setShowEditModal(false); setEditingContract(null); }}>Cancel</Button>
             <Button onClick={handleEditSubmit} disabled={!editContractNumber.trim() || editSaving}>
               {editSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Invoice Modal */}
+      <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Invoice</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="invoiceNumber">Invoice Number</Label>
+              <Input
+                id="invoiceNumber"
+                placeholder="e.g. INV-001"
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="invoiceAmount">Amount ({currency})</Label>
+              <Input
+                id="invoiceAmount"
+                type="number"
+                placeholder="0.00"
+                value={invoiceAmountRaw}
+                onChange={(e) => setInvoiceAmountRaw(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Attachment (optional)</Label>
+              <input
+                ref={invoiceFileRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)}
+              />
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => invoiceFileRef.current?.click()}
+              >
+                <Paperclip className="h-4 w-4 mr-2" />
+                {invoiceFile ? invoiceFile.name : "Choose file..."}
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
+            <Button onClick={handleInvoiceSubmit} disabled={!invoiceNumber.trim() || invoiceSaving}>
+              {invoiceSaving ? "Saving..." : "Add Invoice"}
             </Button>
           </DialogFooter>
         </DialogContent>
