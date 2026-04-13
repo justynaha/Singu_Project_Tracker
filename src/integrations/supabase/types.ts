@@ -451,6 +451,41 @@ export type Database = {
         }
         Relationships: []
       }
+      timeline_item_comments: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          timeline_item_id: string
+          visibility: string
+        }
+        Insert: {
+          author_name?: string
+          content: string
+          created_at?: string
+          id?: string
+          timeline_item_id: string
+          visibility?: string
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          timeline_item_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_item_comments_timeline_item_id_fkey"
+            columns: ["timeline_item_id"]
+            isOneToOne: false
+            referencedRelation: "timeline_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timeline_items: {
         Row: {
           comments: string | null
