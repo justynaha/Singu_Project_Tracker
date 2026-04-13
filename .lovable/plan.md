@@ -1,51 +1,20 @@
 
 
-## Plan: Global Contracts page + Add contractor/description fields
+## Plan: Contracts list refinements
 
-### Database migration
+### `src/pages/ContractsList.tsx`
 
-Add two new columns to the `contracts` table:
-- `contractor` text, nullable
-- `description` text, nullable
+1. **Statuses** — The `statusVariant` function already only handles "completed" and "ongoing". No changes needed there. Ensure only these two values appear.
 
-### 1. Database migration — add columns
+2. **Rename "Project ID" column to "Project Number"** — Change the header text. Instead of showing `project_id.slice(0, 8)`, generate a project number using the same pattern as the Projects page (`13536 + index`). To do this, fetch a consistent ordering of projects and assign numbers based on position.
 
-```sql
-ALTER TABLE public.contracts ADD COLUMN contractor text;
-ALTER TABLE public.contracts ADD COLUMN description text;
-```
+3. **Make Project Number clickable and blue** — Style the Project Number cell with `text-primary font-medium cursor-pointer` (matching the Projects page style). On click, navigate to `/project/{project_id}`. Remove the whole-row `onClick` handler so only the project number is clickable.
 
-### 2. `src/components/project-detail/ContractsTab.tsx` — Update form and table
+4. **Remove row-level cursor-pointer** — Since only the project number should be clickable, remove `cursor-pointer` from `TableRow` and the row-level `onClick`.
 
-**Add Contract modal**: Add two new fields:
-- **Contractor** — text input
-- **Contract Description** — textarea
+### `src/integrations` — Fetch project ordering
 
-**Table columns**: Add `Contractor` and `Description` columns to the table. Rename `Amount ({currency})` → `Contracted ({currency})` and `Amount (EUR)` → `Contracted (EUR)`.
+To generate consistent project numbers, the ContractsList needs to know each project's position in the full project list. Fetch all projects ordered by `created_at` and assign `13536 + index` to each, building a `projectNumberMap` (project_id → number).
 
-**Props**: Update `onCreateContract` to accept `contractor` and `description` fields.
-
-### 3. `src/hooks/useProjectDetail.ts` — Update Contract interface and createContract
-
-- Add `contractor` and `description` to the Contract-related types.
-- Pass new fields in the insert call.
-
-### 4. `src/pages/ContractsList.tsx` — New global Contracts page
-
-Create a new page that fetches all contracts joined with project data (project name, site). Display a table with columns:
-- Contract ID, Project ID, Project Title, Site, Date, Contracted LC, Contracted EUR, Status, Contractor, Contract Description
-
-Use the same table styling and layout patterns as `Projects.tsx` (search, pagination).
-
-### 5. `src/components/AppSidebar.tsx` — Add "Contracts" submenu item
-
-Add a `Contracts` entry under the "Project Tracker" submenu (after "Projects"), using the `FileSignature` icon, linking to `/contracts`.
-
-### 6. `src/App.tsx` — Add route
-
-Add `<Route path="/contracts" element={<ContractsList />} />`.
-
-### 7. Update sidebar active detection
-
-Update `isGroupActive` for "Project Tracker" to also match `/contracts`.
+### No other files need changes.
 
