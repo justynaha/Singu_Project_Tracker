@@ -179,14 +179,15 @@ export default function ContractsList() {
                     </TableRow>
                   ) : (
                     paginated.map((c) => (
-                      <TableRow
-                        key={c.id}
-                        className="cursor-pointer"
-                        onClick={() => navigate(`/project/${c.project_id}`)}
-                      >
+                      <TableRow key={c.id}>
                         <TableCell className="font-medium">{c.contract_number}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground font-mono">
-                          {c.project_id.slice(0, 8)}
+                        <TableCell>
+                          <span
+                            className="text-primary font-medium cursor-pointer hover:underline"
+                            onClick={() => navigate(`/project/${c.project_id}`)}
+                          >
+                            {projectNumberMap.get(c.project_id) ?? "—"}
+                          </span>
                         </TableCell>
                         <TableCell>{c.project_name}</TableCell>
                         <TableCell>{c.project_site || "—"}</TableCell>
