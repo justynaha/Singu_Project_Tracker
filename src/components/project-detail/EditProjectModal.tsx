@@ -392,15 +392,17 @@ export default function EditProjectModal({
             {/* Project budget & Currency */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="budget">Project budget</Label>
+                <Label htmlFor="budget">Budget (Estimated spend)</Label>
                 <Input
                   id="budget"
-                  type="number"
-                  value={totalBudget}
-                  onChange={(e) => setTotalBudget(e.target.value)}
+                  type="text"
+                  inputMode="decimal"
+                  value={totalBudget ? Number(totalBudget).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9.]/g, "");
+                    setTotalBudget(raw);
+                  }}
                   placeholder="Type the budget"
-                  min="0"
-                  step="0.01"
                 />
               </div>
               <div>
