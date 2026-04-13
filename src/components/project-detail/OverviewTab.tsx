@@ -1,4 +1,6 @@
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { sites } from "@/data/buildingsData";
 
 interface Project {
   id: string;
@@ -47,6 +49,8 @@ const budgetLineLabels: Record<string, string> = {
 };
 
 export default function OverviewTab({ project }: OverviewTabProps) {
+  const navigate = useNavigate();
+
   const formatCurrency = (amount: number, currency: string) => {
     return `${currency} ${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
   };
@@ -69,12 +73,28 @@ export default function OverviewTab({ project }: OverviewTabProps) {
     }
   };
 
+  const matchedSite = project.site ? sites.find(s => s.name === project.site) : null;
+
   return (
     <div className="p-6">
       <DetailRow label="Added on" value={formatDateTime(project.created_at)} />
       <DetailRow label="Name" value={project.name} />
       <DetailRow label="Work description" value={project.work_description} />
-      <DetailRow label="Site" value={project.site} />
+      <div className="flex py-4 border-b border-border">
+        <div className="w-48 text-sm font-semibold text-foreground shrink-0">Site</div>
+        <div className="text-sm">
+          {matchedSite ? (
+            <span
+              className="text-primary hover:underline cursor-pointer"
+              onClick={() => navigate(`/buildings/sites/${matchedSite.id}`)}
+            >
+              {project.site}
+            </span>
+          ) : (
+            <span className="text-foreground">{project.site || "-"}</span>
+          )}
+        </div>
+      </div>
       <DetailRow label="Address" value={project.address} />
       <DetailRow label="Building" value={project.building} />
       <DetailRow label="Tenant" value={project.tenant} />
