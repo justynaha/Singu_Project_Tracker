@@ -1,44 +1,27 @@
 
 
-## Plan: Redesign Contracts Tab with Side Panel
+## Plan: Side Panel Position, Layout, and LC Amount Columns
 
 ### Overview
-Simplify the contracts table to show only key columns. Clicking a row opens a detail side panel (inspired by `RowDetailDrawer` from Project Tracker Base). Actions (edit, add invoice) are accessed via a three-dot menu on the left. Invoiced and Balance columns appear dynamically.
+Three changes: (1) make the side panel span full height starting under the app bar, (2) adjust panel content order and hide contract ID, (3) add three local-currency amount columns to the table.
 
-### Changes
+### Changes to `src/components/project-detail/ContractsTab.tsx`
 
-#### 1. `src/components/project-detail/ContractsTab.tsx` — full rewrite of layout
+#### 1. Side panel — full height from app bar
+Change the side panel from a flex child to a `fixed` positioned element anchored at `top-16 right-0 bottom-0` (16 = 4rem = app bar height). This makes it overlay the content starting directly under the top app bar.
 
-**Table columns (simplified):**
-- Three-dot menu icon (left) — dropdown with "Edit" and "Add Invoice" actions
-- Contract ID
-- Date
-- Status (badge)
-- Contractor
-- Contracted (LC) — hidden if currency is EUR
-- Contracted (EUR)
-- Invoiced (EUR) — only shown if any contract has invoices
-- Balance (EUR) — only shown if any contract has invoices
+#### 2. Side panel content adjustments
+- **Remove** the contract ID from the header (the `h3` showing `selectedContract.contract_number`). Replace with the contractor name or just "Contract Details" label.
+- **Reorder details section**: move Contractor before Status.
 
-**Row click** → opens side panel for that contract (sets `selectedContract` state).
+#### 3. Add 3 LC columns to table (when `showLcColumn` is true)
+Add these columns next to their EUR counterparts:
+- **Invoiced (LC)** — sum of invoice `amount_lc` values, shown when invoices exist
+- **Balance (LC)** — `contracted LC - invoiced LC`, shown when invoices exist
+- These join the existing `Contracted (LC)` column
 
-**Side panel** (right side, ~380px, slides in from right, similar to `RowDetailDrawer`):
-- Header: Contract number + close button
-- Details section: Date, Status, Contractor, Description, Agreement Signed, Comments, Contracted LC, Contracted EUR
-- Invoices section: List of invoices with invoice number, amount LC, amount EUR, attachment link, delete button
-- Balance display at bottom of invoices section
-
-**Three-dot menu** (using `DropdownMenu`):
-- "Edit" → opens existing edit modal
-- "Add Invoice" → opens existing invoice modal
-
-**Footer row**: Total row with sums (same as before, left-aligned label)
-
-#### 2. Component structure
-- No new files needed — everything stays in `ContractsTab.tsx`
-- The side panel is rendered conditionally within the component, using the same pattern as `RowDetailDrawer`: a `div` with `w-[380px] border-l` that slides in
-- The table + panel are wrapped in a `flex` container
+Update the footer Total row to include sums for all three LC columns.
 
 ### Files to edit
-- **Edit**: `src/components/project-detail/ContractsTab.tsx`
+- `src/components/project-detail/ContractsTab.tsx`
 
