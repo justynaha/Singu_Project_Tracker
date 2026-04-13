@@ -1,20 +1,20 @@
 
 
-## Plan: Contracts list refinements
+## Plan: Add totals row to Contracts table
 
-### `src/pages/ContractsList.tsx`
+### `src/components/project-detail/ContractsTab.tsx`
 
-1. **Statuses** — The `statusVariant` function already only handles "completed" and "ongoing". No changes needed there. Ensure only these two values appear.
+Add a `<TableFooter>` after `<TableBody>` with a totals row that sums:
+- **Contracted (LC)** column — sum of all `amount_lc` values (only if `showLcColumn` is true)
+- **Contracted (EUR)** column — sum of all `amount_eur` values
 
-2. **Rename "Project ID" column to "Project Number"** — Change the header text. Instead of showing `project_id.slice(0, 8)`, generate a project number using the same pattern as the Projects page (`13536 + index`). To do this, fetch a consistent ordering of projects and assign numbers based on position.
+The row will span the non-numeric columns with a bold "Total" label and display formatted sums in the amount columns. Uses the same `formatAmount` helper already in the file.
 
-3. **Make Project Number clickable and blue** — Style the Project Number cell with `text-primary font-medium cursor-pointer` (matching the Projects page style). On click, navigate to `/project/{project_id}`. Remove the whole-row `onClick` handler so only the project number is clickable.
+### Technical detail
 
-4. **Remove row-level cursor-pointer** — Since only the project number should be clickable, remove `cursor-pointer` from `TableRow` and the row-level `onClick`.
-
-### `src/integrations` — Fetch project ordering
-
-To generate consistent project numbers, the ContractsList needs to know each project's position in the full project list. Fetch all projects ordered by `created_at` and assign `13536 + index` to each, building a `projectNumberMap` (project_id → number).
-
-### No other files need changes.
+- Import `TableFooter` from `@/components/ui/table`
+- Calculate `totalLc = contracts.reduce((s, c) => s + (c.amount_lc || 0), 0)`
+- Calculate `totalEur = contracts.reduce((s, c) => s + (c.amount_eur || 0), 0)`
+- Insert `<TableFooter>` between lines 170-171, right after `</TableBody>`
+- The "Total" label cell uses `colSpan={4}` (or 3 if no description) to align with the amount columns
 
