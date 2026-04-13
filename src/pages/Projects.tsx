@@ -1035,13 +1035,17 @@ export default function Projects() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="budget">Project budget</Label>
+                <Label htmlFor="budget">Budget (Estimated spend)</Label>
                 <Input
                   id="budget"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   placeholder="Type the budget"
-                  value={formData.budget}
-                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                  value={formData.budget ? Number(formData.budget).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9.]/g, "");
+                    setFormData({ ...formData, budget: raw });
+                  }}
                 />
               </div>
               <div>
