@@ -170,13 +170,14 @@ export default function ProjectDetail() {
   const hasSidePanel = !!(commentsPanelItem || filesPanelItem);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="p-6">
-        <ProjectHeader projectNo={project.id.slice(0, 8)} projectName={project.name} site={project.site} address={project.address} onEdit={() => setShowEditModal(true)} />
+    <div className="flex h-[calc(100vh-64px)] bg-background">
+      {/* Main scrollable content */}
+      <div className="flex-1 min-w-0 overflow-y-auto">
+        <div className="p-6">
+          <ProjectHeader projectNo={project.id.slice(0, 8)} projectName={project.name} site={project.site} address={project.address} onEdit={() => setShowEditModal(true)} />
 
-        {/* Tabs */}
-        <div className="flex">
-          <div className={cn("bg-card border border-border rounded-lg flex-1 min-w-0", hasSidePanel && "border-r-0 rounded-r-none")}>
+          {/* Tabs */}
+          <div className="bg-card border border-border rounded-lg">
             <div className="border-b border-border flex gap-1 px-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -242,27 +243,7 @@ export default function ProjectDetail() {
               </div>
             )}
           </div>
-
-          {/* Side Panels */}
-          {commentsPanelItem && (
-            <CommentsPanel
-              timelineItemId={commentsPanelItem.id}
-              timelineItemName={commentsPanelItem.name}
-              onClose={() => setCommentsPanelItem(null)}
-              onCountChange={handleCommentCountChange}
-            />
-          )}
-          {filesPanelItem && project && (
-            <FilesPanelComponent
-              timelineItemId={filesPanelItem.id}
-              timelineItemName={filesPanelItem.name}
-              projectId={project.id}
-              onClose={() => setFilesPanelItem(null)}
-              onCountChange={handleFileCountChange}
-            />
-          )}
         </div>
-      </div>
 
       {/* Global File Preview Modal */}
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>

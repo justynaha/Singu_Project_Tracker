@@ -99,7 +99,7 @@ export default function CommentsPanel({
   };
 
   return (
-    <div className="w-[400px] border-l border-border bg-card flex flex-col h-full">
+    <div className="w-[400px] flex-shrink-0 border-l border-border bg-card flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center gap-2 min-w-0">
