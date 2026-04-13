@@ -169,6 +169,22 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               </TableRow>
             ))}
           </TableBody>
+          {contracts.length > 0 && (
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={4} className="font-bold text-right">Total</TableCell>
+                {showLcColumn && (
+                  <TableCell className="text-right font-bold">
+                    {formatAmount(contracts.reduce((s, c) => s + (c.amount_lc || 0), 0))}
+                  </TableCell>
+                )}
+                <TableCell className="text-right font-bold">
+                  {formatAmount(contracts.reduce((s, c) => s + (c.amount_eur || 0), 0))}
+                </TableCell>
+                <TableCell />
+              </TableRow>
+            </TableFooter>
+          )}
         </Table>
       )}
 
