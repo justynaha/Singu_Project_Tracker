@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { FileText, Info, Clock, ArrowLeft, ListTodo, DollarSign } from "lucide-react";
+import { FileText, Info, Clock, ArrowLeft, ListTodo, FileSignature } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import ProjectHeader from "@/components/project-detail/ProjectHeader";

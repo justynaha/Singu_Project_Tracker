@@ -81,6 +81,7 @@ export function useProjectDetail(projectId: string | undefined) {
   const [files, setFiles] = useState<ProjectFile[]>([]);
   const [costs, setCosts] = useState<ProjectCost[]>([]);
   const [cashflowData, setCashflowData] = useState<MilestoneCashflow[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProject = useCallback(async () => {
