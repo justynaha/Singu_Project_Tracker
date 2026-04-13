@@ -20,7 +20,9 @@ export type Database = {
           amount_lc: number | null
           contract_date: string | null
           contract_number: string
+          contractor: string | null
           created_at: string
+          description: string | null
           id: string
           project_id: string
           status: string
@@ -31,7 +33,9 @@ export type Database = {
           amount_lc?: number | null
           contract_date?: string | null
           contract_number: string
+          contractor?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           project_id: string
           status?: string
@@ -42,7 +46,9 @@ export type Database = {
           amount_lc?: number | null
           contract_date?: string | null
           contract_number?: string
+          contractor?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           project_id?: string
           status?: string
