@@ -458,7 +458,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 const totalInvoicedLc = contractInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
                 const totalInvoicedEur = showLcColumn ? convertToEur(totalInvoicedLc) : totalInvoicedLc;
                 const balanceLc = (c.amount_lc || 0) - totalInvoicedLc;
-                const balanceEur = (c.amount_eur || 0) - totalInvoicedEur;
+                const contractedEur = showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0);
+                const balanceEur = contractedEur - totalInvoicedEur;
                 const isSelected = selectedContract?.id === c.id;
 
                 return (
@@ -491,7 +492,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                     <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
                     <TableCell>{c.contractor || "—"}</TableCell>
                     {showLcColumn && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
-                    <TableCell className="text-right">{formatAmount(c.amount_eur)}</TableCell>
+                    <TableCell className="text-right">{formatAmount(showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0))}</TableCell>
                     {hasAnyInvoices && showLcColumn && (
                       <TableCell className="text-right">
                         {contractInvoices.length > 0 ? formatAmount(totalInvoicedLc) : "—"}
@@ -529,7 +530,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                     </TableCell>
                   )}
                   <TableCell className="text-right font-bold">
-                    {formatAmount(contracts.reduce((s, c) => s + (c.amount_eur || 0), 0))}
+                    {formatAmount(contracts.reduce((s, c) => s + (showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0)), 0))}
                   </TableCell>
                   {hasAnyInvoices && showLcColumn && (
                     <TableCell className="text-right font-bold">
@@ -556,7 +557,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   {hasAnyInvoices && (
                     <TableCell className="text-right font-bold">
                       {formatAmount(
-                        contracts.reduce((s, c) => s + (c.amount_eur || 0), 0) -
+                        contracts.reduce((s, c) => s + (showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0)), 0) -
                         (showLcColumn
                           ? convertToEur(invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0))
                           : invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0))
@@ -638,7 +639,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial Summary</p>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
-                  <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_eur)}</span>
+                  <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedContract.amount_lc || 0) : (selectedContract.amount_lc || 0))}</span>
                 </div>
                 {showLcColumn && (
                   <div className="flex justify-between items-center">
@@ -660,7 +661,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                     )}
                     <div className="flex justify-between items-center pt-1 border-t border-border">
                       <span className="text-sm font-semibold">Balance (EUR)</span>
-                      <span className="text-sm font-semibold">{formatAmount((selectedContract?.amount_eur || 0) - (showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced))}</span>
+                      <span className="text-sm font-semibold">{formatAmount((showLcColumn ? convertToEur(selectedContract?.amount_lc || 0) : (selectedContract?.amount_lc || 0)) - (showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced))}</span>
                     </div>
                     {showLcColumn && (
                       <div className="flex justify-between items-center">

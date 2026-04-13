@@ -125,7 +125,7 @@ export default function ProjectDetail() {
   const isImage = (type: string) => type?.startsWith("image/");
 
   // Use contracts sum for contracted total (must match Contracts tab Total)
-  const totalContracted = contracts.reduce((sum, c) => sum + Number(c.amount_eur || 0), 0);
+  const totalContracted = contracts.reduce((sum, c) => sum + Number(c.amount_lc || 0), 0);
   const totalInvoiced = cashflowTotals.invoiced;
   const totalBudget = project?.total_budget || 0;
 
