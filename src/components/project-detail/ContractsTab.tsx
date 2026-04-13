@@ -191,6 +191,94 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [editComments, setEditComments] = useState("");
   const [editSaving, setEditSaving] = useState(false);
 
+  // Invoice state
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceContractId, setInvoiceContractId] = useState<string | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [invoiceAmountRaw, setInvoiceAmountRaw] = useState("");
+  const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
+  const [invoiceSaving, setInvoiceSaving] = useState(false);
+  const invoiceFileRef = useRef<HTMLInputElement>(null);
+
+  // Fetch invoices
+  const fetchInvoices = async () => {
+    if (contracts.length === 0) return;
+    const contractIds = contracts.map(c => c.id);
+    const { data } = await supabase
+      .from("invoices")
+      .select("*")
+      .in("contract_id", contractIds)
+      .order("created_at", { ascending: true });
+    if (data) setInvoices(data as Invoice[]);
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [contracts]);
+
+  const invoicesByContract = invoices.reduce<Record<string, Invoice[]>>((acc, inv) => {
+    if (!acc[inv.contract_id]) acc[inv.contract_id] = [];
+    acc[inv.contract_id].push(inv);
+    return acc;
+  }, {});
+
+  const openInvoiceModal = (contractId: string) => {
+    setInvoiceContractId(contractId);
+    setInvoiceNumber("");
+    setInvoiceAmountRaw("");
+    setInvoiceFile(null);
+    setShowInvoiceModal(true);
+  };
+
+  const handleInvoiceSubmit = async () => {
+    if (!invoiceContractId || !invoiceNumber.trim()) return;
+    setInvoiceSaving(true);
+    try {
+      let attachmentUrl: string | null = null;
+      let attachmentName: string | null = null;
+
+      if (invoiceFile) {
+        const filePath = `${invoiceContractId}/${Date.now()}_${invoiceFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("contract-attachments")
+          .upload(filePath, invoiceFile);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from("contract-attachments")
+          .getPublicUrl(filePath);
+        attachmentUrl = urlData.publicUrl;
+        attachmentName = invoiceFile.name;
+      }
+
+      const { error } = await supabase.from("invoices").insert({
+        contract_id: invoiceContractId,
+        invoice_number: invoiceNumber.trim(),
+        amount_lc: parseFloat(invoiceAmountRaw) || 0,
+        attachment_name: attachmentName,
+        attachment_url: attachmentUrl,
+      });
+      if (error) throw error;
+      toast.success("Invoice added");
+      setShowInvoiceModal(false);
+      fetchInvoices();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to add invoice");
+    } finally {
+      setInvoiceSaving(false);
+    }
+  };
+
+  const handleDeleteInvoice = async (invoiceId: string) => {
+    const { error } = await supabase.from("invoices").delete().eq("id", invoiceId);
+    if (error) {
+      toast.error("Failed to delete invoice");
+    } else {
+      toast.success("Invoice deleted");
+      fetchInvoices();
+    }
+  };
+
   const openEditModal = (contract: Contract) => {
     setEditingContract(contract);
     setEditContractNumber(contract.contract_number);
