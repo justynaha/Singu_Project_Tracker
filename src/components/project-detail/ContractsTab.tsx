@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus, Info, CalendarIcon } from "lucide-react";
 import {
   Table,
@@ -50,6 +51,8 @@ export interface Contract {
   amount_lc: number | null;
   amount_eur: number | null;
   status: string;
+  contractor: string | null;
+  description: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -62,6 +65,8 @@ interface ContractsTabProps {
     contract_date?: string;
     amount_lc?: number;
     status?: string;
+    contractor?: string;
+    description?: string;
   }) => Promise<any>;
 }
 
@@ -89,6 +94,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [amountRaw, setAmountRaw] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [status, setStatus] = useState("Ongoing");
+  const [contractor, setContractor] = useState("");
+  const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
   const resetForm = () => {
@@ -97,6 +104,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     setAmountRaw("");
     setSelectedCurrency(currency);
     setStatus("Ongoing");
+    setContractor("");
+    setDescription("");
   };
 
   const handleSubmit = async () => {
@@ -108,6 +117,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
       contract_date: contractDate ? format(contractDate, "yyyy-MM-dd") : undefined,
       amount_lc: amount,
       status,
+      contractor: contractor.trim() || undefined,
+      description: description.trim() || undefined,
     });
     setSaving(false);
     resetForm();
@@ -116,7 +127,6 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
 
   return (
     <div className="p-4">
-      {/* Add Button */}
       <div className="mb-4">
         <Button size="sm" onClick={() => setShowModal(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -134,8 +144,10 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             <TableRow>
               <TableHead>Contract ID</TableHead>
               <TableHead>Date</TableHead>
-              {showLcColumn && <TableHead className="text-right">Amount ({currency})</TableHead>}
-              <TableHead className="text-right">Amount (EUR)</TableHead>
+              <TableHead>Contractor</TableHead>
+              <TableHead>Description</TableHead>
+              {showLcColumn && <TableHead className="text-right">Contracted ({currency})</TableHead>}
+              <TableHead className="text-right">Contracted (EUR)</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -146,6 +158,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <TableCell>
                   {c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}
                 </TableCell>
+                <TableCell>{c.contractor || "—"}</TableCell>
+                <TableCell className="max-w-[200px] truncate">{c.description || "—"}</TableCell>
                 {showLcColumn && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
                 <TableCell className="text-right">{formatAmount(c.amount_eur)}</TableCell>
                 <TableCell>
@@ -199,6 +213,27 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div>
+              <Label htmlFor="contractor">Contractor</Label>
+              <Input
+                id="contractor"
+                placeholder="e.g. ABC Construction Ltd."
+                value={contractor}
+                onChange={(e) => setContractor(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contractDescription">Contract Description</Label>
+              <Textarea
+                id="contractDescription"
+                placeholder="Describe the contract scope..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
