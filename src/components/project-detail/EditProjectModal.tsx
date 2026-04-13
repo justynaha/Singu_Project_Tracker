@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, CalendarIcon, ChevronsUpDown, Check, ChevronDown } from "lucide-react";
+import { Plus, Trash2, CalendarIcon, ChevronsUpDown, Check, ChevronDown, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
