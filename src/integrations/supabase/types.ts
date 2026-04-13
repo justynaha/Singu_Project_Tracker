@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      contracts: {
+        Row: {
+          amount_eur: number | null
+          amount_lc: number | null
+          contract_date: string | null
+          contract_number: string
+          created_at: string
+          id: string
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_eur?: number | null
+          amount_lc?: number | null
+          contract_date?: string | null
+          contract_number: string
+          created_at?: string
+          id?: string
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_eur?: number | null
+          amount_lc?: number | null
+          contract_date?: string | null
+          contract_number?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fx_rates: {
         Row: {
           added_by: string | null
