@@ -42,6 +42,7 @@ export default function ProjectDetail() {
     createFile,
     deleteFile,
     createContract,
+    updateContract,
     createCost,
     updateCost,
     deleteCost,
@@ -166,7 +167,7 @@ export default function ProjectDetail() {
             />
           )}
           {activeTab === "contracts" && (
-            <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} onCreateContract={createContract} />
+            <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} onCreateContract={createContract} onUpdateContract={updateContract} />
           )}
           {activeTab === "files" && (
             <FilesTab

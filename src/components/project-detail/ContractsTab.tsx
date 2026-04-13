@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2 } from "lucide-react";
+import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -75,6 +75,16 @@ interface ContractsTabProps {
     agreement_signed?: boolean;
     comments?: string;
   }) => Promise<any>;
+  onUpdateContract?: (id: string, input: {
+    contract_number?: string;
+    contract_date?: string | null;
+    amount_lc?: number | null;
+    status?: string;
+    contractor?: string | null;
+    description?: string | null;
+    agreement_signed?: boolean;
+    comments?: string | null;
+  }) => Promise<any>;
 }
 
 interface ExtractedField<T = string> {
@@ -136,7 +146,7 @@ const AiLabel = ({ field }: { field?: ExtractedField<any> }) => {
   );
 };
 
-export default function ContractsTab({ contracts, currency = "EUR", onCreateContract }: ContractsTabProps) {
+export default function ContractsTab({ contracts, currency = "EUR", onCreateContract, onUpdateContract }: ContractsTabProps) {
   const showLcColumn = currency.toUpperCase() !== "EUR";
   const [showModal, setShowModal] = useState(false);
   const [contractNumber, setContractNumber] = useState("");
@@ -156,6 +166,53 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Edit state
+  const [editingContract, setEditingContract] = useState<Contract | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editContractNumber, setEditContractNumber] = useState("");
+  const [editContractDate, setEditContractDate] = useState<Date | undefined>();
+  const [editAmountRaw, setEditAmountRaw] = useState("");
+  const [editSelectedCurrency, setEditSelectedCurrency] = useState(currency);
+  const [editStatus, setEditStatus] = useState("Ongoing");
+  const [editContractor, setEditContractor] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editAgreementSigned, setEditAgreementSigned] = useState(false);
+  const [editComments, setEditComments] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openEditModal = (contract: Contract) => {
+    setEditingContract(contract);
+    setEditContractNumber(contract.contract_number);
+    setEditContractDate(contract.contract_date ? new Date(contract.contract_date) : undefined);
+    setEditAmountRaw(contract.amount_lc != null ? String(contract.amount_lc) : "");
+    setEditSelectedCurrency(currency);
+    setEditStatus(contract.status);
+    setEditContractor(contract.contractor || "");
+    setEditDescription(contract.description || "");
+    setEditAgreementSigned(contract.agreement_signed);
+    setEditComments(contract.comments || "");
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingContract || !onUpdateContract) return;
+    setEditSaving(true);
+    const amount = editAmountRaw ? parseFloat(editAmountRaw) : null;
+    await onUpdateContract(editingContract.id, {
+      contract_number: editContractNumber.trim(),
+      contract_date: editContractDate ? format(editContractDate, "yyyy-MM-dd") : null,
+      amount_lc: amount,
+      status: editStatus,
+      contractor: editContractor.trim() || null,
+      description: editDescription.trim() || null,
+      agreement_signed: editAgreementSigned,
+      comments: editComments.trim() || null,
+    });
+    setEditSaving(false);
+    setShowEditModal(false);
+    setEditingContract(null);
+  };
 
   const resetForm = () => {
     setContractNumber("");
@@ -268,6 +325,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10" />
               <TableHead>Contract ID</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Contractor</TableHead>
@@ -282,6 +340,11 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           <TableBody>
             {contracts.map((c) => (
               <TableRow key={c.id}>
+                <TableCell className="w-10 p-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditModal(c)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </TableCell>
                 <TableCell className="font-medium">{c.contract_number}</TableCell>
                 <TableCell>
                   {c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}
@@ -301,6 +364,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           {contracts.length > 0 && (
             <TableFooter>
               <TableRow>
+                <TableCell />
                 <TableCell colSpan={4} className="font-bold text-right">Total</TableCell>
                 {showLcColumn && (
                   <TableCell className="text-right font-bold">
@@ -575,6 +639,124 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               </Button>
             </DialogFooter>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Contract Modal */}
+      <Dialog open={showEditModal} onOpenChange={(open) => { if (!open) { setShowEditModal(false); setEditingContract(null); } }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Contract</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="editContractNumber">Contract ID</Label>
+              <Input id="editContractNumber" value={editContractNumber} onChange={(e) => setEditContractNumber(e.target.value)} />
+            </div>
+
+            <div>
+              <Label>Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !editContractDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editContractDate ? format(editContractDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={editContractDate} onSelect={setEditContractDate} initialFocus className="p-3 pointer-events-auto" />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label htmlFor="editContractor">Contractor</Label>
+              <Input id="editContractor" value={editContractor} onChange={(e) => setEditContractor(e.target.value)} />
+            </div>
+
+            <div>
+              <Label htmlFor="editDescription">Contract Description</Label>
+              <Textarea id="editDescription" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={Math.max(3, Math.ceil((editDescription?.length || 0) / 80))} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="editAmount">Contract amount ({editSelectedCurrency})</Label>
+                <Input
+                  id="editAmount"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={editAmountRaw ? Number(editAmountRaw).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""}
+                  onChange={(e) => { const raw = e.target.value.replace(/[^0-9.]/g, ""); setEditAmountRaw(raw); }}
+                />
+              </div>
+              <div>
+                <Label>Local Currency</Label>
+                <Select value={editSelectedCurrency} onValueChange={setEditSelectedCurrency}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PLN">PLN</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label>Status</Label>
+              <RadioGroup value={editStatus} onValueChange={setEditStatus} className="flex gap-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Ongoing" id="edit-status-ongoing" />
+                  <Label htmlFor="edit-status-ongoing" className="font-normal cursor-pointer">Ongoing</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Completed" id="edit-status-completed" />
+                  <Label htmlFor="edit-status-completed" className="font-normal cursor-pointer">Completed</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label>Agreement Signed</Label>
+              <RadioGroup value={editAgreementSigned ? "yes" : "no"} onValueChange={(v) => setEditAgreementSigned(v === "yes")} className="flex gap-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="edit-agreement-yes" />
+                  <Label htmlFor="edit-agreement-yes" className="font-normal cursor-pointer">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="edit-agreement-no" />
+                  <Label htmlFor="edit-agreement-no" className="font-normal cursor-pointer">No</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div>
+              <Label htmlFor="editComments" className="flex items-center gap-1.5">
+                Comments
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      Important: add info about phased payments
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </Label>
+              <Textarea id="editComments" value={editComments} onChange={(e) => setEditComments(e.target.value)} rows={Math.max(3, Math.ceil((editComments?.length || 0) / 80))} />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowEditModal(false); setEditingContract(null); }}>Cancel</Button>
+            <Button onClick={handleEditSubmit} disabled={!editContractNumber.trim() || editSaving}>
+              {editSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
