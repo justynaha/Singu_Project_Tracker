@@ -159,7 +159,7 @@ export default function ContractsList() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Contract ID</TableHead>
-                    <TableHead>Project ID</TableHead>
+                    <TableHead>Project Number</TableHead>
                     <TableHead>Project Title</TableHead>
                     <TableHead>Site</TableHead>
                     <TableHead>Date</TableHead>
