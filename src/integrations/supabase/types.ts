@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      fx_rates: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          currency: string
+          id: string
+          note: string | null
+          rate: number
+          valid_from: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          currency: string
+          id?: string
+          note?: string | null
+          rate: number
+          valid_from?: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          note?: string | null
+          rate?: number
+          valid_from?: string
+        }
+        Relationships: []
+      }
       milestone_cashflow: {
         Row: {
           budget: number | null
