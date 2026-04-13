@@ -231,7 +231,9 @@ export type Database = {
       projects: {
         Row: {
           address: string | null
+          budget_classification: string | null
           budget_line: string | null
+          budget_type: string | null
           building: string | null
           created_at: string
           currency: string | null
@@ -250,7 +252,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          budget_classification?: string | null
           budget_line?: string | null
+          budget_type?: string | null
           building?: string | null
           created_at?: string
           currency?: string | null
@@ -269,7 +273,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          budget_classification?: string | null
           budget_line?: string | null
+          budget_type?: string | null
           building?: string | null
           created_at?: string
           currency?: string | null
