@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2 } from "lucide-react";
+import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -74,6 +74,16 @@ interface ContractsTabProps {
     description?: string;
     agreement_signed?: boolean;
     comments?: string;
+  }) => Promise<any>;
+  onUpdateContract?: (id: string, input: {
+    contract_number?: string;
+    contract_date?: string | null;
+    amount_lc?: number | null;
+    status?: string;
+    contractor?: string | null;
+    description?: string | null;
+    agreement_signed?: boolean;
+    comments?: string | null;
   }) => Promise<any>;
 }
 

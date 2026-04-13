@@ -42,6 +42,7 @@ export default function ProjectDetail() {
     createFile,
     deleteFile,
     createContract,
+    updateContract,
     createCost,
     updateCost,
     deleteCost,
