@@ -453,6 +453,7 @@ export type Database = {
       }
       timeline_items: {
         Row: {
+          comments: string | null
           created_at: string
           due_date: string | null
           id: string
@@ -460,12 +461,15 @@ export type Database = {
           name: string
           parent_id: string | null
           project_id: string
+          responsible: string | null
           sort_order: number
+          start_date: string | null
           status: string
           type: string
           updated_at: string
         }
         Insert: {
+          comments?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
@@ -473,12 +477,15 @@ export type Database = {
           name: string
           parent_id?: string | null
           project_id: string
+          responsible?: string | null
           sort_order?: number
+          start_date?: string | null
           status?: string
           type: string
           updated_at?: string
         }
         Update: {
+          comments?: string | null
           created_at?: string
           due_date?: string | null
           id?: string
@@ -486,7 +493,9 @@ export type Database = {
           name?: string
           parent_id?: string | null
           project_id?: string
+          responsible?: string | null
           sort_order?: number
+          start_date?: string | null
           status?: string
           type?: string
           updated_at?: string

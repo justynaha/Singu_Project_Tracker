@@ -59,7 +59,10 @@ interface ColumnConfig {
 const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: "name", label: "Name", visible: true },
   { id: "status", label: "Status", visible: true },
+  { id: "responsible", label: "Responsible", visible: true },
+  { id: "start_date", label: "Start Date", visible: true },
   { id: "due_date", label: "Due Date", visible: true },
+  { id: "comments", label: "Comments", visible: true },
   { id: "files", label: "Files", visible: true },
   { 
     id: "cashflow", 
@@ -891,6 +894,27 @@ export default function TimelineV2Tab({
     [onUpdateItem]
   );
 
+  const handleResponsibleChange = useCallback(
+    (id: string, responsible: string | null) => {
+      onUpdateItem(id, { responsible } as any);
+    },
+    [onUpdateItem]
+  );
+
+  const handleStartDateChange = useCallback(
+    (id: string, start_date: string | null) => {
+      onUpdateItem(id, { start_date } as any);
+    },
+    [onUpdateItem]
+  );
+
+  const handleCommentsChange = useCallback(
+    (id: string, comments: string | null) => {
+      onUpdateItem(id, { comments } as any);
+    },
+    [onUpdateItem]
+  );
+
   // Get visible columns list
   const getVisibleColumns = (): string[] => {
     const visible: string[] = [];
@@ -1053,6 +1077,30 @@ export default function TimelineV2Tab({
             onChange={(status) => handleStatusChange(item.id, status)}
           />
         );
+      case "responsible":
+        return (
+          <EditableTextCell
+            value={item.responsible}
+            onChange={(val) => handleResponsibleChange(item.id, val)}
+            placeholder="Responsible"
+          />
+        );
+      case "start_date":
+        return (
+          <DatePickerCell
+            value={item.start_date}
+            onChange={(date) => handleStartDateChange(item.id, date)}
+            status={item.status}
+          />
+        );
+      case "comments":
+        return (
+          <EditableTextCell
+            value={item.comments}
+            onChange={(val) => handleCommentsChange(item.id, val)}
+            placeholder="Add comment"
+          />
+        );
       case "due_date":
         return (
           <DatePickerCell
@@ -1168,7 +1216,10 @@ export default function TimelineV2Tab({
                     cellBorder,
                     colId === "name" && "min-w-[300px]",
                     colId === "status" && "min-w-[120px]",
+                    colId === "responsible" && "min-w-[120px]",
+                    colId === "start_date" && "min-w-[140px]",
                     colId === "due_date" && "min-w-[140px]",
+                    colId === "comments" && "min-w-[150px]",
                     ["forecasted", "contracted", "invoiced", "remaining"].includes(colId) && "min-w-[100px] text-right"
                   )}
                 >

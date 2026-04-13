@@ -12,6 +12,9 @@ export interface TimelineItem {
   due_date: string | null;
   sort_order: number;
   include_in_cashflow: boolean;
+  comments: string | null;
+  responsible: string | null;
+  start_date: string | null;
   created_at: string;
   updated_at: string;
 }
