@@ -440,7 +440,6 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10" />
-                <TableHead>Contract ID</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Contractor</TableHead>
@@ -486,7 +485,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
-                    <TableCell className="font-medium">{c.contract_number}</TableCell>
+                    
                     <TableCell>{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>
                     <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
                     <TableCell>{c.contractor || "—"}</TableCell>
@@ -519,7 +518,6 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             {contracts.length > 0 && (
               <TableFooter>
                 <TableRow>
-                  <TableCell />
                   <TableCell className="font-bold">Total</TableCell>
                   <TableCell />
                   <TableCell />
@@ -625,18 +623,6 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <p className="text-sm mt-1">{selectedContract.comments}</p>
               </div>
             )}
-            <div className="flex justify-between items-center pt-1 border-t border-border">
-              {showLcColumn && (
-                <>
-                  <span className="text-sm text-muted-foreground">Contracted ({currency})</span>
-                  <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
-                </>
-              )}
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
-              <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_eur)}</span>
-            </div>
           </div>
 
           {/* Invoices */}
@@ -683,24 +669,6 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               </div>
             )}
 
-            {/* Balance */}
-            {selectedInvoices.length > 0 && (
-              <div className="border-t border-border pt-3 space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold">Balance</span>
-                  <span className="text-sm font-semibold">
-                    {formatAmount(showLcColumn ? convertToEur(selectedBalance) : selectedBalance)} EUR
-                  </span>
-                </div>
-                {showLcColumn && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-muted-foreground">Balance ({currency})</span>
-                    <span className="text-xs text-muted-foreground">{formatAmount(selectedBalance)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Add invoice button */}
             <button
               onClick={() => openInvoiceModal(selectedContract.id)}
@@ -709,6 +677,45 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               <Plus className="h-3.5 w-3.5" />
               Add Invoice
             </button>
+
+            {/* Financial Summary */}
+            <div className="border-t border-border pt-3 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial Summary</p>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
+                <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_eur)}</span>
+              </div>
+              {showLcColumn && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Contracted ({currency})</span>
+                  <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
+                </div>
+              )}
+              {selectedInvoices.length > 0 && (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Invoiced (EUR)</span>
+                    <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced)}</span>
+                  </div>
+                  {showLcColumn && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Invoiced ({currency})</span>
+                      <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoiced)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-1 border-t border-border">
+                    <span className="text-sm font-semibold">Balance (EUR)</span>
+                    <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedBalance) : selectedBalance)}</span>
+                  </div>
+                  {showLcColumn && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Balance ({currency})</span>
+                      <span className="text-sm font-semibold">{formatAmount(selectedBalance)}</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
