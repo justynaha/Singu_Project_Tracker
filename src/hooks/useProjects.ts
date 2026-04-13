@@ -34,6 +34,8 @@ export interface CreateProjectInput {
   budget_line?: string;
   fiscal_year?: string;
   currency?: string;
+  budget_type?: string;
+  budget_classification?: string;
 }
 
 export function useProjects() {
@@ -75,6 +77,8 @@ export function useProjects() {
           budget_line: input.budget_line || null,
           fiscal_year: input.fiscal_year || null,
           currency: input.currency || "PLN",
+          budget_type: input.budget_type || null,
+          budget_classification: input.budget_classification || null,
         })
         .select()
         .single();
