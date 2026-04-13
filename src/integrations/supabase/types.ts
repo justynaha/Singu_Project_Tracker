@@ -100,6 +100,44 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount_lc: number
+          attachment_name: string | null
+          attachment_url: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          invoice_number: string
+        }
+        Insert: {
+          amount_lc?: number
+          attachment_name?: string | null
+          attachment_url?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          invoice_number: string
+        }
+        Update: {
+          amount_lc?: number
+          attachment_name?: string | null
+          attachment_url?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          invoice_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestone_cashflow: {
         Row: {
           budget: number | null
