@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X } from "lucide-react";
+import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown } from "lucide-react";
 import { useProjectTypes } from "@/hooks/useProjectTypes";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -82,6 +82,7 @@ export default function Projects() {
   const [budgetLineOpen, setBudgetLineOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -858,7 +859,6 @@ export default function Projects() {
                 onChange={(e) => setFormData({ ...formData, workDescription: e.target.value.slice(0, 500) })}
                 maxLength={500}
               />
-              <p className="text-xs text-muted-foreground text-right mt-1">{formData.workDescription.length}/500</p>
             </div>
 
             <div>
@@ -877,36 +877,50 @@ export default function Projects() {
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="building">Building (optional)</Label>
-              <Select value={formData.building} onValueChange={(val) => setFormData({ ...formData, building: val })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select building" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="building-a">Building A - Main Office</SelectItem>
-                  <SelectItem value="building-b">Building B - Warehouse</SelectItem>
-                  <SelectItem value="building-c">Building C - Research Center</SelectItem>
-                  <SelectItem value="building-d">Building D - Manufacturing</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full justify-between px-0 font-normal text-muted-foreground"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              Advanced
+              <ChevronDown className={cn("h-4 w-4 transition-transform", showAdvanced && "rotate-180")} />
+            </Button>
 
-            <div>
-              <Label htmlFor="tenant">Tenant (optional)</Label>
-              <Select value={formData.tenant} onValueChange={(val) => setFormData({ ...formData, tenant: val })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select tenant" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="tenant-alpha">Alpha Corp</SelectItem>
-                  <SelectItem value="tenant-beta">Beta Industries</SelectItem>
-                  <SelectItem value="tenant-gamma">Gamma Solutions</SelectItem>
-                  <SelectItem value="tenant-delta">Delta Partners</SelectItem>
-                  <SelectItem value="tenant-epsilon">Epsilon Ltd</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {showAdvanced && (
+              <>
+                <div>
+                  <Label htmlFor="building">Building (optional)</Label>
+                  <Select value={formData.building} onValueChange={(val) => setFormData({ ...formData, building: val })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select building" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="building-a">Building A - Main Office</SelectItem>
+                      <SelectItem value="building-b">Building B - Warehouse</SelectItem>
+                      <SelectItem value="building-c">Building C - Research Center</SelectItem>
+                      <SelectItem value="building-d">Building D - Manufacturing</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="tenant">Tenant (optional)</Label>
+                  <Select value={formData.tenant} onValueChange={(val) => setFormData({ ...formData, tenant: val })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tenant" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tenant-alpha">Alpha Corp</SelectItem>
+                      <SelectItem value="tenant-beta">Beta Industries</SelectItem>
+                      <SelectItem value="tenant-gamma">Gamma Solutions</SelectItem>
+                      <SelectItem value="tenant-delta">Delta Partners</SelectItem>
+                      <SelectItem value="tenant-epsilon">Epsilon Ltd</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
