@@ -171,6 +171,9 @@ export default function ProjectDetail() {
           {activeTab === "contracts" && (
             <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} onCreateContract={createContract} onUpdateContract={updateContract} />
           )}
+          {activeTab === "monthly" && (
+            <MonthlyBreakdownTab projectId={project.id} fiscalYear={project.fiscal_year} />
+          )}
           {activeTab === "files" && (
             <FilesTab
               files={files}
