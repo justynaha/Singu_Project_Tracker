@@ -1,44 +1,44 @@
 
 
-## Plan: Add Invoices to Contracts
+## Plan: Redesign Contracts Tab with Side Panel
 
 ### Overview
-Each contract can have invoices. Below each contract row, show its invoices and a "+ Add Invoice" button. An "Add Invoice" modal collects Amount (LC), Invoice Number, and optional attachment. A "Balance" row shows the difference between contracted amount and total invoiced.
+Simplify the contracts table to show only key columns. Clicking a row opens a detail side panel (inspired by `RowDetailDrawer` from Project Tracker Base). Actions (edit, add invoice) are accessed via a three-dot menu on the left. Invoiced and Balance columns appear dynamically.
 
-### 1. Database migration
-Create `invoices` table:
-```sql
-CREATE TABLE public.invoices (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  contract_id uuid NOT NULL,
-  invoice_number text NOT NULL,
-  amount_lc numeric NOT NULL DEFAULT 0,
-  attachment_name text,
-  attachment_url text,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read" ON public.invoices FOR SELECT TO public USING (true);
-CREATE POLICY "Allow public insert" ON public.invoices FOR INSERT TO public WITH CHECK (true);
-CREATE POLICY "Allow public update" ON public.invoices FOR UPDATE TO public USING (true);
-CREATE POLICY "Allow public delete" ON public.invoices FOR DELETE TO public USING (true);
-```
+### Changes
 
-### 2. `src/components/project-detail/ContractsTab.tsx`
-- Fetch invoices for all contract IDs on mount (grouped by `contract_id`)
-- Replace flat `contracts.map` with an expanded layout: for each contract, render:
-  1. The existing contract row
-  2. Sub-rows for each invoice (indented, showing invoice number, amount LC, attachment link)
-  3. A **Balance** row: `contracted amount_lc - sum(invoice amounts)`
-  4. A `+ Add Invoice` button row
-- Add an "Add Invoice" modal with fields: Invoice Number (text, required), Amount LC (number, required), Attachment (file input, optional)
-- On submit, insert into `invoices` table and refresh local state
-- Attachment: upload to a storage bucket or store as base64 — since the user said "optional attachment", we'll create a `contract-attachments` storage bucket for file uploads
+#### 1. `src/components/project-detail/ContractsTab.tsx` — full rewrite of layout
 
-### 3. Storage bucket (for attachments)
-Create a public storage bucket `contract-attachments` via migration for invoice file uploads.
+**Table columns (simplified):**
+- Three-dot menu icon (left) — dropdown with "Edit" and "Add Invoice" actions
+- Contract ID
+- Date
+- Status (badge)
+- Contractor
+- Contracted (LC) — hidden if currency is EUR
+- Contracted (EUR)
+- Invoiced (EUR) — only shown if any contract has invoices
+- Balance (EUR) — only shown if any contract has invoices
 
-### Files to create/edit
-- **Migration**: new `invoices` table + `contract-attachments` storage bucket
+**Row click** → opens side panel for that contract (sets `selectedContract` state).
+
+**Side panel** (right side, ~380px, slides in from right, similar to `RowDetailDrawer`):
+- Header: Contract number + close button
+- Details section: Date, Status, Contractor, Description, Agreement Signed, Comments, Contracted LC, Contracted EUR
+- Invoices section: List of invoices with invoice number, amount LC, amount EUR, attachment link, delete button
+- Balance display at bottom of invoices section
+
+**Three-dot menu** (using `DropdownMenu`):
+- "Edit" → opens existing edit modal
+- "Add Invoice" → opens existing invoice modal
+
+**Footer row**: Total row with sums (same as before, left-aligned label)
+
+#### 2. Component structure
+- No new files needed — everything stays in `ContractsTab.tsx`
+- The side panel is rendered conditionally within the component, using the same pattern as `RowDetailDrawer`: a `div` with `w-[380px] border-l` that slides in
+- The table + panel are wrapped in a `flex` container
+
+### Files to edit
 - **Edit**: `src/components/project-detail/ContractsTab.tsx`
 
