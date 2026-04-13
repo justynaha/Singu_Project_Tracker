@@ -321,7 +321,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
 
       {/* Add Contract Modal */}
       <Dialog open={showModal} onOpenChange={handleModalClose}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <div className="flex items-center justify-between w-full">
               <DialogTitle>Add Contract</DialogTitle>
@@ -451,7 +451,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   placeholder="Describe the contract scope..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
+                  rows={Math.max(3, Math.ceil((description?.length || 0) / 80))}
                   className={cn(extractedData?.description && "border-primary/30 bg-blue-50")}
                 />
               </div>
@@ -560,7 +560,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   placeholder="e.g. phased payments details..."
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
-                  rows={3}
+                  rows={Math.max(3, Math.ceil((comments?.length || 0) / 80))}
                   className={cn(extractedData?.comments && "border-primary/30 bg-blue-50")}
                 />
               </div>
