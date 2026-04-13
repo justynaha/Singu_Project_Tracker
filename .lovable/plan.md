@@ -1,29 +1,38 @@
 
 
-## Plan: Add "Work Description" field to New Project modal and Details tab
+## Plan: Update New Project modal fields
+
+### Changes to `src/pages/Projects.tsx`
+
+1. **Import `useProjectTypes`** hook and `RadioGroup`/`RadioGroupItem` components.
+
+2. **Replace "Budget line" with "Work category"**:
+   - Remove the `budgetLineLabels` map and the combobox that allows free-text entry.
+   - Fetch work categories via `useProjectTypes()`.
+   - Replace with a `Select` dropdown populated from `projectTypes` (active only), no free-text input.
+   - Rename `formData.budgetLine` usage to map to `budget_line` on submit (keep same DB column).
+
+3. **Add "Budget type" radio field** below the "Project budget" + "Currency" row:
+   - Two options: `IC` / `Ad Hoc` (radio buttons using `RadioGroup`).
+   - Add `budgetType: ""` to `formData` state.
+
+4. **Add "Budget classification" radio field** below "Budget type":
+   - Two options: `Mandatory` / `Speculative` (radio buttons).
+   - Add `budgetClassification: ""` to `formData` state.
+
+5. **Update form reset** to clear the two new fields.
 
 ### Database
-- Add `work_description` column (text, nullable) to `projects` table via migration.
 
-### `src/pages/Projects.tsx`
-- Add `workDescription: ""` to `formData` state.
-- After the Title field in the New Project dialog, add a Textarea for "Work Description (optional)" with `maxLength={500}` and a character counter (e.g. "123/500").
-- Pass `description: formData.workDescription || undefined` in `handleFormSubmit` (map to the existing `description` column — or the new `work_description` column).
-- Reset `workDescription` on close.
-
-### `src/components/project-detail/OverviewTab.tsx`
-- Add `work_description?: string | null` to the Project interface.
-- Insert a `<DetailRow label="Work description" value={project.work_description} />` right after the "Name" row.
+- Add two nullable text columns to `projects` table via migration:
+  - `budget_type` (text, nullable)
+  - `budget_classification` (text, nullable)
 
 ### `src/hooks/useProjects.ts`
-- Add `work_description` to `CreateProjectInput` interface and to the insert call.
 
-### `src/hooks/useProjectDetail.ts`
-- Ensure `work_description` is selected from the `projects` table.
+- Add `budget_type` and `budget_classification` to `CreateProjectInput` and the insert call.
 
-### `src/components/project-detail/EditProjectModal.tsx`
-- Add editable `workDescription` field (Textarea, 500 char limit) so it can be updated after creation.
+### `src/pages/Projects.tsx` — `handleFormSubmit`
 
-### Technical note
-Using a new `work_description` column (not the existing `description`) to keep semantics clear. The migration adds: `ALTER TABLE projects ADD COLUMN work_description text;`
+- Pass `budget_type` and `budget_classification` values from formData.
 
