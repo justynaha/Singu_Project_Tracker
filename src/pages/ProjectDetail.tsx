@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { FileText, Info, Clock, ArrowLeft, ListTodo, FileSignature, CalendarRange } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import ProjectHeader from "@/components/project-detail/ProjectHeader";
 import TimelineV2Tab from "@/components/project-detail/TimelineV2Tab";
 import OverviewTab from "@/components/project-detail/OverviewTab";
@@ -10,8 +11,11 @@ import ContractsTab from "@/components/project-detail/ContractsTab";
 import MonthlyBreakdownTab from "@/components/project-detail/MonthlyBreakdownTab";
 import ActualVsBudgetTab from "@/components/project-detail/ActualVsBudgetTab";
 import EditProjectModal from "@/components/project-detail/EditProjectModal";
-import { useProjectDetail } from "@/hooks/useProjectDetail";
+import CommentsPanel from "@/components/project-detail/CommentsPanel";
+import FilesPanelComponent from "@/components/project-detail/FilesPanel";
+import { useProjectDetail, TimelineItem } from "@/hooks/useProjectDetail";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -66,6 +70,49 @@ export default function ProjectDetail() {
   const offTrackMessage = overdueItems.length > 0 
     ? `${overdueItems.length} item${overdueItems.length > 1 ? "s have" : " has"} missed ${overdueItems.length > 1 ? "their" : "its"} due date`
     : undefined;
+
+  // Side panel state
+  const [commentsPanelItem, setCommentsPanelItem] = useState<TimelineItem | null>(null);
+  const [filesPanelItem, setFilesPanelItem] = useState<TimelineItem | null>(null);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+  const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
+
+  // Fetch comment counts
+  useEffect(() => {
+    if (!id || timelineItems.length === 0) return;
+    const itemIds = timelineItems.map(i => i.id);
+    supabase
+      .from("timeline_item_comments")
+      .select("timeline_item_id")
+      .in("timeline_item_id", itemIds)
+      .then(({ data }) => {
+        if (!data) return;
+        const counts: Record<string, number> = {};
+        data.forEach(row => {
+          counts[row.timeline_item_id] = (counts[row.timeline_item_id] || 0) + 1;
+        });
+        setCommentCounts(counts);
+      });
+  }, [id, timelineItems]);
+
+  // Build file counts from files array
+  useEffect(() => {
+    const counts: Record<string, number> = {};
+    files.forEach(f => {
+      if (f.timeline_item_id) {
+        counts[f.timeline_item_id] = (counts[f.timeline_item_id] || 0) + 1;
+      }
+    });
+    setFileCounts(counts);
+  }, [files]);
+
+  const handleCommentCountChange = useCallback((itemId: string, count: number) => {
+    setCommentCounts(prev => ({ ...prev, [itemId]: count }));
+  }, []);
+
+  const handleFileCountChange = useCallback((itemId: string, count: number) => {
+    setFileCounts(prev => ({ ...prev, [itemId]: count }));
+  }, []);
 
   // File preview modal state
   const [showPreviewModal, setShowPreviewModal] = useState(false);
