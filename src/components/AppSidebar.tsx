@@ -1,4 +1,4 @@
-import { LayoutGrid, Ticket, BarChart3, Building2, Users, ClipboardCheck, Home, Package, Warehouse, Megaphone, CreditCard, FileText, Leaf, ChevronLeft, ChevronDown, PieChart, List, MapPin, Building, MapPinned, Shield, AlertTriangle, Database, Rocket, HelpCircle, FileSignature } from "lucide-react";
+import { LayoutGrid, Ticket, BarChart3, Building2, Users, ClipboardCheck, Home, Package, Warehouse, Megaphone, CreditCard, FileText, Leaf, ChevronLeft, ChevronDown, PieChart, List, MapPin, Building, MapPinned, Shield, AlertTriangle, Database, Rocket, HelpCircle, FileSignature, CalendarRange } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -49,6 +49,10 @@ const navigationItems: NavItem[] = [{
     title: "Contracts",
     icon: FileSignature,
     path: "/contracts"
+  }, {
+    title: "Monthly Breakdown",
+    icon: CalendarRange,
+    path: "/monthly-breakdown"
   }]
 }, {
   title: "Buildings",
@@ -149,7 +153,7 @@ export const AppSidebar = () => {
 
   const isGroupActive = (item: NavItem) => {
     if (item.title === "Project Tracker") {
-      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/") || location.pathname === "/contracts";
+      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/") || location.pathname === "/contracts" || location.pathname === "/monthly-breakdown";
     }
     if (item.title === "Buildings") {
       return location.pathname.startsWith("/buildings");
