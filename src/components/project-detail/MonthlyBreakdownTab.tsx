@@ -256,7 +256,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                   <tr className="border-t border-border">
                     <td className="sticky left-0 z-10 bg-background px-3 py-1.5 font-medium text-foreground border-r border-border">
                       <span className="flex items-center gap-1.5">
-                        Amount
+                        Forecasted
                         <button
                           onClick={() => setLocked((l) => !l)}
                           className="text-muted-foreground hover:text-foreground transition-colors"
