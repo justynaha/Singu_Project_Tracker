@@ -37,6 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -66,13 +67,10 @@ interface ContractsTabProps {
 
 const statusVariant = (status: string) => {
   switch (status.toLowerCase()) {
-    case "signed":
-    case "active":
+    case "completed":
       return "default";
-    case "draft":
+    case "ongoing":
       return "secondary";
-    case "closed":
-      return "outline";
     default:
       return "secondary";
   }
@@ -89,14 +87,16 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   const [contractNumber, setContractNumber] = useState("");
   const [contractDate, setContractDate] = useState<Date | undefined>();
   const [amountRaw, setAmountRaw] = useState("");
-  const [status, setStatus] = useState("Draft");
+  const [selectedCurrency, setSelectedCurrency] = useState(currency);
+  const [status, setStatus] = useState("Ongoing");
   const [saving, setSaving] = useState(false);
 
   const resetForm = () => {
     setContractNumber("");
     setContractDate(undefined);
     setAmountRaw("");
-    setStatus("Draft");
+    setSelectedCurrency(currency);
+    setStatus("Ongoing");
   };
 
   const handleSubmit = async () => {
@@ -115,13 +115,11 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          {contracts.length} contract{contracts.length !== 1 ? "s" : ""}
-        </h3>
+    <div className="p-4">
+      {/* Add Button */}
+      <div className="mb-4">
         <Button size="sm" onClick={() => setShowModal(true)}>
-          <Plus className="h-4 w-4 mr-1" />
+          <Plus className="h-4 w-4 mr-2" />
           Add contract
         </Button>
       </div>
@@ -206,7 +204,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="contractAmount" className="flex items-center gap-1.5">
-                  Contract amount ({currency})
+                  Contract amount ({selectedCurrency})
                 </Label>
                 <Input
                   id="contractAmount"
@@ -234,23 +232,31 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                     </Tooltip>
                   </TooltipProvider>
                 </Label>
-                <Input value={currency} disabled className="bg-muted" />
+                <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PLN">PLN</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
             <div>
               <Label>Status</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Draft">Draft</SelectItem>
-                  <SelectItem value="Signed">Signed</SelectItem>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
+              <RadioGroup value={status} onValueChange={setStatus} className="flex gap-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Ongoing" id="status-ongoing" />
+                  <Label htmlFor="status-ongoing" className="font-normal cursor-pointer">Ongoing</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Completed" id="status-completed" />
+                  <Label htmlFor="status-completed" className="font-normal cursor-pointer">Completed</Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
           <DialogFooter>
