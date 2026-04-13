@@ -457,7 +457,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 const totalInvoicedLc = contractInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
                 const totalInvoicedEur = showLcColumn ? convertToEur(totalInvoicedLc) : totalInvoicedLc;
                 const balanceLc = (c.amount_lc || 0) - totalInvoicedLc;
-                const balanceEur = showLcColumn ? convertToEur(balanceLc) : balanceLc;
+                const balanceEur = (c.amount_eur || 0) - totalInvoicedEur;
                 const isSelected = selectedContract?.id === c.id;
 
                 return (
@@ -705,7 +705,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                   )}
                   <div className="flex justify-between items-center pt-1 border-t border-border">
                     <span className="text-sm font-semibold">Balance (EUR)</span>
-                    <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedBalance) : selectedBalance)}</span>
+                    <span className="text-sm font-semibold">{formatAmount((selectedContract?.amount_eur || 0) - (showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced))}</span>
                   </div>
                   {showLcColumn && (
                     <div className="flex justify-between items-center">
