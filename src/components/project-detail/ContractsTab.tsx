@@ -350,7 +350,26 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     setEditingContract(null);
   };
 
-  const resetForm = () => {
+  const handleDeleteContract = async () => {
+    if (!editingContract) return;
+    setDeletingContract(true);
+    // Delete related invoices first
+    await supabase.from("invoices").delete().eq("contract_id", editingContract.id);
+    const { error } = await supabase.from("contracts").delete().eq("id", editingContract.id);
+    setDeletingContract(false);
+    if (error) {
+      toast.error("Failed to delete contract");
+      return;
+    }
+    toast.success("Contract deleted");
+    setShowDeleteContractConfirm(false);
+    setShowEditModal(false);
+    setEditingContract(null);
+    if (selectedContract?.id === editingContract.id) setSelectedContract(null);
+    // Force reload by triggering a re-fetch — contracts come from parent, so we reload
+    window.location.reload();
+  };
+
     setContractNumber("");
     setContractDate(undefined);
     setAmountRaw("");
