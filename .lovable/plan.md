@@ -1,30 +1,19 @@
 
 
-## Plan: Add Edit Contract functionality
+## Plan: Make Site name clickable in Details tab
 
-### Overview
-Add a pencil icon on the left side of each contract row that opens an "Edit Contract" modal with the same fields as the Add Contract form (V1 mode). Changes are saved via a new `updateContract` function.
+### What changes
+In `src/components/project-detail/OverviewTab.tsx`:
 
-### Changes
+1. Import `useNavigate` from `react-router-dom` and `sites` from `@/data/buildingsData`
+2. Replace the plain `DetailRow` for "Site" with a custom row that renders the site name as a blue, clickable link
+3. On click, find the matching site by name in `sites` array and navigate to `/buildings/sites/:siteId`
+4. If no matching site is found, render as plain text (no link)
 
-#### 1. `src/hooks/useProjectDetail.ts`
-- Add `updateContract` function that updates a contract by ID in the `contracts` table and updates local state
-- Add it to the return object
-
-#### 2. `src/components/project-detail/ContractsTab.tsx`
-- Import `Pencil` icon from lucide-react
-- Add `onUpdateContract` prop to `ContractsTabProps`
-- Add `editingContract` state (`Contract | null`) and `showEditModal` state
-- Add a new column (first column) with pencil icon button in each row; clicking sets `editingContract` and opens the edit modal
-- Add an "Edit Contract" dialog that reuses the same form fields as V1 (no V1/V2 toggle — edit is always manual). Pre-fill all fields from the selected contract
-- On save, call `onUpdateContract` with the contract ID and updated fields, then close the modal
-- Add empty `<TableCell />` in the footer for the new column
-
-#### 3. `src/pages/ProjectDetail.tsx`
-- Pass `onUpdateContract` prop to ContractsTab, wired to the new `updateContract` from the hook
+### Technical detail
+- The `DetailRow` component only renders plain text. For the Site row, we'll render a custom `div` with the same layout but use a `<button>` or `<span>` styled as a link (`text-primary hover:underline cursor-pointer`)
+- Site matching: `sites.find(s => s.name === project.site)` — sites use the `name` field which matches what's stored in the project's `site` field
 
 ### Files to edit
-- `src/hooks/useProjectDetail.ts`
-- `src/components/project-detail/ContractsTab.tsx`
-- `src/pages/ProjectDetail.tsx`
+- `src/components/project-detail/OverviewTab.tsx`
 
