@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { TimelineItem, ProjectFile } from "@/hooks/useProjectDetail";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, ChevronDown, ChevronRight, Trash2, Diamond, Columns3, GripVertical, ChevronsUpDown, Check, AlertCircle, FileText } from "lucide-react";
+import { Plus, ChevronDown, ChevronRight, Trash2, Diamond, Columns3, GripVertical, ChevronsUpDown, Check, AlertCircle, FileText, MessageSquare } from "lucide-react";
 import { format, isPast, parseISO } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -32,6 +32,10 @@ interface TimelineV2TabProps {
   localCurrency?: string;
   trackingStatus: "on-track" | "off-track";
   offTrackMessage?: string;
+  commentCounts?: Record<string, number>;
+  fileCounts?: Record<string, number>;
+  onOpenComments?: (item: TimelineItem) => void;
+  onOpenFiles?: (item: TimelineItem) => void;
   onCreateItem: (input: {
     type: "task" | "milestone";
     name: string;
@@ -786,6 +790,10 @@ export default function TimelineV2Tab({
   localCurrency,
   trackingStatus,
   offTrackMessage,
+  commentCounts = {},
+  fileCounts = {},
+  onOpenComments,
+  onOpenFiles,
   onCreateItem,
   onUpdateItem,
   onDeleteItem,
@@ -1094,12 +1102,15 @@ export default function TimelineV2Tab({
           />
         );
       case "comments":
+        const commentCount = commentCounts[item.id] || 0;
         return (
-          <EditableTextCell
-            value={item.comments}
-            onChange={(val) => handleCommentsChange(item.id, val)}
-            placeholder="Add comment"
-          />
+          <button
+            onClick={() => onOpenComments?.(item)}
+            className="flex items-center gap-1.5 text-sm px-2 py-1 hover:bg-muted/50 rounded cursor-pointer"
+          >
+            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+            {commentCount > 0 && <span>{commentCount}</span>}
+          </button>
         );
       case "due_date":
         return (
@@ -1110,18 +1121,15 @@ export default function TimelineV2Tab({
           />
         );
       case "files":
-        const fileCount = getFileCount(item.id, isMilestone);
+        const fileCount = fileCounts[item.id] || getFileCount(item.id, isMilestone);
         return (
-          <div className="flex items-center gap-1.5 text-sm px-2 py-1">
-            {fileCount > 0 ? (
-              <>
-                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{fileCount}</span>
-              </>
-            ) : (
-              <span className="text-muted-foreground">--</span>
-            )}
-          </div>
+          <button
+            onClick={() => onOpenFiles?.(item)}
+            className="flex items-center gap-1.5 text-sm px-2 py-1 hover:bg-muted/50 rounded cursor-pointer"
+          >
+            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+            {fileCount > 0 && <span>{fileCount}</span>}
+          </button>
         );
       case "forecasted":
         return isMilestone ? (
