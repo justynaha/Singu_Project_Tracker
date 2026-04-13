@@ -132,7 +132,7 @@ export default function EditProjectModal({
     setSaving(true);
     const result = await onSave({
       name: name.trim(),
-      description: workDescription.trim() || undefined,
+      work_description: workDescription.trim() || null,
       total_budget: parseFloat(totalBudget) || 0,
       start_date: startDate ? format(startDate, "yyyy-MM-dd") : null,
       end_date: endDate ? format(endDate, "yyyy-MM-dd") : null,
