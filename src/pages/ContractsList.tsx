@@ -26,6 +26,7 @@ interface ContractWithProject {
   contractor: string | null;
   description: string | null;
   agreement_signed: boolean;
+  comments: string | null;
   project_id: string;
   project_name: string;
   project_site: string | null;
@@ -169,13 +170,14 @@ export default function ContractsList() {
                     <TableHead className="text-right">Contracted LC</TableHead>
                     <TableHead className="text-right">Contracted EUR</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Agreement Signed</TableHead>
-                  </TableRow>
+                     <TableHead>Agreement Signed</TableHead>
+                     <TableHead>Comments</TableHead>
+                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginated.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center text-muted-foreground py-12">
+                      <TableCell colSpan={12} className="text-center text-muted-foreground py-12">
                         No contracts found
                       </TableCell>
                     </TableRow>
@@ -205,8 +207,9 @@ export default function ContractsList() {
                         <TableCell>
                           <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
                         </TableCell>
-                        <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
-                      </TableRow>
+                         <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
+                         <TableCell className="max-w-[200px] truncate">{c.comments || "—"}</TableCell>
+                       </TableRow>
                     ))
                   )}
                 </TableBody>
