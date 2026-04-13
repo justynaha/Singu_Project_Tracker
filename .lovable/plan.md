@@ -1,26 +1,28 @@
 
 
-## Plan: Side Panel Position, Layout, and LC Amount Columns
+## Plan: Contracts Tab — Hide Contract ID Column, Restructure Side Panel
 
 ### Overview
-Three changes: (1) make the side panel span full height starting under the app bar, (2) adjust panel content order and hide contract ID, (3) add three local-currency amount columns to the table.
+Three changes: (1) remove Contract ID column from table, (2) restructure the side panel to show invoices first, then a clear financial summary (Contracted → Invoiced → Balance) at the bottom, (3) keep Contract ID visible only in the side panel details.
 
 ### Changes to `src/components/project-detail/ContractsTab.tsx`
 
-#### 1. Side panel — full height from app bar
-Change the side panel from a flex child to a `fixed` positioned element anchored at `top-16 right-0 bottom-0` (16 = 4rem = app bar height). This makes it overlay the content starting directly under the top app bar.
+#### 1. Remove Contract ID column from table
+- Remove `<TableHead>Contract ID</TableHead>` from the header
+- Remove the `<TableCell>{c.contract_number}</TableCell>` from each row
+- Update the Total footer row: remove the extra empty `<TableCell />` and move the "Total" label accordingly
 
-#### 2. Side panel content adjustments
-- **Remove** the contract ID from the header (the `h3` showing `selectedContract.contract_number`). Replace with the contractor name or just "Contract Details" label.
-- **Reorder details section**: move Contractor before Status.
+#### 2. Restructure side panel content order
+Reorder the panel sections so invoices come first, then financials:
 
-#### 3. Add 3 LC columns to table (when `showLcColumn` is true)
-Add these columns next to their EUR counterparts:
-- **Invoiced (LC)** — sum of invoice `amount_lc` values, shown when invoices exist
-- **Balance (LC)** — `contracted LC - invoiced LC`, shown when invoices exist
-- These join the existing `Contracted (LC)` column
-
-Update the footer Total row to include sums for all three LC columns.
+1. **Header** — "Contract Details" label + contractor name (unchanged)
+2. **Details section** — Contract ID, Date, Contractor, Status, Agreement Signed, Description, Comments (remove the Contracted LC/EUR lines from here)
+3. **Invoices section** — List of invoices with number, amounts, attachments, delete button (move above financials)
+4. **Financial summary section** (new clear layout, always visible):
+   - Contracted (LC) / Contracted (EUR) — stacked rows
+   - Invoiced (LC) / Invoiced (EUR) — stacked rows (if invoices exist)
+   - Balance (LC) / Balance (EUR) — stacked rows (if invoices exist)
+   - Each row: label left, value right, clean spacing
 
 ### Files to edit
 - `src/components/project-detail/ContractsTab.tsx`
