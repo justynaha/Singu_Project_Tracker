@@ -1049,7 +1049,19 @@ export default function Projects() {
                 />
               </div>
               <div>
-                <Label htmlFor="currency">Currency</Label>
+                <Label htmlFor="currency" className="flex items-center gap-1.5">
+                  Local Currency
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        Local currency will be converted to EUR based on foreign exchange rates defined in the system.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
                 <Select value={formData.currency} onValueChange={(val) => setFormData({ ...formData, currency: val })}>
                   <SelectTrigger>
                     <SelectValue />

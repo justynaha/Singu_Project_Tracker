@@ -163,7 +163,7 @@ export default function ProjectDetail() {
             />
           )}
           {activeTab === "contracts" && (
-            <ContractsTab contracts={contracts} />
+            <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} />
           )}
           {activeTab === "files" && (
             <FilesTab

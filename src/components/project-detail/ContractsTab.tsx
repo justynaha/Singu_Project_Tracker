@@ -23,6 +23,7 @@ export interface Contract {
 
 interface ContractsTabProps {
   contracts: Contract[];
+  currency?: string;
 }
 
 const statusVariant = (status: string) => {
@@ -44,7 +45,8 @@ const formatAmount = (amount: number | null) => {
   return amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-export default function ContractsTab({ contracts }: ContractsTabProps) {
+export default function ContractsTab({ contracts, currency = "EUR" }: ContractsTabProps) {
+  const showLcColumn = currency.toUpperCase() !== "EUR";
   if (contracts.length === 0) {
     return (
       <div className="p-6 text-center text-muted-foreground">
@@ -60,7 +62,7 @@ export default function ContractsTab({ contracts }: ContractsTabProps) {
           <TableRow>
             <TableHead>Contract ID</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead className="text-right">Amount (LC)</TableHead>
+            {showLcColumn && <TableHead className="text-right">Amount ({currency})</TableHead>}
             <TableHead className="text-right">Amount (EUR)</TableHead>
             <TableHead>Status</TableHead>
           </TableRow>
@@ -72,7 +74,7 @@ export default function ContractsTab({ contracts }: ContractsTabProps) {
               <TableCell>
                 {c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}
               </TableCell>
-              <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>
+              {showLcColumn && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
               <TableCell className="text-right">{formatAmount(c.amount_eur)}</TableCell>
               <TableCell>
                 <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
