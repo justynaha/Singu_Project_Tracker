@@ -894,6 +894,27 @@ export default function TimelineV2Tab({
     [onUpdateItem]
   );
 
+  const handleResponsibleChange = useCallback(
+    (id: string, responsible: string | null) => {
+      onUpdateItem(id, { responsible } as any);
+    },
+    [onUpdateItem]
+  );
+
+  const handleStartDateChange = useCallback(
+    (id: string, start_date: string | null) => {
+      onUpdateItem(id, { start_date } as any);
+    },
+    [onUpdateItem]
+  );
+
+  const handleCommentsChange = useCallback(
+    (id: string, comments: string | null) => {
+      onUpdateItem(id, { comments } as any);
+    },
+    [onUpdateItem]
+  );
+
   // Get visible columns list
   const getVisibleColumns = (): string[] => {
     const visible: string[] = [];
