@@ -468,6 +468,7 @@ export function useProjectDetail(projectId: string | undefined) {
     status?: string;
     contractor?: string;
     description?: string;
+    agreement_signed?: boolean;
   }) => {
     if (!projectId) return null;
     try {
@@ -481,7 +482,8 @@ export function useProjectDetail(projectId: string | undefined) {
           status: input.status || "Ongoing",
           contractor: input.contractor || null,
           description: input.description || null,
-        })
+          agreement_signed: input.agreement_signed ?? false,
+        } as any)
         .select()
         .single();
       if (error) throw error;
