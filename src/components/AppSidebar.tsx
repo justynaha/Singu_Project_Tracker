@@ -260,7 +260,6 @@ export const AppSidebar = () => {
                             <li key={subItem.path}>
                               <NavLink
                                 to={subItem.path}
-                                end
                                 className={cn(
                                   "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
                                   "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
