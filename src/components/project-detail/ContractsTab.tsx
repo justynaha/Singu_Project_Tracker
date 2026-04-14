@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2, MoreVertical, X, FileSignature } from "lucide-react";
+import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2, MoreVertical, X, FileSignature, LayoutGrid } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
   AlertDialogAction,
