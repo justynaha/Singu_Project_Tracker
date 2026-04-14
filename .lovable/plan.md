@@ -1,52 +1,43 @@
 
 
-## Plan: Group Monthly Breakdown by Site Group with collapsible headers
+## Plan: Split CAPEX Tracker groups into IC / Ad Hoc subsections
 
 ### What changes
 
-Group the project rows in the Monthly Breakdown report table by Site Group (Western Europe, Poland, Hungary, Other) — the same grouping logic used in Contract Tracker. Each group gets a collapsible header row with a chevron icon, group name, and project count in parentheses.
-
-### Implementation
-
-**File: `src/pages/MonthlyBreakdownList.tsx`**
-
-1. **Add state for collapsed groups**
-   - `collapsedGroups` (Set) + `toggleGroup` function — same pattern as ContractsList
-
-2. **Add `SITE_GROUP_DISPLAY` map** (already exists in ContractsList):
-   ```
-   WE → "Western Europe", PL → "Poland", HU → "Hungary"
-   ```
-
-3. **Add `groupedProjects` useMemo** — group `filteredProjects` by site group:
-   - For each project, determine country from `siteToCountry`, then site group from `COUNTRY_TO_SITE_GROUP`
-   - Group into `{ group, label, projects }[]` ordered WE → PL → HU → Other
-   - Calculate per-group subtotals for monthly values and total
-
-4. **Replace flat project rows with grouped rendering**:
-   - For each group, render a collapsible header row (bg-muted/40, chevron icon, label + project count)
-   - When expanded, render the project rows within that group
-   - After each group's projects, render a **Subtotal** row (bg-orange-100, same style as Contract Tracker subtotals) showing sum of monthly columns and total for that group
-
-5. **Keep existing summary rows** (Grand Total, Budget, Contracted, etc.) unchanged at the bottom
-
-6. **Update XLS export** to include group headers and subtotals in the exported data
+Within each site group (Western Europe, Poland, Hungary, Other), split projects into two subsections based on their `budget_type` field: **IC** and **Ad Hoc**. Each subsection gets its own subtotal row, and each site group gets a total row aggregating both subsections.
 
 ### Visual result
 ```text
-┌──────────────────────────────────────────────────┐
-│ ▼ Western Europe (3 projects)                    │  ← collapsible header
-│   #13536  Project A   100  200  ...  1,200.00    │
-│   #13537  Project B   ...                        │
-│   #13538  Project C   ...                        │
-│   Subtotal — Western Europe    ...  3,600.00     │  ← orange bg
-│ ▼ Poland (2 projects)                            │
-│   #13539  Project D   ...                        │
-│   #13540  Project E   ...                        │
-│   Subtotal — Poland            ...  2,400.00     │
-│ Grand Total (EUR)              ...  6,000.00     │
-│ Budget (EUR)                       10,000.00     │
-│ ...                                              │
-└──────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│ ▼ Western Europe (5 projects)                        │  ← group header
+│   IC                                                 │  ← subsection header (lighter bg)
+│     #13536  Project A   100  200  ...  1,200.00      │
+│     #13537  Project B   ...                          │
+│     Subtotal IC — Western Europe     ...  2,000.00   │  ← subtle subtotal
+│   Ad Hoc                                             │  ← subsection header
+│     #13538  Project C   ...                          │
+│     Subtotal Ad Hoc — Western Europe ...  1,600.00   │
+│   Total — Western Europe             ...  3,600.00   │  ← orange bg (existing subtotal style)
+│ ▼ Poland (3 projects)                                │
+│   ...                                                │
+└──────────────────────────────────────────────────────┘
 ```
+
+### Implementation — single file: `src/pages/MonthlyBreakdownList.tsx`
+
+**1. Update `groupedProjects` useMemo (~line 283)**
+- Within each site group, split `gProjects` into two arrays: `icProjects` (budget_type === 'IC') and `adHocProjects` (budget_type === 'Ad Hoc')
+- Calculate separate subtotals for IC and Ad Hoc (monthly + total)
+- Keep the existing group-level subtotals as the "Total" for the whole section
+- Return shape: `{ group, label, projects, subtotals, icProjects, icSubtotals, adHocProjects, adHocSubtotals }`
+
+**2. Update table rendering (~line 570-623)**
+- Replace the flat project list inside each group with two subsection blocks:
+  - **IC subsection**: header row (text "IC", lighter bg like bg-muted/20), IC project rows, IC subtotal row (bg-orange-50 or similar, labeled "Subtotal IC — {group}")
+  - **Ad Hoc subsection**: same pattern with "Ad Hoc" label
+  - Skip a subsection entirely if it has no projects
+- Rename the existing orange subtotal row to "Total — {group}" (keeps bg-orange-100)
+
+**3. Update XLS export (~line 314-349)**
+- Within each group, export IC header + IC projects + IC subtotal, then Ad Hoc header + Ad Hoc projects + Ad Hoc subtotal, then group total row
 
