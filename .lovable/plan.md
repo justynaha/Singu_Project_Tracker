@@ -1,28 +1,26 @@
 
 
-## Plan: Fix Grand Total background, freeze header row, unfreeze Project Name column
+## Plan: Add sample contracts and invoices to 24 projects
 
-### Changes in `src/pages/MonthlyBreakdownList.tsx`
+### What
+Insert 1-3 contracts and 1-2 invoices per contract for the 24 projects that currently have no contracts. All these projects use EUR currency.
 
-**1. Grand Total row — opaque background on sticky Total cell (line 707)**
-- Change `bg-background` → `bg-muted/50` to match the row's background, ensuring it's opaque and consistent (bg-muted/50 is the row bg). Actually `bg-muted/50` is semi-transparent. Use a fully opaque color like `bg-gray-200` or keep `bg-background` but the row itself uses `bg-muted/50`. The issue is the monthly data cells in Grand Total row have no explicit bg, so they show through. Fix: add `bg-muted/50` to the Grand Total's sticky Total cell — but that's semi-transparent too. Better: use `bg-gray-100` for the Total cell, matching what was done for other rows. Or even simpler: the Grand Total row bg is `bg-muted/50` — the sticky cell needs an opaque bg. Use `bg-gray-200` to approximate the muted look.
+### How
+Use the database insert tool to run two SQL statements:
 
-Actually let me re-check: the problem is the Grand Total monthly cells don't have backgrounds, so when scrolling, they show through the sticky Total column. The fix is to give the sticky Total cell in Grand Total an opaque background. `bg-gray-100` should work.
+**1. Insert ~45 contracts** across 24 projects with realistic data:
+- Contract numbers like `CNT-2026-XXX`
+- Dates in Q1-Q2 2026
+- Amounts between 30-80% of project budget (split across contracts)
+- Mix of statuses: mostly "Ongoing", some "Completed"
+- Realistic contractor names (construction/industrial companies)
 
-**2. Freeze header row (sticky top)**
-- Add `sticky top-0 z-20` to `<TableHeader>` or to the header `<TableRow>` so it stays visible during vertical scrolling
-- The header cells already have `bg-background`, so they won't be transparent
-
-**3. Remove sticky from Project Name column**
-- Remove `sticky left-[60px] bg-background z-10` from the Project Name `<TableHead>` (line 590) and `<TableCell>` (line 647)
-- Keep it as a normal scrollable column
+**2. Insert ~60 invoices** linked to the contracts:
+- Invoice numbers like `INV-2026-XXX`
+- Amounts as portions of contract value (30-70%)
+- 1-2 invoices per contract
 
 ### Technical details
-
-| Line | Change |
-|------|--------|
-| 586 | Add `sticky top-0 z-20 bg-background` to header `<TableRow>` |
-| 590 | Remove `sticky left-[60px] bg-background z-10` from Project Name header |
-| 647 | Remove `sticky left-[60px] bg-background z-10` from Project Name data cells |
-| 707 | Change `bg-background` to `bg-gray-100` on Grand Total sticky Total cell |
+- All amounts in EUR (`amount_lc`), `amount_eur` set to same value
+- No file changes needed — data-only operation via insert tool
 
