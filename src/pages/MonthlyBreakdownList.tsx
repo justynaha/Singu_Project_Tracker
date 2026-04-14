@@ -381,16 +381,70 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         );
                       })
                     )}
-                    {/* Grand Total */}
                     {paginated.length > 0 && (
-                      <TableRow className="h-10 bg-muted/50 font-bold">
-                        <TableCell className="py-0 px-3 sticky left-0 bg-muted/50 z-10" />
-                        <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">Grand Total</TableCell>
-                        {MONTH_KEYS.map(k => (
-                          <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
-                        ))}
-                        <TableCell className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals.total || null)}</TableCell>
-                      </TableRow>
+                      <>
+                        {/* Grand Total */}
+                        <TableRow className="h-10 bg-muted/50 font-bold">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-muted/50 z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">
+                            Grand Total
+                            {summaryTotals.grandBudget > 0 && (
+                              <span className={cn("ml-2 text-xs font-normal", grandTotals.total > summaryTotals.grandBudget ? "text-destructive" : "text-muted-foreground")}>
+                                ({Math.round((grandTotals.total / summaryTotals.grandBudget) * 100)}% of budget)
+                              </span>
+                            )}
+                          </TableCell>
+                          {MONTH_KEYS.map(k => (
+                            <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
+                          ))}
+                          <TableCell className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals.total || null)}</TableCell>
+                        </TableRow>
+                        {/* Project Budget */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Project Budget</TableCell>
+                          {MONTH_KEYS.map(k => (
+                            <TableCell key={k} className="py-0 px-3" />
+                          ))}
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>
+                        </TableRow>
+                        {/* Planned 3M */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Planned 3M</TableCell>
+                          {MONTH_KEYS.map(k => (
+                            <TableCell key={k} className="py-0 px-3" />
+                          ))}
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">
+                            <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.planned3M / grandTotals.total) * 100) : 0}% total)</span>
+                            {formatAmount(summaryTotals.planned3M || null)}
+                          </TableCell>
+                        </TableRow>
+                        {/* Contracted */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Contracted</TableCell>
+                          {MONTH_KEYS.map(k => (
+                            <TableCell key={k} className="py-0 px-3" />
+                          ))}
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">
+                            <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandContracted / grandTotals.total) * 100) : 0}% total)</span>
+                            {formatAmount(summaryTotals.grandContracted || null)}
+                          </TableCell>
+                        </TableRow>
+                        {/* Invoiced */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Invoiced</TableCell>
+                          {MONTH_KEYS.map(k => (
+                            <TableCell key={k} className="py-0 px-3" />
+                          ))}
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">
+                            <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandInvoiced / grandTotals.total) * 100) : 0}% total)</span>
+                            {formatAmount(summaryTotals.grandInvoiced || null)}
+                          </TableCell>
+                        </TableRow>
+                      </>
                     )}
                   </TableBody>
                 </Table>
