@@ -610,7 +610,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         })}
                       </>
                     )}
-                    )}
                     {filteredProjects.length > 0 && (
                       <>
                         {/* Grand Total */}
