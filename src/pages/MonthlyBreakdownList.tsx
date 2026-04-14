@@ -332,8 +332,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
         {/* Filters */}
         <div className="mb-4">
             <div className="space-y-4">
-              <div className="flex items-end gap-4 flex-wrap">
-                <div className="flex-1 min-w-[150px]">
+              <div className="flex items-end gap-3 flex-wrap">
+                <div className="min-w-[120px]">
                   <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -354,7 +354,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="flex-1">
+                <div className="min-w-[110px] flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Country</Label>
                   <Select value={pendingCountry || "all"} onValueChange={v => setPendingCountry(v === "all" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="All countries" /></SelectTrigger>
@@ -364,7 +364,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1">
+                <div className="min-w-[110px] flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Work category</Label>
                   <Select value={pendingBudgetLine || "all"} onValueChange={v => setPendingBudgetLine(v === "all" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
@@ -374,7 +374,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1">
+                <div className="min-w-[100px] flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Status</Label>
                   <Select value={pendingStatus || "all"} onValueChange={v => setPendingStatus(v === "all" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="All statuses" /></SelectTrigger>
@@ -385,7 +385,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1">
+                <div className="min-w-[100px] flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Fiscal year</Label>
                   <Select value={pendingFiscalYear || "all"} onValueChange={v => setPendingFiscalYear(v === "all" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="All years" /></SelectTrigger>
@@ -395,9 +395,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <div className="flex items-end gap-4 flex-wrap">
-                <div className="flex-1 min-w-[150px]">
+                <div className="min-w-[100px] flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Budget type</Label>
                   <Select value={pendingBudgetType || "all"} onValueChange={v => setPendingBudgetType(v === "all" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>
@@ -407,7 +405,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1">
+                <div className="min-w-[110px] flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Budget classification</Label>
                   <Select value={pendingBudgetClassification || "all"} onValueChange={v => setPendingBudgetClassification(v === "all" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="All classifications" /></SelectTrigger>
