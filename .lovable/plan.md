@@ -1,38 +1,20 @@
 
 
-## Plan: Rebuild `/contracts` page with full ContractsTab features
+## Plan: Fix side panel layout on Contracts page to prevent horizontal scroll
 
-### Overview
-Replace the current simple `ContractsList` page with a full-featured version that mirrors the project-level `ContractsTab`, including: table with action menus, side panel with tabs (Contract Details / Invoices), edit/delete modals, invoice management, and filters matching the Projects page (minus "Tracking"). Each row adds Project Number, Project Title, and Site columns.
+### Problem
+When the side panel opens on `/contracts`, the table's many columns cause horizontal scroll instead of the main content area shrinking responsively.
 
-### Key design decisions
-- Fetch all contracts + all projects + all invoices + FX rates upfront
-- Each contract's currency comes from its parent project's `currency` field
-- Since contracts span multiple currencies, always show EUR amounts (convert per-project FX rate)
-- Side panel is the same fixed-position panel as in ContractsTab
-- Filters: Site group, Country, Site, Budget line, Status (contract status: Ongoing/Completed), Fiscal year
-- Project Number uses the same `13536 + index` scheme
-- Clicking Project Number navigates to `/project/:id`
+### Changes to `src/pages/ContractsList.tsx`
 
-### Changes
+1. **Remove outer `min-h-screen` wrapper** (line 416) — replace with just `className="bg-background"` or merge into the flex container directly. The `h-[calc(100vh-64px)]` on the inner flex already handles height.
 
-**`src/pages/ContractsList.tsx`** — Full rewrite (~800 lines)
+2. **Add `overflow-x-auto`** to the table's container div (line 575: `<div className="border border-border rounded-lg overflow-hidden">`) → change to `overflow-auto` so the table scrolls horizontally within the main content area if needed, rather than pushing the whole page wider.
 
-1. **Data fetching**: Fetch `projects` (all fields needed for filters), `contracts`, `invoices`, `fx_rates` from Supabase
-2. **Filter UI**: Copy the filter bar pattern from `Projects.tsx` — Site group (multi-select), Country, Site, Budget line, Status (Ongoing/Completed instead of project statuses), Fiscal year. Remove "Tracking". Use pending/applied filter pattern with chips.
-3. **Table columns**: Action menu (3-dot) | Contract ID | Project Number (clickable link) | Project Title | Site | Date | Contractor | Contracted (EUR) | Invoiced (EUR) | Balance (EUR) | Status | Agreement Signed
-4. **Row click** opens side panel (same as ContractsTab): fixed right panel with Contract Details tab and Invoices tab
-5. **Action menu**: Edit, Add Invoice (same modals as ContractsTab)
-6. **Edit modal** with delete functionality (same as ContractsTab)
-7. **Invoice modal** with file upload (same as ContractsTab)
-8. **Footer totals** for Contracted, Invoiced, Balance
-9. **Pagination** (10 per page)
-10. **FX conversion**: For each contract, look up its project's currency, fetch matching FX rate, convert to EUR
+3. **Add `overflow-hidden`** to the outer flex container (line 417) to prevent any content from escaping: `<div className="flex h-[calc(100vh-64px)] overflow-hidden">`
 
-### No other files need changes
-- Routing already exists in `App.tsx` (`/contracts` -> `ContractsList`)
-- No database changes needed
+These three small changes ensure the side panel compresses the main area and any table overflow is handled within bounds.
 
 ### Files to edit
-- `src/pages/ContractsList.tsx`
+- `src/pages/ContractsList.tsx` (3 lines)
 
