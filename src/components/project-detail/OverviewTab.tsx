@@ -40,13 +40,7 @@ function DetailRow({ label, value }: DetailRowProps) {
   );
 }
 
-const budgetLineLabels: Record<string, string> = {
-  common_areas: "Common Areas",
-  tenant_fitout: "Tenant Fit-Out",
-  building_upgrades: "Building Upgrades",
-  sustainability: "Sustainability",
-  safety_compliance: "Safety & Compliance",
-};
+const budgetLineLabels: Record<string, string> = {};
 
 export default function OverviewTab({ project }: OverviewTabProps) {
   const navigate = useNavigate();
@@ -101,7 +95,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
       <DetailRow label="Tenant" value={project.tenant} />
       <DetailRow label="Project start date" value={formatDate(project.start_date)} />
       <DetailRow label="Project end date" value={formatDate(project.end_date)} />
-      <DetailRow label="Budget line" value={project.budget_line ? budgetLineLabels[project.budget_line] || project.budget_line : null} />
+      <DetailRow label="Work category" value={project.budget_line || null} />
       <DetailRow label="Fiscal year" value={project.fiscal_year} />
       <DetailRow 
         label="Budget" 

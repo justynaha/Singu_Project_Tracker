@@ -445,15 +445,15 @@ export default function Projects() {
                   </Select>
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-2 block">Budget line</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Work category</Label>
                   <Select value={pendingBudgetLine || "all"} onValueChange={(val) => setPendingBudgetLine(val === "all" ? "" : val)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="All budget lines" />
+                      <SelectValue placeholder="All categories" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All budget lines</SelectItem>
+                      <SelectItem value="all">All categories</SelectItem>
                       {filterOptions.budgetLines.map((bl) => (
-                        <SelectItem key={bl} value={bl}>{budgetLineLabels[bl] || bl}</SelectItem>
+                        <SelectItem key={bl} value={bl}>{bl}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -528,7 +528,7 @@ export default function Projects() {
                   )}
                   {filterBudgetLine && (
                     <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
-                      {budgetLineLabels[filterBudgetLine] || filterBudgetLine}
+                      {filterBudgetLine}
                       <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetLine(""); setPendingBudgetLine(""); }} />
                     </Badge>
                   )}
@@ -638,7 +638,7 @@ export default function Projects() {
                 <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>
-                <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Budget line</th>
+                <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Work category</th>
               </tr>
             </thead>
             <tbody>
@@ -803,7 +803,7 @@ export default function Projects() {
                         {project.total_budget && project.total_budget > 0 ? (
                           <div className="space-y-0.5">
                             <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
-                              {budgetLineLabels[project.budget_line || ""] || project.budget_line || "Unassigned"}
+                              {project.budget_line || "Unassigned"}
                             </Badge>
                             <div className="text-sm font-medium">
                               {project.currency || "PLN"} {project.total_budget.toLocaleString('de-DE', { minimumFractionDigits: 2 })}

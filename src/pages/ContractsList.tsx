@@ -620,12 +620,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     </Select>
                   </div>
                   <div className="flex-1">
-                    <Label className="text-xs text-muted-foreground mb-2 block">Budget line</Label>
+                    <Label className="text-xs text-muted-foreground mb-2 block">Work category</Label>
                     <Select value={pendingBudgetLine || "all"} onValueChange={v => setPendingBudgetLine(v === "all" ? "" : v)}>
-                      <SelectTrigger><SelectValue placeholder="All budget lines" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All budget lines</SelectItem>
-                        {filterOptions.budgetLines.map(bl => <SelectItem key={bl} value={bl}>{budgetLineLabels[bl] || bl}</SelectItem>)}
+                        <SelectItem value="all">All categories</SelectItem>
+                        {filterOptions.budgetLines.map(bl => <SelectItem key={bl} value={bl}>{bl}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -699,7 +699,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     )}
                     {filterBudgetLine && (
                       <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
-                        {budgetLineLabels[filterBudgetLine] || filterBudgetLine}
+                        {filterBudgetLine}
                         <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetLine(""); setPendingBudgetLine(""); }} />
                       </Badge>
                     )}
