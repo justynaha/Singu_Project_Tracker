@@ -752,38 +752,45 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
 
                 <div className="px-5 py-4 space-y-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial Summary</p>
+
+                  {/* Local Currency section (only if not EUR) */}
+                  {selectedShowLc && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Contracted ({selectedCurrency})</span>
+                        <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
+                      </div>
+                      {selectedInvoices.length > 0 && (
+                        <>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Invoiced ({selectedCurrency})</span>
+                            <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoicedLc)}</span>
+                          </div>
+                          <div className="flex justify-between items-center pt-1 border-t border-border">
+                            <span className="text-sm font-semibold">Balance ({selectedCurrency})</span>
+                            <span className="text-sm font-semibold">{formatAmount((selectedContract.amount_lc || 0) - selectedTotalInvoicedLc)}</span>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* EUR section */}
+                  {selectedShowLc && <div className="h-2" />}
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
                     <span className="text-sm font-semibold">{formatAmount(convertToEur(selectedContract.amount_lc || 0, selectedCurrency))}</span>
                   </div>
-                  {selectedShowLc && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Contracted ({selectedCurrency})</span>
-                      <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
-                    </div>
-                  )}
                   {selectedInvoices.length > 0 && (
                     <>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Invoiced (EUR)</span>
                         <span className="text-sm font-semibold">{formatAmount(convertToEur(selectedTotalInvoicedLc, selectedCurrency))}</span>
                       </div>
-                      {selectedShowLc && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Invoiced ({selectedCurrency})</span>
-                          <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoicedLc)}</span>
-                        </div>
-                      )}
                       <div className="flex justify-between items-center pt-1 border-t border-border">
                         <span className="text-sm font-semibold">Balance (EUR)</span>
                         <span className="text-sm font-semibold">{formatAmount(convertToEur((selectedContract.amount_lc || 0) - selectedTotalInvoicedLc, selectedCurrency))}</span>
                       </div>
-                      {selectedShowLc && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Balance ({selectedCurrency})</span>
-                          <span className="text-sm font-semibold">{formatAmount((selectedContract.amount_lc || 0) - selectedTotalInvoicedLc)}</span>
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
