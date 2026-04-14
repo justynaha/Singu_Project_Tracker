@@ -78,6 +78,8 @@ export const COUNTRY_TO_SITE_GROUP: Record<string, string> = {
   "Hungary": "HU",
   "Spain": "WE",
   "Italy": "WE",
+  "Netherlands": "WE",
+  "France": "WE",
 };
 
 export const SITE_GROUP_OPTIONS = [

@@ -18,6 +18,8 @@ export interface Project {
   budget_line: string | null;
   fiscal_year: string | null;
   currency: string | null;
+  budget_type: string | null;
+  budget_classification: string | null;
 }
 
 export interface CreateProjectInput {

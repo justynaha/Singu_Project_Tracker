@@ -39,6 +39,25 @@ const siteToCountry: Record<string, string> = {
   "Mapletree Park Valls": "Spain",
   "Százhalombatta": "Hungary",
   "Üllő": "Hungary",
+  "Bedzin": "Poland",
+  "Blonie 2": "Poland",
+  "Gdańsk-Airport": "Poland",
+  "Nadarzyn": "Poland",
+  "Piotrków 1": "Poland",
+  "Szczecin": "Poland",
+  "Bologna Castel San Pietro": "Italy",
+  "Fogars": "Spain",
+  "Les Franqueses": "Spain",
+  "Sallent": "Spain",
+  "Valls": "Spain",
+  "Mapletree Park Tilburg": "Netherlands",
+  "Mapletree Park Schiphol": "Netherlands",
+  "Tilburg": "Netherlands",
+  "Schiphol": "Netherlands",
+  "Mapletree Park Lyon": "France",
+  "Mapletree Park Marseille": "France",
+  "Lyon": "France",
+  "Marseille": "France",
 };
 
 const budgetLineLabels: Record<string, string> = {
@@ -91,6 +110,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [pendingStatus, setPendingStatus] = useState("");
   const [pendingFiscalYear, setPendingFiscalYear] = useState("");
   const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
+  const [pendingBudgetType, setPendingBudgetType] = useState("");
+  const [pendingBudgetClassification, setPendingBudgetClassification] = useState("");
 
   const [filterCountry, setFilterCountry] = useState("");
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
@@ -98,18 +119,26 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
   const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
+  const [filterBudgetType, setFilterBudgetType] = useState("");
+  const [filterBudgetClassification, setFilterBudgetClassification] = useState("");
 
   // Column visibility
   const [visibleMonths, setVisibleMonths] = useState<Record<string, boolean>>(
     Object.fromEntries([...MONTH_KEYS.map(k => [k, true]), ["total", true]])
   );
+  const [visibleExtraColumns, setVisibleExtraColumns] = useState({ budgetType: true, budgetClassification: true });
 
   const monthColumnDefs = [
     ...MONTH_KEYS.map((k, i) => ({ key: k, label: MONTH_HEADERS[i] })),
     { key: "total", label: "Total" },
   ];
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
+  const extraColumnDefs = [
+    { key: "budgetType", label: "Budget Type" },
+    { key: "budgetClassification", label: "Budget Classification" },
+  ];
+
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification;
 
   const applyFilters = () => {
     setFilterCountry(pendingCountry);
@@ -118,14 +147,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     setFilterStatus(pendingStatus);
     setFilterFiscalYear(pendingFiscalYear);
     setFilterSiteGroups(pendingSiteGroups);
+    setFilterBudgetType(pendingBudgetType);
+    setFilterBudgetClassification(pendingBudgetClassification);
     setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setPendingCountry(""); setPendingBudgetLine(""); setPendingSite("");
     setPendingStatus(""); setPendingFiscalYear(""); setPendingSiteGroups([]);
+    setPendingBudgetType(""); setPendingBudgetClassification("");
     setFilterCountry(""); setFilterBudgetLine(""); setFilterSite("");
     setFilterStatus(""); setFilterFiscalYear(""); setFilterSiteGroups([]);
+    setFilterBudgetType(""); setFilterBudgetClassification("");
   };
 
   const togglePendingSiteGroup = (group: string) => {
@@ -180,7 +213,9 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     const budgetLines = [...new Set(projects.map(p => p.budget_line).filter(Boolean))].sort();
     const statuses = [...new Set(projects.map(p => p.status).filter(Boolean))].sort();
     const fiscalYears = [...new Set(projects.map(p => p.fiscal_year).filter(Boolean))].sort();
-    return { sites, countries, budgetLines, statuses, fiscalYears };
+    const budgetTypes = [...new Set(projects.map(p => p.budget_type).filter(Boolean))].sort() as string[];
+    const budgetClassifications = [...new Set(projects.map(p => p.budget_classification).filter(Boolean))].sort() as string[];
+    return { sites, countries, budgetLines, statuses, fiscalYears, budgetTypes, budgetClassifications };
   }, [projects]);
 
   const filteredProjects = useMemo(() => {
@@ -194,9 +229,11 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       const matchesStatus = !filterStatus || p.status === filterStatus;
       const matchesFiscalYear = !filterFiscalYear || p.fiscal_year === filterFiscalYear;
       const matchesSiteGroup = filterSiteGroups.length === 0 || (country && filterSiteGroups.includes(COUNTRY_TO_SITE_GROUP[country] || ""));
-      return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatus && matchesFiscalYear && matchesSiteGroup;
+      const matchesBudgetType = !filterBudgetType || p.budget_type === filterBudgetType;
+      const matchesBudgetClassification = !filterBudgetClassification || p.budget_classification === filterBudgetClassification;
+      return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatus && matchesFiscalYear && matchesSiteGroup && matchesBudgetType && matchesBudgetClassification;
     });
-  }, [projects, searchQuery, filterCountry, filterBudgetLine, filterSite, filterStatus, filterFiscalYear, filterSiteGroups]);
+  }, [projects, searchQuery, filterCountry, filterBudgetLine, filterSite, filterStatus, filterFiscalYear, filterSiteGroups, filterBudgetType, filterBudgetClassification]);
 
   const grandTotals = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -235,6 +272,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
         "#": projectNumberMap.get(p.id) ?? "",
         "Project Name": p.name,
       };
+      if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
+      if (visibleExtraColumns.budgetClassification) row["Budget Classification"] = p.budget_classification || "";
       MONTH_KEYS.forEach((k, i) => {
         if (visibleMonths[k]) {
           const v = bd ? (bd as any)[k] || 0 : 0;
@@ -371,6 +410,28 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              <div className="flex items-end gap-4">
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Budget type</Label>
+                  <Select value={pendingBudgetType || "all"} onValueChange={v => setPendingBudgetType(v === "all" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All types</SelectItem>
+                      {filterOptions.budgetTypes.map(bt => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Budget classification</Label>
+                  <Select value={pendingBudgetClassification || "all"} onValueChange={v => setPendingBudgetClassification(v === "all" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="All classifications" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All classifications</SelectItem>
+                      {filterOptions.budgetClassifications.map(bc => <SelectItem key={bc} value={bc}>{bc}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button className="shrink-0" onClick={applyFilters}>
                   <Search className="h-4 w-4 mr-2" />Search
                 </Button>
@@ -389,6 +450,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                   {filterBudgetLine && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{budgetLineLabels[filterBudgetLine] || filterBudgetLine}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetLine(""); setPendingBudgetLine(""); }} /></Badge>}
                   {filterStatus && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterStatus}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterStatus(""); setPendingStatus(""); }} /></Badge>}
                   {filterFiscalYear && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">FY {filterFiscalYear}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFiscalYear(""); setPendingFiscalYear(""); }} /></Badge>}
+                  {filterBudgetType && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">Type: {filterBudgetType}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetType(""); setPendingBudgetType(""); }} /></Badge>}
+                  {filterBudgetClassification && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterBudgetClassification}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetClassification(""); setPendingBudgetClassification(""); }} /></Badge>}
                   <Button variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
                 </div>
               )}
@@ -406,6 +469,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
             </PopoverTrigger>
             <PopoverContent className="w-56 p-3" align="end">
               <div className="space-y-2">
+                {extraColumnDefs.map(col => (
+                  <div key={col.key} className="flex items-center justify-between">
+                    <span className="text-sm">{col.label}</span>
+                    <Switch
+                      checked={visibleExtraColumns[col.key as keyof typeof visibleExtraColumns]}
+                      onCheckedChange={(checked) =>
+                        setVisibleExtraColumns(prev => ({ ...prev, [col.key]: checked }))
+                      }
+                    />
+                  </div>
+                ))}
+                <div className="border-t border-border pt-2 mt-2" />
                 {monthColumnDefs.map(col => (
                   <div key={col.key} className="flex items-center justify-between">
                     <span className="text-sm">{col.label}</span>
@@ -437,6 +512,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     <TableRow className="h-10">
                       <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
                       <TableHead className="h-10 py-0 px-3 sticky left-[60px] bg-background z-10 min-w-[200px]">Project Name</TableHead>
+                      {visibleExtraColumns.budgetType && <TableHead className="h-10 py-0 px-3">Budget Type</TableHead>}
+                      {visibleExtraColumns.budgetClassification && <TableHead className="h-10 py-0 px-3">Budget Classification</TableHead>}
                       {MONTH_KEYS.map((k, i) => visibleMonths[k] && <TableHead key={k} className="h-10 py-0 px-3 text-right min-w-[100px]">{MONTH_HEADERS[i]}</TableHead>)}
                       {visibleMonths.total && <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-muted/30">Total</TableHead>}
                     </TableRow>
@@ -444,7 +521,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                   <TableBody>
                     {filteredProjects.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={2 + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0)} className="text-center text-muted-foreground py-12">No projects found</TableCell>
+                        <TableCell colSpan={2 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0) + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0)} className="text-center text-muted-foreground py-12">No projects found</TableCell>
                       </TableRow>
                     ) : (
                       filteredProjects.map(p => {
@@ -459,6 +536,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               </span>
                             </TableCell>
                             <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 font-medium">{p.name}</TableCell>
+                            {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 text-sm">{p.budget_type || "—"}</TableCell>}
+                            {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 text-sm">{p.budget_classification || "—"}</TableCell>}
                             {MONTH_KEYS.map(k => visibleMonths[k] && (
                               <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
                             ))}
@@ -475,6 +554,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">
                             Grand Total
                           </TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 bg-muted/50" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 bg-muted/50" />}
                           {MONTH_KEYS.map(k => visibleMonths[k] && (
                             <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                           ))}
@@ -493,6 +574,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Budget</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>}
                         </TableRow>
@@ -500,6 +583,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Planned 3M</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
@@ -512,6 +597,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Contracted</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
@@ -524,6 +611,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Invoiced</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">

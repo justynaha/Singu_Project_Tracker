@@ -48,6 +48,8 @@ interface ProjectInfo {
   currency: string | null;
   budget_line: string | null;
   fiscal_year: string | null;
+  budget_type: string | null;
+  budget_classification: string | null;
   created_at: string;
 }
 
@@ -98,6 +100,25 @@ const siteToCountry: Record<string, string> = {
   "Mapletree Park Valls": "Spain",
   "Százhalombatta": "Hungary",
   "Üllő": "Hungary",
+  "Bedzin": "Poland",
+  "Blonie 2": "Poland",
+  "Gdańsk-Airport": "Poland",
+  "Nadarzyn": "Poland",
+  "Piotrków 1": "Poland",
+  "Szczecin": "Poland",
+  "Bologna Castel San Pietro": "Italy",
+  "Fogars": "Spain",
+  "Les Franqueses": "Spain",
+  "Sallent": "Spain",
+  "Valls": "Spain",
+  "Mapletree Park Tilburg": "Netherlands",
+  "Mapletree Park Schiphol": "Netherlands",
+  "Tilburg": "Netherlands",
+  "Schiphol": "Netherlands",
+  "Mapletree Park Lyon": "France",
+  "Mapletree Park Marseille": "France",
+  "Lyon": "France",
+  "Marseille": "France",
 };
 
 const budgetLineLabels: Record<string, string> = {
@@ -164,9 +185,11 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
   const [pendingCountry, setPendingCountry] = useState("");
   const [pendingSite, setPendingSite] = useState("");
-  const [pendingBudgetLine, setPendingBudgetLine] = useState("");
+   const [pendingBudgetLine, setPendingBudgetLine] = useState("");
   const [pendingStatus, setPendingStatus] = useState("");
   const [pendingFiscalYear, setPendingFiscalYear] = useState("");
+  const [pendingBudgetType, setPendingBudgetType] = useState("");
+  const [pendingBudgetClassification, setPendingBudgetClassification] = useState("");
 
   const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
   const [filterCountry, setFilterCountry] = useState("");
@@ -174,6 +197,8 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
+  const [filterBudgetType, setFilterBudgetType] = useState("");
+  const [filterBudgetClassification, setFilterBudgetClassification] = useState("");
 
   const [visibleColumns, setVisibleColumns] = useState({
     contractId: true,
@@ -213,7 +238,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     HU: "Hungary",
   };
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification;
 
   const applyFilters = () => {
     setFilterSiteGroups(pendingSiteGroups);
@@ -222,14 +247,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     setFilterBudgetLine(pendingBudgetLine);
     setFilterStatus(pendingStatus);
     setFilterFiscalYear(pendingFiscalYear);
+    setFilterBudgetType(pendingBudgetType);
+    setFilterBudgetClassification(pendingBudgetClassification);
     setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setPendingSiteGroups([]); setPendingCountry(""); setPendingSite("");
     setPendingBudgetLine(""); setPendingStatus(""); setPendingFiscalYear("");
+    setPendingBudgetType(""); setPendingBudgetClassification("");
     setFilterSiteGroups([]); setFilterCountry(""); setFilterSite("");
     setFilterBudgetLine(""); setFilterStatus(""); setFilterFiscalYear("");
+    setFilterBudgetType(""); setFilterBudgetClassification("");
   };
 
   const togglePendingSiteGroup = (group: string) => {
@@ -239,7 +268,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const fetchData = async () => {
     setLoading(true);
     const [projectsRes, contractsRes, invoicesRes, fxRes] = await Promise.all([
-      supabase.from("projects").select("id, name, site, currency, budget_line, fiscal_year, created_at").order("created_at", { ascending: true }),
+      supabase.from("projects").select("id, name, site, currency, budget_line, fiscal_year, budget_type, budget_classification, created_at").order("created_at", { ascending: true }),
       supabase.from("contracts").select("*").order("contract_date", { ascending: false }),
       supabase.from("invoices").select("*").order("created_at", { ascending: true }),
       supabase.from("fx_rates").select("currency, rate, valid_from").order("valid_from", { ascending: false }),
@@ -286,7 +315,9 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     const countries = [...new Set(sites.map(s => siteToCountry[s] || "Unknown"))].sort();
     const budgetLines = [...new Set(projects.map(p => p.budget_line).filter(Boolean))].sort() as string[];
     const fiscalYears = [...new Set(projects.map(p => p.fiscal_year).filter(Boolean))].sort() as string[];
-    return { sites, countries, budgetLines, fiscalYears };
+    const budgetTypes = [...new Set(projects.map(p => p.budget_type).filter(Boolean))].sort() as string[];
+    const budgetClassifications = [...new Set(projects.map(p => p.budget_classification).filter(Boolean))].sort() as string[];
+    return { sites, countries, budgetLines, fiscalYears, budgetTypes, budgetClassifications };
   }, [projects]);
 
   const filtered = useMemo(() => {
@@ -308,9 +339,11 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       if (filterBudgetLine && proj.budget_line !== filterBudgetLine) return false;
       if (filterFiscalYear && proj.fiscal_year !== filterFiscalYear) return false;
       if (filterStatus && c.status !== filterStatus) return false;
+      if (filterBudgetType && proj.budget_type !== filterBudgetType) return false;
+      if (filterBudgetClassification && proj.budget_classification !== filterBudgetClassification) return false;
       return true;
     });
-  }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
+  }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus, filterBudgetType, filterBudgetClassification]);
 
   const groupedFiltered = useMemo(() => {
     const groups: Record<string, ContractRow[]> = {};
@@ -322,8 +355,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       groups[sg].push(c);
     });
     const order = ["WE", "PL", "HU", "Other"];
-    return order.filter(k => groups[k]?.length).map(k => ({ group: k, label: SITE_GROUP_DISPLAY[k] || k, contracts: groups[k] }));
-  }, [filtered, projectMap]);
+    return order.filter(k => groups[k]?.length).map(k => {
+      let contracted = 0, invoiced = 0;
+      groups[k].forEach(c => {
+        const proj = projectMap.get(c.project_id);
+        const cur = proj?.currency || "EUR";
+        contracted += convertToEur(c.amount_lc || 0, cur);
+        const cInvoices = invoicesByContract[c.id] || [];
+        invoiced += cInvoices.reduce((s, inv) => s + convertToEur(inv.amount_lc, cur), 0);
+      });
+      return { group: k, label: SITE_GROUP_DISPLAY[k] || k, contracts: groups[k], subtotals: { contracted, invoiced, balance: contracted - invoiced } };
+    });
+  }, [filtered, projectMap, invoicesByContract, fxRates]);
 
   const totals = useMemo(() => {
     let contracted = 0, invoiced = 0;
@@ -597,6 +640,28 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="flex items-end gap-4">
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground mb-2 block">Budget type</Label>
+                    <Select value={pendingBudgetType || "all"} onValueChange={v => setPendingBudgetType(v === "all" ? "" : v)}>
+                      <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types</SelectItem>
+                        {filterOptions.budgetTypes.map(bt => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground mb-2 block">Budget classification</Label>
+                    <Select value={pendingBudgetClassification || "all"} onValueChange={v => setPendingBudgetClassification(v === "all" ? "" : v)}>
+                      <SelectTrigger><SelectValue placeholder="All classifications" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All classifications</SelectItem>
+                        {filterOptions.budgetClassifications.map(bc => <SelectItem key={bc} value={bc}>{bc}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button className="shrink-0" onClick={applyFilters}>
                     <Search className="h-4 w-4 mr-2" />Search
                   </Button>
@@ -638,6 +703,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                       <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
                         {filterFiscalYear}
                         <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFiscalYear(""); setPendingFiscalYear(""); }} />
+                      </Badge>
+                    )}
+                    {filterBudgetType && (
+                      <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                        Type: {filterBudgetType}
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetType(""); setPendingBudgetType(""); }} />
+                      </Badge>
+                    )}
+                    {filterBudgetClassification && (
+                      <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                        {filterBudgetClassification}
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetClassification(""); setPendingBudgetClassification(""); }} />
                       </Badge>
                     )}
                     <button className="text-sm text-primary hover:underline font-medium" onClick={clearFilters}>Clear</button>
@@ -772,6 +849,15 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                               </TableRow>
                             );
                           })}
+                          {/* Subtotal row for group */}
+                          <TableRow key={`subtotal-${group.group}`} className="h-10 bg-muted/20">
+                            <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic">
+                              Subtotal — {group.label}
+                            </TableCell>
+                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right font-semibold">{formatAmount(group.subtotals.contracted)}</TableCell>}
+                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right font-semibold">{formatAmount(group.subtotals.invoiced)}</TableCell>}
+                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-semibold">{formatAmount(group.subtotals.balance)}</TableCell>}
+                          </TableRow>
                         </>
                       ))
                     )}
