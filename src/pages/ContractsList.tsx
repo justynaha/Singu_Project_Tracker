@@ -355,8 +355,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       groups[sg].push(c);
     });
     const order = ["WE", "PL", "HU", "Other"];
-    return order.filter(k => groups[k]?.length).map(k => ({ group: k, label: SITE_GROUP_DISPLAY[k] || k, contracts: groups[k] }));
-  }, [filtered, projectMap]);
+    return order.filter(k => groups[k]?.length).map(k => {
+      let contracted = 0, invoiced = 0;
+      groups[k].forEach(c => {
+        const proj = projectMap.get(c.project_id);
+        const cur = proj?.currency || "EUR";
+        contracted += convertToEur(c.amount_lc || 0, cur);
+        const cInvoices = invoicesByContract[c.id] || [];
+        invoiced += cInvoices.reduce((s, inv) => s + convertToEur(inv.amount_lc, cur), 0);
+      });
+      return { group: k, label: SITE_GROUP_DISPLAY[k] || k, contracts: groups[k], subtotals: { contracted, invoiced, balance: contracted - invoiced } };
+    });
+  }, [filtered, projectMap, invoicesByContract, fxRates]);
 
   const totals = useMemo(() => {
     let contracted = 0, invoiced = 0;
