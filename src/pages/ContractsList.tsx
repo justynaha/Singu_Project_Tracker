@@ -592,12 +592,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginated.length === 0 ? (
+                    {filtered.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={12} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
                       </TableRow>
                     ) : (
-                      paginated.map((c) => {
+                      filtered.map((c) => {
                         const proj = projectMap.get(c.project_id);
                         const cur = proj?.currency || "EUR";
                         const contractedEur = convertToEur(c.amount_lc || 0, cur);
