@@ -318,7 +318,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
 
   return (
     <div className={embedded ? "" : "min-h-screen bg-background"}>
-      <div className={embedded ? "" : "p-6"}>
+      <div className={embedded ? "p-4" : "p-6"}>
         {!embedded && <h1 className="text-3xl font-bold mb-6">Monthly Breakdown</h1>}
 
         {/* Search */}
