@@ -315,7 +315,9 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     const countries = [...new Set(sites.map(s => siteToCountry[s] || "Unknown"))].sort();
     const budgetLines = [...new Set(projects.map(p => p.budget_line).filter(Boolean))].sort() as string[];
     const fiscalYears = [...new Set(projects.map(p => p.fiscal_year).filter(Boolean))].sort() as string[];
-    return { sites, countries, budgetLines, fiscalYears };
+    const budgetTypes = [...new Set(projects.map(p => p.budget_type).filter(Boolean))].sort() as string[];
+    const budgetClassifications = [...new Set(projects.map(p => p.budget_classification).filter(Boolean))].sort() as string[];
+    return { sites, countries, budgetLines, fiscalYears, budgetTypes, budgetClassifications };
   }, [projects]);
 
   const filtered = useMemo(() => {
