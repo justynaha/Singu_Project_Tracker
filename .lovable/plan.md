@@ -1,29 +1,31 @@
 
 
-## Plan: XLS Export, Column Reorder, and Columns Button for Reports
+## Plan: Add Country, Description columns + Group by Site Group in Contract Tracker
 
-### Changes
+### Changes to `src/pages/ContractsList.tsx`
 
-**1. `src/pages/ContractsList.tsx`** — XLS export, column reorder, Columns button
+**1. Add new columns to `visibleColumns` and `columnDefs`**
+- Add `country` (derived from `siteToCountry[proj.site]`) after `site`
+- Add `description` (from `contract.description`) after `agreementSigned`
 
-- **Column reorder**: Move "Status" and "Agreement Signed" columns to appear right after "Contractor" (before financial columns).
-- **Columns button**: Add `visibleColumns` state with toggles for all table columns (matching the pattern from ContractsTab — Popover with Switch toggles). Place it in a toolbar row above the table, right-aligned.
-- **XLS export button**: Add "Export XLS" button next to "Columns" button. On click, generate an XLSX file client-side using the `xlsx` library (SheetJS). Export all currently filtered rows with the same columns visible in the table. Include the footer totals row.
-- **Footer row**: Update `colSpan` to match new column order.
+**2. Group rows by Site Group**
+- After filtering, sort/group `filtered` contracts by site group (using `COUNTRY_TO_SITE_GROUP` mapping: WE → "Western Europe", HU → "Hungary", PL → "Poland")
+- Render a group header row (`TableRow` spanning all columns with the site group name in bold, light background) before each group's contracts
+- Site group display names map: `WE` → "Western Europe", `PL` → "Poland", `HU` → "Hungary"
 
-**2. `src/pages/MonthlyBreakdownList.tsx`** — XLS export, Columns button
+**3. Update table rendering**
+- In the `<TableHeader>`, add `Country` and `Description` heads at the right positions
+- In the body, iterate over grouped data: for each group, render a header row then the contract rows
+- In each contract row, add the `country` and `description` cells
+- Update `visibleBeforeFinancial` to account for the two new columns
+- Update footer `colSpan` accordingly
 
-- **Columns button**: Add `visibleColumns` state for toggling month columns and Total column. Same Popover+Switch pattern.
-- **XLS export button**: Add "Export XLS" button next to "Columns". Export all filtered projects with month values, total, and summary rows (Grand Total, Budget, Planned 3M, Contracted, Invoiced).
-- Both buttons placed in a toolbar row between filters and the table, right-aligned.
+**4. Update XLS export**
+- Include `Country` and `Description` columns in the exported data (respecting visibility)
 
-**3. Install `xlsx` package** for client-side Excel generation (`npm install xlsx`).
-
-### Column order for Contract Tracker (after change)
-`[actions] | Contract ID | Project Number | Project Title | Site | Date | Contractor | Status | Agreement Signed | Contracted (EUR) | Invoiced (EUR) | Balance (EUR)`
+### Column order (after change)
+`[actions] | Contract ID | Project Number | Project Title | Site | Country | Date | Contractor | Status | Agreement Signed | Description | Contracted (EUR) | Invoiced (EUR) | Balance (EUR)`
 
 ### Files to edit
-- `src/pages/ContractsList.tsx` (~80 lines changed)
-- `src/pages/MonthlyBreakdownList.tsx` (~60 lines added)
-- `package.json` (add `xlsx` dependency)
+- `src/pages/ContractsList.tsx` (~60 lines changed/added)
 
