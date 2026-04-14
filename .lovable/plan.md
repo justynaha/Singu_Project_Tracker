@@ -1,20 +1,41 @@
 
 
-## Plan: Fix sidebar compression when contracts side panel opens
+## Plan: Create Reports page with Contract Tracker and Monthly Breakdown tabs
 
-### Problem
-When the side panel opens on the `/contracts` page, the left navigation sidebar gets compressed because it lacks `flex-shrink-0` in the App layout. The sidebar labels get truncated ("dings" instead of "Buildings").
+### Overview
+Create a new `Reports` page that wraps `ContractsList` and `MonthlyBreakdownList` as tab content. Update routing and sidebar accordingly.
 
-### Root cause
-In `App.tsx`, the layout is `<div className="flex w-full min-h-screen">` containing `<AppSidebar />` and the main content area. The sidebar in `AppSidebar.tsx` uses `w-64` but no `flex-shrink-0`, so when the contracts page adds a 380px side panel, the flex layout shrinks the sidebar.
+### Changes
 
-### Fix
+**1. `src/pages/Reports.tsx`** — New file
+- Simple page with two tabs using the existing `Tabs` component
+- Tab 1: "Contract Tracker" — renders `ContractsList` (adapted as embedded component)
+- Tab 2: "Monthly Breakdown" — renders `MonthlyBreakdownList` (adapted as embedded component)
 
-**`src/components/AppSidebar.tsx`** (line 175):
-- Add `flex-shrink-0` to the `<aside>` root element alongside the existing `w-64`/`w-16` classes.
+**2. `src/pages/ContractsList.tsx`** — Minor change
+- Accept an optional `embedded` prop (boolean). When true, skip any outer page wrapper/padding so it fits inside the Reports tab seamlessly.
 
-This is a one-line change that prevents the sidebar from ever being compressed by flex layout pressure from any page's content.
+**3. `src/pages/MonthlyBreakdownList.tsx`** — Minor change
+- Same `embedded` prop pattern as ContractsList.
+
+**4. `src/App.tsx`** — Update routes
+- Add `import Reports from "./pages/Reports"`
+- Change `/reports` route to render `<Reports />`
+- Keep `/contracts` and `/monthly-breakdown` routes as redirects to `/reports` (or remove them if not needed elsewhere)
+
+**5. `src/components/AppSidebar.tsx`** — Update sidebar
+- Remove "Contracts" and "Monthly Breakdown" from Project Tracker submenu
+- Update "Reports" menu item to have submenu with:
+  - "Contract Tracker" → `/reports` (or `/reports?tab=contracts`)
+  - "Monthly Breakdown" → `/reports?tab=monthly-breakdown`
+- Or simpler: just make "Reports" a single link to `/reports` with no submenu, and the tabs handle navigation within the page
+
+### No database changes needed
 
 ### Files to edit
-- `src/components/AppSidebar.tsx` — add `flex-shrink-0` to the aside element
+- `src/pages/Reports.tsx` (new)
+- `src/pages/ContractsList.tsx` (minor)
+- `src/pages/MonthlyBreakdownList.tsx` (minor)
+- `src/App.tsx`
+- `src/components/AppSidebar.tsx`
 
