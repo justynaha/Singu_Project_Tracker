@@ -669,38 +669,45 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
               {/* Financial Summary */}
               <div className="px-5 py-4 space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial Summary</p>
+
+                {/* Local Currency section (only if not EUR) */}
+                {showLcColumn && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Contracted ({currency})</span>
+                      <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
+                    </div>
+                    {selectedInvoices.length > 0 && (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Invoiced ({currency})</span>
+                          <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoiced)}</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-1 border-t border-border">
+                          <span className="text-sm font-semibold">Balance ({currency})</span>
+                          <span className="text-sm font-semibold">{formatAmount(selectedBalance)}</span>
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* EUR section */}
+                {showLcColumn && <div className="h-2" />}
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
                   <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedContract.amount_lc || 0) : (selectedContract.amount_lc || 0))}</span>
                 </div>
-                {showLcColumn && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Contracted ({currency})</span>
-                    <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
-                  </div>
-                )}
                 {selectedInvoices.length > 0 && (
                   <>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Invoiced (EUR)</span>
                       <span className="text-sm font-semibold">{formatAmount(showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced)}</span>
                     </div>
-                    {showLcColumn && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Invoiced ({currency})</span>
-                        <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoiced)}</span>
-                      </div>
-                    )}
                     <div className="flex justify-between items-center pt-1 border-t border-border">
                       <span className="text-sm font-semibold">Balance (EUR)</span>
                       <span className="text-sm font-semibold">{formatAmount((showLcColumn ? convertToEur(selectedContract?.amount_lc || 0) : (selectedContract?.amount_lc || 0)) - (showLcColumn ? convertToEur(selectedTotalInvoiced) : selectedTotalInvoiced))}</span>
                     </div>
-                    {showLcColumn && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Balance ({currency})</span>
-                        <span className="text-sm font-semibold">{formatAmount(selectedBalance)}</span>
-                      </div>
-                    )}
                   </>
                 )}
               </div>
