@@ -467,6 +467,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
             </PopoverTrigger>
             <PopoverContent className="w-56 p-3" align="end">
               <div className="space-y-2">
+                {extraColumnDefs.map(col => (
+                  <div key={col.key} className="flex items-center justify-between">
+                    <span className="text-sm">{col.label}</span>
+                    <Switch
+                      checked={visibleExtraColumns[col.key as keyof typeof visibleExtraColumns]}
+                      onCheckedChange={(checked) =>
+                        setVisibleExtraColumns(prev => ({ ...prev, [col.key]: checked }))
+                      }
+                    />
+                  </div>
+                ))}
+                <div className="border-t border-border pt-2 mt-2" />
                 {monthColumnDefs.map(col => (
                   <div key={col.key} className="flex items-center justify-between">
                     <span className="text-sm">{col.label}</span>
