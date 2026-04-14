@@ -207,6 +207,15 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     return totals;
   }, [filteredProjects, breakdownMap]);
 
+  const summaryTotals = useMemo(() => {
+    const filteredIds = new Set(filteredProjects.map(p => p.id));
+    const grandBudget = filteredProjects.reduce((s, p) => s + (p.total_budget || 0), 0);
+    const planned3M = MONTH_KEYS.slice(0, 3).reduce((s, k) => s + (grandTotals[k] || 0), 0);
+    const grandContracted = contracts.filter(c => filteredIds.has(c.project_id)).reduce((s, c) => s + (c.amount_lc || 0), 0);
+    const grandInvoiced = invoicesWithProject.filter(i => filteredIds.has(i.project_id)).reduce((s, i) => s + (i.amount_lc || 0), 0);
+    return { grandBudget, planned3M, grandContracted, grandInvoiced };
+  }, [filteredProjects, grandTotals, contracts, invoicesWithProject]);
+
   const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
   const paginated = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const loading = projectsLoading || bdLoading;
