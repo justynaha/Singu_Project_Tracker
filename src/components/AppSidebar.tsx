@@ -198,7 +198,11 @@ export const AppSidebar = () => {
                       <ul className="ml-6 mt-1 space-y-1 border-l border-sidebar-border pl-3">
                         {item.submenu.map(subItem => {
                           const hasChildren = subItem.children && subItem.children.length > 0;
-                          const childActive = hasChildren && subItem.children!.some(c => location.pathname === c.path);
+                          const childActive = hasChildren && subItem.children!.some(c => 
+                            c.path.includes("?") 
+                              ? location.pathname + location.search === c.path 
+                              : location.pathname === c.path
+                          );
                           const subActive = !hasChildren && (
                             subItem.path.includes("?")
                               ? location.pathname + location.search === subItem.path
