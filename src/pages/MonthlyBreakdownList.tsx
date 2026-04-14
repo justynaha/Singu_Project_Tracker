@@ -92,6 +92,12 @@ interface InvoiceWithProject {
   project_id: string;
 }
 
+const SITE_GROUP_DISPLAY: Record<string, string> = {
+  WE: "Western Europe",
+  PL: "Poland",
+  HU: "Hungary",
+};
+
 export default function MonthlyBreakdownList({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const { projects, loading: projectsLoading } = useProjects();
@@ -102,6 +108,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const itemsPerPage = 20;
 
   // Pending / applied filter state
