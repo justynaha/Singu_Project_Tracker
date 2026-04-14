@@ -305,11 +305,11 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="sticky left-0 bg-background z-10">#</TableHead>
-                      <TableHead className="sticky left-[60px] bg-background z-10 min-w-[200px]">Project Name</TableHead>
-                      {MONTH_HEADERS.map(h => <TableHead key={h} className="text-right min-w-[100px]">{h}</TableHead>)}
-                      <TableHead className="text-right min-w-[110px] font-bold">Total</TableHead>
+                    <TableRow className="h-10">
+                      <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
+                      <TableHead className="h-10 py-0 px-3 sticky left-[60px] bg-background z-10 min-w-[200px]">Project Name</TableHead>
+                      {MONTH_HEADERS.map(h => <TableHead key={h} className="h-10 py-0 px-3 text-right min-w-[100px]">{h}</TableHead>)}
+                      <TableHead className="h-10 py-0 px-3 text-right min-w-[110px] font-bold">Total</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -323,30 +323,30 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         let rowTotal = 0;
                         if (bd) MONTH_KEYS.forEach(k => { rowTotal += (bd as any)[k] || 0; });
                         return (
-                          <TableRow key={p.id}>
-                            <TableCell className="sticky left-0 bg-background z-10">
+                          <TableRow key={p.id} className="h-10">
+                            <TableCell className="py-0 px-3 sticky left-0 bg-background z-10">
                               <span className="text-primary font-medium cursor-pointer hover:underline" onClick={() => navigate(`/project/${p.id}`)}>
                                 {projectNumberMap.get(p.id) ?? "—"}
                               </span>
                             </TableCell>
-                            <TableCell className="sticky left-[60px] bg-background z-10 font-medium">{p.name}</TableCell>
+                            <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 font-medium">{p.name}</TableCell>
                             {MONTH_KEYS.map(k => (
-                              <TableCell key={k} className="text-right tabular-nums">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
+                              <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
                             ))}
-                            <TableCell className="text-right font-bold tabular-nums">{formatAmount(rowTotal || null)}</TableCell>
+                            <TableCell className="py-0 px-3 text-right font-bold tabular-nums">{formatAmount(rowTotal || null)}</TableCell>
                           </TableRow>
                         );
                       })
                     )}
                     {/* Grand Total */}
                     {paginated.length > 0 && (
-                      <TableRow className="bg-muted/50 font-bold">
-                        <TableCell className="sticky left-0 bg-muted/50 z-10" />
-                        <TableCell className="sticky left-[60px] bg-muted/50 z-10">Grand Total</TableCell>
+                      <TableRow className="h-10 bg-muted/50 font-bold">
+                        <TableCell className="py-0 px-3 sticky left-0 bg-muted/50 z-10" />
+                        <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">Grand Total</TableCell>
                         {MONTH_KEYS.map(k => (
-                          <TableCell key={k} className="text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
+                          <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                         ))}
-                        <TableCell className="text-right tabular-nums">{formatAmount(grandTotals.total || null)}</TableCell>
+                        <TableCell className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals.total || null)}</TableCell>
                       </TableRow>
                     )}
                   </TableBody>

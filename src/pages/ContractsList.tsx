@@ -577,19 +577,19 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
               <div className="border border-border rounded-lg overflow-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10" />
-                      <TableHead>Contract ID</TableHead>
-                      <TableHead>Project Number</TableHead>
-                      <TableHead>Project Title</TableHead>
-                      <TableHead>Site</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Contractor</TableHead>
-                      <TableHead className="text-right">Contracted (EUR)</TableHead>
-                      <TableHead className="text-right">Invoiced (EUR)</TableHead>
-                      <TableHead className="text-right">Balance (EUR)</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Agreement Signed</TableHead>
+                    <TableRow className="h-10">
+                      <TableHead className="w-10 h-10 py-0 px-3" />
+                      <TableHead className="h-10 py-0 px-3">Contract ID</TableHead>
+                      <TableHead className="h-10 py-0 px-3">Project Number</TableHead>
+                      <TableHead className="h-10 py-0 px-3">Project Title</TableHead>
+                      <TableHead className="h-10 py-0 px-3">Site</TableHead>
+                      <TableHead className="h-10 py-0 px-3">Date</TableHead>
+                      <TableHead className="h-10 py-0 px-3">Contractor</TableHead>
+                      <TableHead className="h-10 py-0 px-3 text-right">Contracted (EUR)</TableHead>
+                      <TableHead className="h-10 py-0 px-3 text-right">Invoiced (EUR)</TableHead>
+                      <TableHead className="h-10 py-0 px-3 text-right">Balance (EUR)</TableHead>
+                      <TableHead className="h-10 py-0 px-3">Status</TableHead>
+                      <TableHead className="h-10 py-0 px-3">Agreement Signed</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -610,10 +610,10 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                         return (
                           <TableRow
                             key={c.id}
-                            className={cn("cursor-pointer", isSelected && "bg-muted/50")}
+                            className={cn("h-10 cursor-pointer", isSelected && "bg-muted/50")}
                             onClick={() => setSelectedContract(isSelected ? null : c)}
                           >
-                            <TableCell className="w-10 p-1" onClick={e => e.stopPropagation()}>
+                            <TableCell className="w-10 py-0 px-1" onClick={e => e.stopPropagation()}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -630,8 +630,8 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
-                            <TableCell className="font-medium">{c.contract_number}</TableCell>
-                            <TableCell>
+                            <TableCell className="py-0 px-3 font-medium">{c.contract_number}</TableCell>
+                            <TableCell className="py-0 px-3">
                               <span
                                 className="text-primary font-medium cursor-pointer hover:underline"
                                 onClick={(e) => { e.stopPropagation(); navigate(`/project/${c.project_id}`); }}
@@ -639,15 +639,15 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                 {projectNumberMap.get(c.project_id) ?? "—"}
                               </span>
                             </TableCell>
-                            <TableCell>{proj?.name || "Unknown"}</TableCell>
-                            <TableCell>{proj?.site || "—"}</TableCell>
-                            <TableCell>{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>
-                            <TableCell>{c.contractor || "—"}</TableCell>
-                            <TableCell className="text-right">{formatAmount(contractedEur)}</TableCell>
-                            <TableCell className="text-right">{cInvoices.length > 0 ? formatAmount(invoicedEur) : "—"}</TableCell>
-                            <TableCell className="text-right">{cInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>
-                            <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
-                            <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>
+                            <TableCell className="py-0 px-3">{proj?.name || "Unknown"}</TableCell>
+                            <TableCell className="py-0 px-3">{proj?.site || "—"}</TableCell>
+                            <TableCell className="py-0 px-3">{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>
+                            <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>
+                            <TableCell className="py-0 px-3 text-right">{formatAmount(contractedEur)}</TableCell>
+                            <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(invoicedEur) : "—"}</TableCell>
+                            <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>
+                            <TableCell className="py-0 px-3"><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
+                            <TableCell className="py-0 px-3">{c.agreement_signed ? "Yes" : "No"}</TableCell>
                           </TableRow>
                         );
                       })
@@ -655,13 +655,13 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   </TableBody>
                   {filtered.length > 0 && (
                     <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={7} className="font-bold">Total</TableCell>
-                        <TableCell className="text-right font-bold">{formatAmount(totals.contracted)}</TableCell>
-                        <TableCell className="text-right font-bold">{formatAmount(totals.invoiced)}</TableCell>
-                        <TableCell className="text-right font-bold">{formatAmount(totals.balance)}</TableCell>
-                        <TableCell />
-                        <TableCell />
+                      <TableRow className="h-10">
+                        <TableCell colSpan={7} className="py-0 px-3 font-bold">Total</TableCell>
+                        <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.contracted)}</TableCell>
+                        <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.invoiced)}</TableCell>
+                        <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.balance)}</TableCell>
+                        <TableCell className="py-0 px-3" />
+                        <TableCell className="py-0 px-3" />
                       </TableRow>
                     </TableFooter>
                   )}

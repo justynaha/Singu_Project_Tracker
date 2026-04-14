@@ -9,7 +9,7 @@ export const AppHeader = () => {
 
   return (
     <>
-      <header className="bg-card border-b border-border sticky top-0 z-20">
+      <header className="bg-card border-b border-border sticky top-0 z-20 overflow-hidden min-w-0">
         <div className="flex items-center justify-between h-16 px-6">
           {/* Logo */}
           <div className="flex items-center gap-3">
