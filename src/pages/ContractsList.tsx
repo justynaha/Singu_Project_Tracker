@@ -790,7 +790,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={1 + Object.values(visibleColumns).filter(Boolean).length} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
+                        <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
                       </TableRow>
                     ) : (
                       groupedFiltered.map((group) => {
