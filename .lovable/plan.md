@@ -1,21 +1,28 @@
 
 
-## Plan: Fix transparent backgrounds on sticky columns
+## Plan: Fix Grand Total background, freeze header row, unfreeze Project Name column
 
-### Problem
-Sticky columns (#, Project Name, Total) use semi-transparent or inherited backgrounds (`bg-muted/30`), so when scrolling horizontally, non-sticky cell content shows through behind them.
+### Changes in `src/pages/MonthlyBreakdownList.tsx`
 
-### Fix
-Replace all semi-transparent backgrounds on sticky cells with opaque equivalents:
+**1. Grand Total row — opaque background on sticky Total cell (line 707)**
+- Change `bg-background` → `bg-muted/50` to match the row's background, ensuring it's opaque and consistent (bg-muted/50 is the row bg). Actually `bg-muted/50` is semi-transparent. Use a fully opaque color like `bg-gray-200` or keep `bg-background` but the row itself uses `bg-muted/50`. The issue is the monthly data cells in Grand Total row have no explicit bg, so they show through. Fix: add `bg-muted/50` to the Grand Total's sticky Total cell — but that's semi-transparent too. Better: use `bg-gray-100` for the Total cell, matching what was done for other rows. Or even simpler: the Grand Total row bg is `bg-muted/50` — the sticky cell needs an opaque bg. Use `bg-gray-200` to approximate the muted look.
 
-**In `src/pages/MonthlyBreakdownList.tsx`:**
+Actually let me re-check: the problem is the Grand Total monthly cells don't have backgrounds, so when scrolling, they show through the sticky Total column. The fix is to give the sticky Total cell in Grand Total an opaque background. `bg-gray-100` should work.
 
-1. **Total column in project rows** (line 653): `bg-muted/30` → `bg-gray-100` (opaque equivalent)
-2. **Total column header** (line 594): `bg-muted/30` → `bg-gray-100`
-3. **Total column in subtotal rows** (lines ~666, 682): already have colored bg from subsection — verify they're opaque (bg-blue-50, bg-orange-50, bg-orange-100 are all opaque ✓)
-4. **Total column in Grand Total row** (~line 707): verify opaque bg
-5. **Total column in summary rows** (Budget, Contracted, etc. ~lines 721, 727, 738, 749, 760, 771, 781): `bg-muted/30` → `bg-gray-100`
-6. **Country & Site columns in project rows** (lines 645-646): not sticky, so no issue — but if they should also be sticky, they'd need `bg-background`
+**2. Freeze header row (sticky top)**
+- Add `sticky top-0 z-20` to `<TableHeader>` or to the header `<TableRow>` so it stays visible during vertical scrolling
+- The header cells already have `bg-background`, so they won't be transparent
 
-All sticky cells will get fully opaque backgrounds so content underneath doesn't bleed through.
+**3. Remove sticky from Project Name column**
+- Remove `sticky left-[60px] bg-background z-10` from the Project Name `<TableHead>` (line 590) and `<TableCell>` (line 647)
+- Keep it as a normal scrollable column
+
+### Technical details
+
+| Line | Change |
+|------|--------|
+| 586 | Add `sticky top-0 z-20 bg-background` to header `<TableRow>` |
+| 590 | Remove `sticky left-[60px] bg-background z-10` from Project Name header |
+| 647 | Remove `sticky left-[60px] bg-background z-10` from Project Name data cells |
+| 707 | Change `bg-background` to `bg-gray-100` on Grand Total sticky Total cell |
 
