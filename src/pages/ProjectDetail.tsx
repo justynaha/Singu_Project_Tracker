@@ -128,6 +128,9 @@ export default function ProjectDetail() {
   const totalContracted = contracts.reduce((sum, c) => sum + Number(c.amount_lc || 0), 0);
   const totalInvoiced = cashflowTotals.invoiced;
   const totalBudget = project?.total_budget || 0;
+  const totalOngoing = contracts.filter(c => c.status === 'Ongoing').reduce((sum, c) => sum + Number(c.amount_lc || 0), 0);
+  const totalSavings = (project as any)?.savings || 0;
+  const totalPostponed = (project as any)?.postponed || 0;
 
   const formatCurrency = (amount: number) => {
     return `USD ${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
@@ -226,7 +229,7 @@ export default function ProjectDetail() {
               <ContractsTab contracts={contracts} currency={project?.currency || "EUR"} onCreateContract={createContract} onUpdateContract={updateContract} />
             )}
             {activeTab === "monthly" && (
-              <MonthlyBreakdownTab projectId={project.id} fiscalYear={project.fiscal_year} projectCurrency={project.currency || "PLN"} totalContracted={totalContracted} totalInvoiced={totalInvoiced} totalBudget={project?.total_budget || 0} />
+              <MonthlyBreakdownTab projectId={project.id} fiscalYear={project.fiscal_year} projectCurrency={project.currency || "PLN"} totalContracted={totalContracted} totalInvoiced={totalInvoiced} totalBudget={project?.total_budget || 0} totalOngoing={totalOngoing} totalSavings={totalSavings} totalPostponed={totalPostponed} />
             )}
             {activeTab === "files" && (
               <FilesTab

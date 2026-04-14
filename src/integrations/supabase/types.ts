@@ -399,6 +399,8 @@ export type Database = {
           fiscal_year: string | null
           id: string
           name: string
+          postponed: number | null
+          savings: number | null
           site: string | null
           start_date: string | null
           status: string
@@ -420,6 +422,8 @@ export type Database = {
           fiscal_year?: string | null
           id?: string
           name: string
+          postponed?: number | null
+          savings?: number | null
           site?: string | null
           start_date?: string | null
           status?: string
@@ -441,6 +445,8 @@ export type Database = {
           fiscal_year?: string | null
           id?: string
           name?: string
+          postponed?: number | null
+          savings?: number | null
           site?: string | null
           start_date?: string | null
           status?: string
