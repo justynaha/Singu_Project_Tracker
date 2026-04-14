@@ -20,8 +20,10 @@ export default function Reports() {
     <div className="bg-background flex flex-col h-full overflow-hidden">
       <div className="p-6 pb-0 flex-shrink-0">
         <h1 className="text-3xl font-bold mb-6">Reports</h1>
-        <div className="bg-card border border-border rounded-lg">
-          <div className="border-b border-border flex gap-1 px-2">
+      </div>
+      <div className="flex-1 flex flex-col min-h-0 px-6 pb-6">
+        <div className="bg-card border border-border rounded-lg flex flex-col flex-1 min-h-0">
+          <div className="border-b border-border flex gap-1 px-2 flex-shrink-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -37,7 +39,7 @@ export default function Reports() {
               </button>
             ))}
           </div>
-          <div className="p-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             {activeTab === "contracts" && <ContractsList embedded />}
             {activeTab === "monthly-breakdown" && <MonthlyBreakdownList embedded />}
           </div>
