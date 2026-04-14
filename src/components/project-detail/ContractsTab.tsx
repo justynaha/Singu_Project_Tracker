@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2, MoreVertical, X, FileSignature, LayoutGrid } from "lucide-react";
+import { Plus, Info, CalendarIcon, Sparkles, Upload, Loader2, Pencil, Paperclip, Trash2, MoreVertical, X, FileSignature, Columns3, ChevronsUpDown } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
@@ -172,9 +172,12 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
 
   // Column visibility state
   const [visibleColumns, setVisibleColumns] = useState({
+    contractId: false,
     date: true,
     status: true,
     contractor: true,
+    description: false,
+    agreementSigned: false,
     contractedLc: true,
     invoicedLc: true,
     balanceLc: true,
@@ -473,25 +476,28 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     <div className="flex h-full">
       {/* Main table area */}
       <div className="flex-1 min-w-0 p-4">
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex items-center justify-between">
           <Button size="sm" onClick={() => setShowModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add contract
           </Button>
           <Popover>
             <PopoverTrigger asChild>
-              <Button size="sm" variant="outline" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <LayoutGrid className="h-4 w-4 mr-2" />
+              <Button size="sm" variant="outline">
+                <Columns3 className="h-4 w-4 mr-2" />
                 Columns
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-56 p-3">
+            <PopoverContent align="end" className="w-56 p-3">
               <p className="text-xs font-semibold text-muted-foreground mb-2">Toggle columns</p>
               <div className="space-y-2">
                 {([
+                  { key: "contractId" as const, label: "Contract ID" },
                   { key: "date" as const, label: "Date" },
                   { key: "status" as const, label: "Status" },
                   { key: "contractor" as const, label: "Contractor" },
+                  { key: "description" as const, label: "Description" },
+                  { key: "agreementSigned" as const, label: "Agreement Signed" },
                   ...(showLcColumn ? [
                     { key: "contractedLc" as const, label: `Contracted (${currency})` },
                     { key: "invoicedLc" as const, label: `Invoiced (${currency})` },
@@ -523,9 +529,12 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10" />
+                {visibleColumns.contractId && <TableHead>Contract ID</TableHead>}
                 {visibleColumns.date && <TableHead>Date</TableHead>}
                 {visibleColumns.status && <TableHead>Status</TableHead>}
                 {visibleColumns.contractor && <TableHead>Contractor</TableHead>}
+                {visibleColumns.description && <TableHead>Description</TableHead>}
+                {visibleColumns.agreementSigned && <TableHead>Signed</TableHead>}
                 {showLcColumn && visibleColumns.contractedLc && <TableHead className="text-right">Contracted ({currency})</TableHead>}
                 {showLcColumn && visibleColumns.invoicedLc && <TableHead className="text-right">Invoiced ({currency})</TableHead>}
                 {showLcColumn && visibleColumns.balanceLc && <TableHead className="text-right">Balance ({currency})</TableHead>}
@@ -570,9 +579,12 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                       </DropdownMenu>
                     </TableCell>
                     
+                    {visibleColumns.contractId && <TableCell>{c.contract_number}</TableCell>}
                     {visibleColumns.date && <TableCell>{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>}
                     {visibleColumns.status && <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>}
                     {visibleColumns.contractor && <TableCell>{c.contractor || "—"}</TableCell>}
+                    {visibleColumns.description && <TableCell>{c.description || "—"}</TableCell>}
+                    {visibleColumns.agreementSigned && <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>}
                     {showLcColumn && visibleColumns.contractedLc && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
                     {showLcColumn && visibleColumns.invoicedLc && (
                       <TableCell className="text-right">{contractInvoices.length > 0 ? formatAmount(totalInvoicedLc) : "—"}</TableCell>
@@ -602,9 +614,12 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
                 <TableFooter>
                   <TableRow>
                     <TableCell className="font-bold">Total</TableCell>
+                    {visibleColumns.contractId && <TableCell />}
                     {visibleColumns.date && <TableCell />}
                     {visibleColumns.status && <TableCell />}
                     {visibleColumns.contractor && <TableCell />}
+                    {visibleColumns.description && <TableCell />}
+                    {visibleColumns.agreementSigned && <TableCell />}
                     {showLcColumn && visibleColumns.contractedLc && <TableCell className="text-right font-bold">{formatAmount(totalContractedLc)}</TableCell>}
                     {showLcColumn && visibleColumns.invoicedLc && <TableCell className="text-right font-bold">{formatAmount(totalInvLc)}</TableCell>}
                     {showLcColumn && visibleColumns.balanceLc && <TableCell className="text-right font-bold">{formatAmount(totalBalLc)}</TableCell>}
@@ -618,6 +633,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           </Table>
         )}
       </div>
+
 
 
 
