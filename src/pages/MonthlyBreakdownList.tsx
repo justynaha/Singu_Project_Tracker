@@ -110,6 +110,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [pendingStatus, setPendingStatus] = useState("");
   const [pendingFiscalYear, setPendingFiscalYear] = useState("");
   const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
+  const [pendingBudgetType, setPendingBudgetType] = useState("");
+  const [pendingBudgetClassification, setPendingBudgetClassification] = useState("");
 
   const [filterCountry, setFilterCountry] = useState("");
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
@@ -117,18 +119,26 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
   const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
+  const [filterBudgetType, setFilterBudgetType] = useState("");
+  const [filterBudgetClassification, setFilterBudgetClassification] = useState("");
 
   // Column visibility
   const [visibleMonths, setVisibleMonths] = useState<Record<string, boolean>>(
     Object.fromEntries([...MONTH_KEYS.map(k => [k, true]), ["total", true]])
   );
+  const [visibleExtraColumns, setVisibleExtraColumns] = useState({ budgetType: true, budgetClassification: true });
 
   const monthColumnDefs = [
     ...MONTH_KEYS.map((k, i) => ({ key: k, label: MONTH_HEADERS[i] })),
     { key: "total", label: "Total" },
   ];
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
+  const extraColumnDefs = [
+    { key: "budgetType", label: "Budget Type" },
+    { key: "budgetClassification", label: "Budget Classification" },
+  ];
+
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification;
 
   const applyFilters = () => {
     setFilterCountry(pendingCountry);
@@ -137,14 +147,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     setFilterStatus(pendingStatus);
     setFilterFiscalYear(pendingFiscalYear);
     setFilterSiteGroups(pendingSiteGroups);
+    setFilterBudgetType(pendingBudgetType);
+    setFilterBudgetClassification(pendingBudgetClassification);
     setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setPendingCountry(""); setPendingBudgetLine(""); setPendingSite("");
     setPendingStatus(""); setPendingFiscalYear(""); setPendingSiteGroups([]);
+    setPendingBudgetType(""); setPendingBudgetClassification("");
     setFilterCountry(""); setFilterBudgetLine(""); setFilterSite("");
     setFilterStatus(""); setFilterFiscalYear(""); setFilterSiteGroups([]);
+    setFilterBudgetType(""); setFilterBudgetClassification("");
   };
 
   const togglePendingSiteGroup = (group: string) => {
