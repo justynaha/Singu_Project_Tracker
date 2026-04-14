@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Search, ChevronLeft, ChevronRight, MoreVertical, Plus, Pencil, X, Trash2, Paperclip, ChevronsUpDown, Check } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, MoreVertical, Plus, Pencil, X, Trash2, Paperclip, ChevronsUpDown, Check, Download, Columns3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter,
@@ -37,7 +38,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
-import { CalendarIcon, Info } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
+import * as XLSX from "xlsx";
 
 interface ProjectInfo {
   id: string;
@@ -130,14 +132,11 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Project number map
   const [projectNumberMap, setProjectNumberMap] = useState<Map<string, number>>(new Map());
   const [projectMap, setProjectMap] = useState<Map<string, ProjectInfo>>(new Map());
 
-  // Side panel
   const [selectedContract, setSelectedContract] = useState<ContractRow | null>(null);
 
-  // Edit modal
   const [editingContract, setEditingContract] = useState<ContractRow | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editContractNumber, setEditContractNumber] = useState("");
@@ -153,7 +152,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [showDeleteContractConfirm, setShowDeleteContractConfirm] = useState(false);
   const [deletingContract, setDeletingContract] = useState(false);
 
-  // Invoice modal
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoiceContractId, setInvoiceContractId] = useState<string | null>(null);
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -162,7 +160,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [invoiceSaving, setInvoiceSaving] = useState(false);
   const invoiceFileRef = useRef<HTMLInputElement>(null);
 
-  // Filters
   const [showFilters, setShowFilters] = useState(false);
   const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
   const [pendingCountry, setPendingCountry] = useState("");
@@ -177,6 +174,34 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
+
+  const [visibleColumns, setVisibleColumns] = useState({
+    contractId: true,
+    projectNumber: true,
+    projectTitle: true,
+    site: true,
+    date: true,
+    contractor: true,
+    status: true,
+    agreementSigned: true,
+    contracted: true,
+    invoiced: true,
+    balance: true,
+  });
+
+  const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
+    { key: "contractId", label: "Contract ID" },
+    { key: "projectNumber", label: "Project Number" },
+    { key: "projectTitle", label: "Project Title" },
+    { key: "site", label: "Site" },
+    { key: "date", label: "Date" },
+    { key: "contractor", label: "Contractor" },
+    { key: "status", label: "Status" },
+    { key: "agreementSigned", label: "Agreement Signed" },
+    { key: "contracted", label: "Contracted (EUR)" },
+    { key: "invoiced", label: "Invoiced (EUR)" },
+    { key: "balance", label: "Balance (EUR)" },
+  ];
 
   const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
 
@@ -201,7 +226,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     setPendingSiteGroups(prev => prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]);
   };
 
-  // Fetch all data
   const fetchData = async () => {
     setLoading(true);
     const [projectsRes, contractsRes, invoicesRes, fxRes] = await Promise.all([
@@ -226,7 +250,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
 
   useEffect(() => { fetchData(); }, []);
 
-  // FX helpers
   const getFxRate = (currency: string): number | null => {
     if (!currency || currency === "EUR") return 1;
     const rate = fxRates.find(r => r.currency === currency);
@@ -240,7 +263,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     return amountLc / rate;
   };
 
-  // Invoice helpers
   const invoicesByContract = useMemo(() => {
     return invoices.reduce<Record<string, Invoice[]>>((acc, inv) => {
       if (!acc[inv.contract_id]) acc[inv.contract_id] = [];
@@ -249,7 +271,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     }, {});
   }, [invoices]);
 
-  // Filter options from projects
   const filterOptions = useMemo(() => {
     const sites = [...new Set(projects.map(p => p.site).filter(Boolean))].sort() as string[];
     const countries = [...new Set(sites.map(s => siteToCountry[s] || "Unknown"))].sort();
@@ -258,13 +279,10 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     return { sites, countries, budgetLines, fiscalYears };
   }, [projects]);
 
-  // Filtered contracts
   const filtered = useMemo(() => {
     return contracts.filter(c => {
       const proj = projectMap.get(c.project_id);
       if (!proj) return false;
-
-      // Search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matches = c.contract_number.toLowerCase().includes(q) ||
@@ -273,24 +291,17 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
           (c.description && c.description.toLowerCase().includes(q));
         if (!matches) return false;
       }
-
-      // Filter by project's site -> country -> site group
       const projectCountry = proj.site ? siteToCountry[proj.site] : null;
       if (filterSiteGroups.length > 0 && !(projectCountry && filterSiteGroups.includes(COUNTRY_TO_SITE_GROUP[projectCountry] || ""))) return false;
       if (filterCountry && projectCountry !== filterCountry) return false;
       if (filterSite && proj.site !== filterSite) return false;
       if (filterBudgetLine && proj.budget_line !== filterBudgetLine) return false;
       if (filterFiscalYear && proj.fiscal_year !== filterFiscalYear) return false;
-      // Status filter applies to CONTRACT status
       if (filterStatus && c.status !== filterStatus) return false;
-
       return true;
     });
   }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
 
-  const totalPages = 1; // unused, kept for reference
-
-  // Totals
   const totals = useMemo(() => {
     let contracted = 0, invoiced = 0;
     filtered.forEach(c => {
@@ -303,7 +314,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     return { contracted, invoiced, balance: contracted - invoiced };
   }, [filtered, projectMap, invoicesByContract, fxRates]);
 
-  // Edit modal
   const openEditModal = (contract: ContractRow) => {
     const proj = projectMap.get(contract.project_id);
     setEditingContract(contract);
@@ -356,7 +366,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     fetchData();
   };
 
-  // Invoice modal
   const openInvoiceModal = (contractId: string) => {
     setInvoiceContractId(contractId);
     setInvoiceNumber("");
@@ -404,17 +413,63 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     fetchData();
   };
 
-  // Side panel data
+  const handleExportXls = () => {
+    const rows = filtered.map(c => {
+      const proj = projectMap.get(c.project_id);
+      const cur = proj?.currency || "EUR";
+      const contractedEur = convertToEur(c.amount_lc || 0, cur);
+      const cInvoices = invoicesByContract[c.id] || [];
+      const invoicedEur = cInvoices.reduce((s, inv) => s + convertToEur(inv.amount_lc, cur), 0);
+      const balanceEur = contractedEur - invoicedEur;
+      const row: Record<string, any> = {};
+      if (visibleColumns.contractId) row["Contract ID"] = c.contract_number;
+      if (visibleColumns.projectNumber) row["Project Number"] = projectNumberMap.get(c.project_id) ?? "";
+      if (visibleColumns.projectTitle) row["Project Title"] = proj?.name || "";
+      if (visibleColumns.site) row["Site"] = proj?.site || "";
+      if (visibleColumns.date) row["Date"] = c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "";
+      if (visibleColumns.contractor) row["Contractor"] = c.contractor || "";
+      if (visibleColumns.status) row["Status"] = c.status;
+      if (visibleColumns.agreementSigned) row["Agreement Signed"] = c.agreement_signed ? "Yes" : "No";
+      if (visibleColumns.contracted) row["Contracted (EUR)"] = contractedEur;
+      if (visibleColumns.invoiced) row["Invoiced (EUR)"] = invoicedEur;
+      if (visibleColumns.balance) row["Balance (EUR)"] = balanceEur;
+      return row;
+    });
+    const totalRow: Record<string, any> = {};
+    const firstVisibleKey = columnDefs.find(c => visibleColumns[c.key])?.label;
+    if (firstVisibleKey) totalRow[firstVisibleKey] = "Total";
+    if (visibleColumns.contracted) totalRow["Contracted (EUR)"] = totals.contracted;
+    if (visibleColumns.invoiced) totalRow["Invoiced (EUR)"] = totals.invoiced;
+    if (visibleColumns.balance) totalRow["Balance (EUR)"] = totals.balance;
+    rows.push(totalRow);
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Contracts");
+    XLSX.writeFile(wb, "contracts_report.xlsx");
+  };
+
   const selectedProj = selectedContract ? projectMap.get(selectedContract.project_id) : null;
   const selectedCurrency = selectedProj?.currency || "EUR";
   const selectedShowLc = selectedCurrency.toUpperCase() !== "EUR";
   const selectedInvoices = selectedContract ? (invoicesByContract[selectedContract.id] || []) : [];
   const selectedTotalInvoicedLc = selectedInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
 
+  const visibleBeforeFinancial = [
+    true,
+    visibleColumns.contractId,
+    visibleColumns.projectNumber,
+    visibleColumns.projectTitle,
+    visibleColumns.site,
+    visibleColumns.date,
+    visibleColumns.contractor,
+    visibleColumns.status,
+    visibleColumns.agreementSigned,
+  ].filter(Boolean).length;
+
   return (
     <div className={embedded ? "" : "bg-background"}>
       <div className={embedded ? "flex overflow-hidden" : "flex h-[calc(100vh-64px)] overflow-hidden"}>
-        {/* Main content */}
         <div className={cn("flex-1 min-w-0 overflow-y-auto", embedded ? "p-0" : "p-6")}>
           {!embedded && (
             <div className="flex items-center justify-between mb-6">
@@ -422,7 +477,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
             </div>
           )}
 
-          {/* Search */}
           <div className="flex items-center gap-4 mb-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -435,7 +489,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
             </div>
           </div>
 
-          {/* Filters */}
           <div className="mb-4">
             <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="mb-2">
               Filters
@@ -567,6 +620,34 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
             )}
           </div>
 
+          <div className="flex items-center justify-end gap-2 mb-3">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Columns3 className="h-4 w-4 mr-2" />Columns
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3" align="end">
+                <div className="space-y-2">
+                  {columnDefs.map(col => (
+                    <div key={col.key} className="flex items-center justify-between">
+                      <span className="text-sm">{col.label}</span>
+                      <Switch
+                        checked={visibleColumns[col.key]}
+                        onCheckedChange={(checked) =>
+                          setVisibleColumns(prev => ({ ...prev, [col.key]: checked }))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" size="sm" onClick={handleExportXls}>
+              <Download className="h-4 w-4 mr-2" />Export XLS
+            </Button>
+          </div>
+
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
@@ -578,23 +659,23 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   <TableHeader>
                     <TableRow className="h-10">
                       <TableHead className="w-10 h-10 py-0 px-3" />
-                      <TableHead className="h-10 py-0 px-3">Contract ID</TableHead>
-                      <TableHead className="h-10 py-0 px-3">Project Number</TableHead>
-                      <TableHead className="h-10 py-0 px-3">Project Title</TableHead>
-                      <TableHead className="h-10 py-0 px-3">Site</TableHead>
-                      <TableHead className="h-10 py-0 px-3">Date</TableHead>
-                      <TableHead className="h-10 py-0 px-3">Contractor</TableHead>
-                      <TableHead className="h-10 py-0 px-3 text-right">Contracted (EUR)</TableHead>
-                      <TableHead className="h-10 py-0 px-3 text-right">Invoiced (EUR)</TableHead>
-                      <TableHead className="h-10 py-0 px-3 text-right">Balance (EUR)</TableHead>
-                      <TableHead className="h-10 py-0 px-3">Status</TableHead>
-                      <TableHead className="h-10 py-0 px-3">Agreement Signed</TableHead>
+                      {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3">Contract ID</TableHead>}
+                      {visibleColumns.projectNumber && <TableHead className="h-10 py-0 px-3">Project Number</TableHead>}
+                      {visibleColumns.projectTitle && <TableHead className="h-10 py-0 px-3">Project Title</TableHead>}
+                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3">Site</TableHead>}
+                      {visibleColumns.date && <TableHead className="h-10 py-0 px-3">Date</TableHead>}
+                      {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
+                      {visibleColumns.status && <TableHead className="h-10 py-0 px-3">Status</TableHead>}
+                      {visibleColumns.agreementSigned && <TableHead className="h-10 py-0 px-3">Agreement Signed</TableHead>}
+                      {visibleColumns.contracted && <TableHead className="h-10 py-0 px-3 text-right">Contracted (EUR)</TableHead>}
+                      {visibleColumns.invoiced && <TableHead className="h-10 py-0 px-3 text-right">Invoiced (EUR)</TableHead>}
+                      {visibleColumns.balance && <TableHead className="h-10 py-0 px-3 text-right">Balance (EUR)</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={12} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
+                        <TableCell colSpan={1 + Object.values(visibleColumns).filter(Boolean).length} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
                       </TableRow>
                     ) : (
                       filtered.map((c) => {
@@ -629,24 +710,26 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
-                            <TableCell className="py-0 px-3 font-medium">{c.contract_number}</TableCell>
-                            <TableCell className="py-0 px-3">
-                              <span
-                                className="text-primary font-medium cursor-pointer hover:underline"
-                                onClick={(e) => { e.stopPropagation(); navigate(`/project/${c.project_id}`); }}
-                              >
-                                {projectNumberMap.get(c.project_id) ?? "—"}
-                              </span>
-                            </TableCell>
-                            <TableCell className="py-0 px-3">{proj?.name || "Unknown"}</TableCell>
-                            <TableCell className="py-0 px-3">{proj?.site || "—"}</TableCell>
-                            <TableCell className="py-0 px-3">{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>
-                            <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>
-                            <TableCell className="py-0 px-3 text-right">{formatAmount(contractedEur)}</TableCell>
-                            <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(invoicedEur) : "—"}</TableCell>
-                            <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>
-                            <TableCell className="py-0 px-3"><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>
-                            <TableCell className="py-0 px-3">{c.agreement_signed ? "Yes" : "No"}</TableCell>
+                            {visibleColumns.contractId && <TableCell className="py-0 px-3 font-medium">{c.contract_number}</TableCell>}
+                            {visibleColumns.projectNumber && (
+                              <TableCell className="py-0 px-3">
+                                <span
+                                  className="text-primary font-medium cursor-pointer hover:underline"
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/project/${c.project_id}`); }}
+                                >
+                                  {projectNumberMap.get(c.project_id) ?? "—"}
+                                </span>
+                              </TableCell>
+                            )}
+                            {visibleColumns.projectTitle && <TableCell className="py-0 px-3">{proj?.name || "Unknown"}</TableCell>}
+                            {visibleColumns.site && <TableCell className="py-0 px-3">{proj?.site || "—"}</TableCell>}
+                            {visibleColumns.date && <TableCell className="py-0 px-3">{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>}
+                            {visibleColumns.contractor && <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>}
+                            {visibleColumns.status && <TableCell className="py-0 px-3"><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>}
+                            {visibleColumns.agreementSigned && <TableCell className="py-0 px-3">{c.agreement_signed ? "Yes" : "No"}</TableCell>}
+                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right">{formatAmount(contractedEur)}</TableCell>}
+                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(invoicedEur) : "—"}</TableCell>}
+                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>}
                           </TableRow>
                         );
                       })
@@ -655,23 +738,19 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   {filtered.length > 0 && (
                     <TableFooter>
                       <TableRow className="h-10">
-                        <TableCell colSpan={7} className="py-0 px-3 font-bold">Total</TableCell>
-                        <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.contracted)}</TableCell>
-                        <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.invoiced)}</TableCell>
-                        <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.balance)}</TableCell>
-                        <TableCell className="py-0 px-3" />
-                        <TableCell className="py-0 px-3" />
+                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold">Total</TableCell>
+                        {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.contracted)}</TableCell>}
+                        {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.invoiced)}</TableCell>}
+                        {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.balance)}</TableCell>}
                       </TableRow>
                     </TableFooter>
                   )}
                 </Table>
               </div>
-
             </>
           )}
         </div>
 
-        {/* Side Detail Panel */}
         {selectedContract && (
           <div className="w-[380px] flex-shrink-0 border-l border-border bg-card flex flex-col overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-2">
@@ -719,168 +798,160 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     <span className="text-sm text-muted-foreground">Agreement Signed</span>
                     <span className="text-sm font-medium">{selectedContract.agreement_signed ? "Yes" : "No"}</span>
                   </div>
-                  {selectedContract.description && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">Description</span>
-                      <p className="text-sm mt-1">{selectedContract.description}</p>
-                    </div>
-                  )}
-                  {selectedContract.comments && (
-                    <div>
-                      <span className="text-sm text-muted-foreground">Comments</span>
-                      <p className="text-sm mt-1">{selectedContract.comments}</p>
-                    </div>
-                  )}
                 </div>
 
-                <div className="px-5 py-4 space-y-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial Summary</p>
-
-                  {/* Local Currency section (only if not EUR) */}
+                <div className="px-5 py-4 border-b border-border space-y-3">
                   {selectedShowLc && (
                     <>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Financial ({selectedCurrency})</p>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Contracted ({selectedCurrency})</span>
-                        <span className="text-sm font-semibold">{formatAmount(selectedContract.amount_lc)}</span>
+                        <span className="text-sm text-muted-foreground">Contracted</span>
+                        <span className="text-sm font-medium">{formatAmount(selectedContract.amount_lc)}</span>
                       </div>
-                      {selectedInvoices.length > 0 && (
-                        <>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Invoiced ({selectedCurrency})</span>
-                            <span className="text-sm font-semibold">{formatAmount(selectedTotalInvoicedLc)}</span>
-                          </div>
-                          <div className="flex justify-between items-center pt-1 border-t border-border">
-                            <span className="text-sm font-semibold">Balance ({selectedCurrency})</span>
-                            <span className="text-sm font-semibold">{formatAmount((selectedContract.amount_lc || 0) - selectedTotalInvoicedLc)}</span>
-                          </div>
-                        </>
-                      )}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Invoiced</span>
+                        <span className="text-sm font-medium">{formatAmount(selectedTotalInvoicedLc)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Balance</span>
+                        <span className="text-sm font-medium">{formatAmount((selectedContract.amount_lc || 0) - selectedTotalInvoicedLc)}</span>
+                      </div>
                     </>
                   )}
 
-                  {/* EUR section */}
-                  {selectedShowLc && <div className="h-2" />}
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{selectedShowLc ? "Financial (EUR)" : "Financial"}</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Contracted (EUR)</span>
-                    <span className="text-sm font-semibold">{formatAmount(convertToEur(selectedContract.amount_lc || 0, selectedCurrency))}</span>
+                    <span className="text-sm text-muted-foreground">Contracted</span>
+                    <span className="text-sm font-medium">{formatAmount(convertToEur(selectedContract.amount_lc || 0, selectedCurrency))}</span>
                   </div>
-                  {selectedInvoices.length > 0 && (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Invoiced (EUR)</span>
-                        <span className="text-sm font-semibold">{formatAmount(convertToEur(selectedTotalInvoicedLc, selectedCurrency))}</span>
-                      </div>
-                      <div className="flex justify-between items-center pt-1 border-t border-border">
-                        <span className="text-sm font-semibold">Balance (EUR)</span>
-                        <span className="text-sm font-semibold">{formatAmount(convertToEur((selectedContract.amount_lc || 0) - selectedTotalInvoicedLc, selectedCurrency))}</span>
-                      </div>
-                    </>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Invoiced</span>
+                    <span className="text-sm font-medium">{formatAmount(convertToEur(selectedTotalInvoicedLc, selectedCurrency))}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Balance</span>
+                    <span className="text-sm font-medium">{formatAmount(convertToEur((selectedContract.amount_lc || 0) - selectedTotalInvoicedLc, selectedCurrency))}</span>
+                  </div>
                 </div>
+
+                {selectedContract.description && (
+                  <div className="px-5 py-4 border-b border-border">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Description</p>
+                    <p className="text-sm">{selectedContract.description}</p>
+                  </div>
+                )}
+                {selectedContract.comments && (
+                  <div className="px-5 py-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Comments</p>
+                    <p className="text-sm">{selectedContract.comments}</p>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="invoices" className="flex-1 overflow-y-auto mt-0">
-                <div className="px-5 py-4 space-y-3">
-                  {selectedInvoices.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">No invoices yet</p>
-                  ) : (
-                    <div className="space-y-1">
-                      {selectedInvoices.map(inv => {
-                        const invEur = convertToEur(inv.amount_lc, selectedCurrency);
-                        return (
-                          <div key={inv.id} className="flex items-start gap-2.5 py-2.5 border-b border-border last:border-0">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium">{inv.invoice_number}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {selectedShowLc && <>{formatAmount(inv.amount_lc)} {selectedCurrency} · </>}
-                                {formatAmount(invEur)} EUR
-                              </p>
-                              {inv.attachment_url && (
-                                <a href={inv.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 mt-1">
-                                  <Paperclip className="h-3 w-3" />{inv.attachment_name || "Attachment"}
-                                </a>
-                              )}
-                            </div>
-                            <button onClick={() => handleDeleteInvoice(inv.id)} className="shrink-0 h-6 w-6 rounded flex items-center justify-center hover:bg-muted transition-colors text-destructive">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => openInvoiceModal(selectedContract.id)}
-                    className="flex items-center gap-1.5 w-full py-2.5 text-sm font-medium text-muted-foreground border border-dashed border-muted-foreground/30 rounded-lg justify-center hover:border-primary hover:text-primary transition-colors"
-                  >
-                    <Plus className="h-3.5 w-3.5" />Add Invoice
-                  </button>
+                <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+                  <span className="text-sm font-medium">{selectedInvoices.length} invoice{selectedInvoices.length !== 1 ? "s" : ""}</span>
+                  <Button size="sm" variant="outline" onClick={() => openInvoiceModal(selectedContract.id)}>
+                    <Plus className="h-3.5 w-3.5 mr-1" />Add
+                  </Button>
                 </div>
+                {selectedInvoices.length === 0 ? (
+                  <div className="px-5 py-12 text-center text-muted-foreground text-sm">No invoices yet</div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {selectedInvoices.map(inv => (
+                      <div key={inv.id} className="px-5 py-3 flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium">{inv.invoice_number}</p>
+                          <p className="text-xs text-muted-foreground">{formatAmount(inv.amount_lc)} {selectedCurrency}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {inv.attachment_url && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <a href={inv.attachment_url} target="_blank" rel="noopener noreferrer" className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-muted">
+                                    <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </a>
+                                </TooltipTrigger>
+                                <TooltipContent>{inv.attachment_name || "Attachment"}</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteInvoice(inv.id)}>
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
         )}
       </div>
 
-      {/* Edit Contract Modal */}
-      <Dialog open={showEditModal} onOpenChange={open => { if (!open) { setShowEditModal(false); setEditingContract(null); } }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Edit Contract</DialogTitle></DialogHeader>
+      <Dialog open={showEditModal} onOpenChange={(open) => { if (!open) { setShowEditModal(false); setEditingContract(null); } }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Contract</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4 py-2">
-            <div><Label htmlFor="editContractNumber">Contract ID</Label><Input id="editContractNumber" value={editContractNumber} onChange={e => setEditContractNumber(e.target.value)} /></div>
+            <div>
+              <Label>Contract Number</Label>
+              <Input value={editContractNumber} onChange={e => setEditContractNumber(e.target.value)} />
+            </div>
             <div>
               <Label>Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !editContractDate && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />{editContractDate ? format(editContractDate, "PPP") : "Pick a date"}
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editContractDate ? format(editContractDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={editContractDate} onSelect={setEditContractDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={editContractDate} onSelect={setEditContractDate} initialFocus />
+                </PopoverContent>
               </Popover>
             </div>
-            <div><Label htmlFor="editContractor">Contractor</Label><Input id="editContractor" value={editContractor} onChange={e => setEditContractor(e.target.value)} /></div>
-            <div><Label htmlFor="editDescription">Contract Description</Label><Textarea id="editDescription" value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={Math.max(3, Math.ceil((editDescription?.length || 0) / 80))} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editAmount">Contract amount ({editSelectedCurrency})</Label>
-                <Input id="editAmount" type="text" inputMode="decimal" placeholder="0.00" value={editAmountRaw ? Number(editAmountRaw).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) : ""} onChange={e => { const raw = e.target.value.replace(/[^0-9.]/g, ""); setEditAmountRaw(raw); }} />
-              </div>
-              <div>
-                <Label>Local Currency</Label>
-                <Select value={editSelectedCurrency} onValueChange={setEditSelectedCurrency}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="PLN">PLN</SelectItem><SelectItem value="USD">USD</SelectItem><SelectItem value="EUR">EUR</SelectItem></SelectContent>
-                </Select>
-              </div>
+            <div>
+              <Label>Amount ({editSelectedCurrency})</Label>
+              <Input type="number" value={editAmountRaw} onChange={e => setEditAmountRaw(e.target.value)} />
             </div>
             <div>
               <Label>Status</Label>
-              <RadioGroup value={editStatus} onValueChange={setEditStatus} className="flex gap-4 mt-2">
-                <div className="flex items-center space-x-2"><RadioGroupItem value="Ongoing" id="edit-status-ongoing" /><Label htmlFor="edit-status-ongoing" className="font-normal cursor-pointer">Ongoing</Label></div>
-                <div className="flex items-center space-x-2"><RadioGroupItem value="Completed" id="edit-status-completed" /><Label htmlFor="edit-status-completed" className="font-normal cursor-pointer">Completed</Label></div>
+              <RadioGroup value={editStatus} onValueChange={setEditStatus} className="flex gap-4 mt-1">
+                <div className="flex items-center gap-2"><RadioGroupItem value="Ongoing" id="edit-ongoing" /><Label htmlFor="edit-ongoing">Ongoing</Label></div>
+                <div className="flex items-center gap-2"><RadioGroupItem value="Completed" id="edit-completed" /><Label htmlFor="edit-completed">Completed</Label></div>
               </RadioGroup>
             </div>
             <div>
-              <Label>Agreement Signed</Label>
-              <RadioGroup value={editAgreementSigned ? "yes" : "no"} onValueChange={v => setEditAgreementSigned(v === "yes")} className="flex gap-4 mt-2">
-                <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="edit-agreement-yes" /><Label htmlFor="edit-agreement-yes" className="font-normal cursor-pointer">Yes</Label></div>
-                <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="edit-agreement-no" /><Label htmlFor="edit-agreement-no" className="font-normal cursor-pointer">No</Label></div>
-              </RadioGroup>
+              <Label>Contractor</Label>
+              <Input value={editContractor} onChange={e => setEditContractor(e.target.value)} />
             </div>
             <div>
-              <Label htmlFor="editComments" className="flex items-center gap-1.5">Comments
-                <TooltipProvider><Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" /></TooltipTrigger><TooltipContent side="top" className="max-w-xs">Important: add info about phased payments</TooltipContent></Tooltip></TooltipProvider>
-              </Label>
-              <Textarea id="editComments" value={editComments} onChange={e => setEditComments(e.target.value)} rows={Math.max(3, Math.ceil((editComments?.length || 0) / 80))} />
+              <Label>Description</Label>
+              <Textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={2} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={editAgreementSigned} onChange={e => setEditAgreementSigned(e.target.checked)} id="edit-agreement" className="rounded border-input" />
+              <Label htmlFor="edit-agreement">Agreement Signed</Label>
+            </div>
+            <div>
+              <Label>Comments</Label>
+              <Textarea value={editComments} onChange={e => setEditComments(e.target.value)} rows={2} />
             </div>
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="destructive" onClick={() => setShowDeleteContractConfirm(true)} className="sm:mr-auto">
-              <Trash2 className="h-4 w-4 mr-2" />Delete contract
+          <DialogFooter className="flex justify-between">
+            <Button variant="destructive" size="sm" onClick={() => setShowDeleteContractConfirm(true)}>
+              <Trash2 className="h-4 w-4 mr-1" />Delete
             </Button>
-            <Button variant="outline" onClick={() => { setShowEditModal(false); setEditingContract(null); }}>Cancel</Button>
-            <Button onClick={handleEditSubmit} disabled={!editContractNumber.trim() || editSaving}>{editSaving ? "Saving..." : "Save Changes"}</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => { setShowEditModal(false); setEditingContract(null); }}>Cancel</Button>
+              <Button onClick={handleEditSubmit} disabled={editSaving}>{editSaving ? "Saving..." : "Save"}</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -889,40 +960,39 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete contract?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete contract "{editingContract?.contract_number}"? This action cannot be undone and will permanently remove the contract along with all its invoices.
-            </AlertDialogDescription>
+            <AlertDialogDescription>This will permanently delete this contract and all associated invoices.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deletingContract}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteContract} disabled={deletingContract} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {deletingContract ? "Deleting..." : "Delete contract"}
+              {deletingContract ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Add Invoice Modal */}
-      <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
+      <Dialog open={showInvoiceModal} onOpenChange={(open) => { if (!open) setShowInvoiceModal(false); }}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Add Invoice</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Add Invoice</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4 py-2">
-            <div><Label htmlFor="invoiceNumber">Invoice Number</Label><Input id="invoiceNumber" placeholder="e.g. INV-001" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} /></div>
             <div>
-              <Label htmlFor="invoiceAmount">Amount ({(() => { const c = contracts.find(ct => ct.id === invoiceContractId); const p = c ? projectMap.get(c.project_id) : null; return p?.currency || "EUR"; })()})</Label>
-              <Input id="invoiceAmount" type="number" placeholder="0.00" value={invoiceAmountRaw} onChange={e => setInvoiceAmountRaw(e.target.value)} />
+              <Label>Invoice Number</Label>
+              <Input value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
             </div>
             <div>
-              <Label>Attachment (optional)</Label>
-              <input ref={invoiceFileRef} type="file" className="hidden" onChange={e => setInvoiceFile(e.target.files?.[0] || null)} />
-              <Button variant="outline" className="w-full justify-start" onClick={() => invoiceFileRef.current?.click()}>
-                <Paperclip className="h-4 w-4 mr-2" />{invoiceFile ? invoiceFile.name : "Choose file..."}
-              </Button>
+              <Label>Amount</Label>
+              <Input type="number" value={invoiceAmountRaw} onChange={e => setInvoiceAmountRaw(e.target.value)} />
+            </div>
+            <div>
+              <Label>Attachment</Label>
+              <Input ref={invoiceFileRef} type="file" onChange={e => setInvoiceFile(e.target.files?.[0] || null)} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancel</Button>
-            <Button onClick={handleInvoiceSubmit} disabled={!invoiceNumber.trim() || invoiceSaving}>{invoiceSaving ? "Saving..." : "Add Invoice"}</Button>
+            <Button onClick={handleInvoiceSubmit} disabled={invoiceSaving || !invoiceNumber.trim()}>{invoiceSaving ? "Saving..." : "Add"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, ChevronLeft, ChevronRight, Check, ChevronsUpDown, X } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Check, ChevronsUpDown, X, Download, Columns3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useProjects } from "@/hooks/useProjects";
 import { SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
 import { cn } from "@/lib/utils";
+import * as XLSX from "xlsx";
 
 const MONTH_KEYS = ["apr","may","jun","jul","aug","sep","oct","nov","dec","jan","feb","mar"] as const;
 const MONTH_HEADERS = [
@@ -97,6 +99,16 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
   const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
 
+  // Column visibility
+  const [visibleMonths, setVisibleMonths] = useState<Record<string, boolean>>(
+    Object.fromEntries([...MONTH_KEYS.map(k => [k, true]), ["total", true]])
+  );
+
+  const monthColumnDefs = [
+    ...MONTH_KEYS.map((k, i) => ({ key: k, label: MONTH_HEADERS[i] })),
+    { key: "total", label: "Total" },
+  ];
+
   const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
 
   const applyFilters = () => {
@@ -131,11 +143,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       if (!bdRes.error) setBreakdowns((bdRes.data || []) as BreakdownRow[]);
       if (!cRes.error) setContracts((cRes.data || []) as ContractRow[]);
 
-      // Map invoices to project_id via contracts
       if (!iRes.error && !cRes.error) {
-        const contractProjectMap = new Map<string, string>();
-        (cRes.data || []).forEach((c: any) => contractProjectMap.set(c.id ?? "", c.project_id));
-        // Need contract ids - refetch with id
         const cFull = await supabase.from("contracts").select("id, project_id");
         if (!cFull.error) {
           const cpMap = new Map<string, string>();
@@ -217,6 +225,57 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   }, [filteredProjects, grandTotals, contracts, invoicesWithProject]);
 
   const loading = projectsLoading || bdLoading;
+
+  // XLS Export
+  const handleExportXls = () => {
+    const rows = filteredProjects.map(p => {
+      const bd = breakdownMap.get(p.id);
+      let rowTotal = 0;
+      const row: Record<string, any> = {
+        "#": projectNumberMap.get(p.id) ?? "",
+        "Project Name": p.name,
+      };
+      MONTH_KEYS.forEach((k, i) => {
+        if (visibleMonths[k]) {
+          const v = bd ? (bd as any)[k] || 0 : 0;
+          row[MONTH_HEADERS[i]] = v;
+          rowTotal += v;
+        } else {
+          if (bd) rowTotal += (bd as any)[k] || 0;
+        }
+      });
+      if (visibleMonths.total) row["Total"] = rowTotal;
+      return row;
+    });
+
+    // Grand Total row
+    const gtRow: Record<string, any> = { "#": "", "Project Name": "Grand Total" };
+    MONTH_KEYS.forEach((k, i) => { if (visibleMonths[k]) gtRow[MONTH_HEADERS[i]] = grandTotals[k] || 0; });
+    if (visibleMonths.total) gtRow["Total"] = grandTotals.total || 0;
+    rows.push(gtRow);
+
+    // Summary rows
+    const budgetRow: Record<string, any> = { "#": "", "Project Name": "Budget" };
+    if (visibleMonths.total) budgetRow["Total"] = summaryTotals.grandBudget || 0;
+    rows.push(budgetRow);
+
+    const planned3MRow: Record<string, any> = { "#": "", "Project Name": "Planned 3M" };
+    if (visibleMonths.total) planned3MRow["Total"] = summaryTotals.planned3M || 0;
+    rows.push(planned3MRow);
+
+    const contractedRow: Record<string, any> = { "#": "", "Project Name": "Contracted" };
+    if (visibleMonths.total) contractedRow["Total"] = summaryTotals.grandContracted || 0;
+    rows.push(contractedRow);
+
+    const invoicedRow: Record<string, any> = { "#": "", "Project Name": "Invoiced" };
+    if (visibleMonths.total) invoicedRow["Total"] = summaryTotals.grandInvoiced || 0;
+    rows.push(invoicedRow);
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Monthly Breakdown");
+    XLSX.writeFile(wb, "monthly_breakdown_report.xlsx");
+  };
 
   return (
     <div className={embedded ? "" : "min-h-screen bg-background"}>
@@ -337,6 +396,35 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
           )}
         </div>
 
+        {/* Toolbar: Columns + Export */}
+        <div className="flex items-center justify-end gap-2 mb-3">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Columns3 className="h-4 w-4 mr-2" />Columns
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-3" align="end">
+              <div className="space-y-2">
+                {monthColumnDefs.map(col => (
+                  <div key={col.key} className="flex items-center justify-between">
+                    <span className="text-sm">{col.label}</span>
+                    <Switch
+                      checked={visibleMonths[col.key]}
+                      onCheckedChange={(checked) =>
+                        setVisibleMonths(prev => ({ ...prev, [col.key]: checked }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Button variant="outline" size="sm" onClick={handleExportXls}>
+            <Download className="h-4 w-4 mr-2" />Export XLS
+          </Button>
+        </div>
+
         {/* Table */}
         {loading ? (
           <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
@@ -349,14 +437,14 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     <TableRow className="h-10">
                       <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
                       <TableHead className="h-10 py-0 px-3 sticky left-[60px] bg-background z-10 min-w-[200px]">Project Name</TableHead>
-                      {MONTH_HEADERS.map(h => <TableHead key={h} className="h-10 py-0 px-3 text-right min-w-[100px]">{h}</TableHead>)}
-                      <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-muted/30">Total</TableHead>
+                      {MONTH_KEYS.map((k, i) => visibleMonths[k] && <TableHead key={k} className="h-10 py-0 px-3 text-right min-w-[100px]">{MONTH_HEADERS[i]}</TableHead>)}
+                      {visibleMonths.total && <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-muted/30">Total</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredProjects.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={15} className="text-center text-muted-foreground py-12">No projects found</TableCell>
+                        <TableCell colSpan={2 + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0)} className="text-center text-muted-foreground py-12">No projects found</TableCell>
                       </TableRow>
                     ) : (
                       filteredProjects.map(p => {
@@ -371,10 +459,10 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               </span>
                             </TableCell>
                             <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 font-medium">{p.name}</TableCell>
-                            {MONTH_KEYS.map(k => (
+                            {MONTH_KEYS.map(k => visibleMonths[k] && (
                               <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
                             ))}
-                            <TableCell className="py-0 px-3 text-right font-bold tabular-nums bg-muted/30">{formatAmount(rowTotal || null)}</TableCell>
+                            {visibleMonths.total && <TableCell className="py-0 px-3 text-right font-bold tabular-nums bg-muted/30">{formatAmount(rowTotal || null)}</TableCell>}
                           </TableRow>
                         );
                       })
@@ -387,62 +475,62 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">
                             Grand Total
                           </TableCell>
-                          {MONTH_KEYS.map(k => (
+                          {MONTH_KEYS.map(k => visibleMonths[k] && (
                             <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                           ))}
-                          <TableCell className="py-0 px-3 text-right tabular-nums bg-muted/30">
-                            {summaryTotals.grandBudget > 0 && (
-                              <span className={cn("mr-2 text-xs font-normal", grandTotals.total > summaryTotals.grandBudget ? "text-destructive" : "text-muted-foreground")}>
-                                ({Math.round((grandTotals.total / summaryTotals.grandBudget) * 100)}% of budget)
-                              </span>
-                            )}
-                            {formatAmount(grandTotals.total || null)}
-                          </TableCell>
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right tabular-nums bg-muted/30">
+                              {summaryTotals.grandBudget > 0 && (
+                                <span className={cn("mr-2 text-xs font-normal", grandTotals.total > summaryTotals.grandBudget ? "text-destructive" : "text-muted-foreground")}>
+                                  ({Math.round((grandTotals.total / summaryTotals.grandBudget) * 100)}% of budget)
+                                </span>
+                              )}
+                              {formatAmount(grandTotals.total || null)}
+                            </TableCell>
+                          )}
                         </TableRow>
-                        {/* Project Budget */}
+                        {/* Budget */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Budget</TableCell>
-                          {MONTH_KEYS.map(k => (
-                            <TableCell key={k} className="py-0 px-3" />
-                          ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>}
                         </TableRow>
                         {/* Planned 3M */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Planned 3M</TableCell>
-                          {MONTH_KEYS.map(k => (
-                            <TableCell key={k} className="py-0 px-3" />
-                          ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
-                            <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.planned3M / grandTotals.total) * 100) : 0}% total)</span>
-                            {formatAmount(summaryTotals.planned3M || null)}
-                          </TableCell>
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
+                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.planned3M / grandTotals.total) * 100) : 0}% total)</span>
+                              {formatAmount(summaryTotals.planned3M || null)}
+                            </TableCell>
+                          )}
                         </TableRow>
                         {/* Contracted */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Contracted</TableCell>
-                          {MONTH_KEYS.map(k => (
-                            <TableCell key={k} className="py-0 px-3" />
-                          ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
-                            <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandContracted / grandTotals.total) * 100) : 0}% total)</span>
-                            {formatAmount(summaryTotals.grandContracted || null)}
-                          </TableCell>
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
+                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandContracted / grandTotals.total) * 100) : 0}% total)</span>
+                              {formatAmount(summaryTotals.grandContracted || null)}
+                            </TableCell>
+                          )}
                         </TableRow>
                         {/* Invoiced */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Invoiced</TableCell>
-                          {MONTH_KEYS.map(k => (
-                            <TableCell key={k} className="py-0 px-3" />
-                          ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
-                            <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandInvoiced / grandTotals.total) * 100) : 0}% total)</span>
-                            {formatAmount(summaryTotals.grandInvoiced || null)}
-                          </TableCell>
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
+                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandInvoiced / grandTotals.total) * 100) : 0}% total)</span>
+                              {formatAmount(summaryTotals.grandInvoiced || null)}
+                            </TableCell>
+                          )}
                         </TableRow>
                       </>
                     )}
