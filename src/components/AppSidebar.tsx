@@ -50,8 +50,8 @@ const navigationItems: NavItem[] = [{
     icon: FileText,
     path: "/reports",
     children: [
-      { title: "Contract Tracker", path: "/reports?tab=contracts" },
       { title: "CAPEX Tracker", path: "/reports?tab=monthly-breakdown" },
+      { title: "Contract Tracker", path: "/reports?tab=contracts" },
     ]
   }]
 }, {
