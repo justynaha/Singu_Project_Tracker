@@ -41,11 +41,19 @@ const navigationItems: NavItem[] = [{
     title: "Dashboard",
     icon: PieChart,
     path: "/dashboard"
-  }, {
+}, {
     title: "Projects",
     icon: List,
     path: "/projects"
-}]
+  }, {
+    title: "Reports",
+    icon: FileText,
+    path: "/reports",
+    children: [
+      { title: "Contract Tracker", path: "/reports?tab=contracts" },
+      { title: "Monthly Breakdown", path: "/reports?tab=monthly-breakdown" },
+    ]
+  }]
 }, {
   title: "Buildings",
   icon: Building2,
@@ -115,19 +123,6 @@ const navigationItems: NavItem[] = [{
   path: "/settlements",
   hasSubmenu: true
 }, {
-  title: "Reports",
-  icon: FileText,
-  path: "/reports",
-  submenu: [{
-    title: "Contract Tracker",
-    icon: FileSignature,
-    path: "/reports?tab=contracts"
-  }, {
-    title: "Monthly Breakdown",
-    icon: CalendarRange,
-    path: "/reports?tab=monthly-breakdown"
-  }]
-}, {
   title: "ESG",
   icon: Leaf,
   path: "/esg",
@@ -153,13 +148,10 @@ export const AppSidebar = () => {
 
   const isGroupActive = (item: NavItem) => {
     if (item.title === "Project Tracker") {
-      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/");
+      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/") || location.pathname === "/reports";
     }
     if (item.title === "Buildings") {
       return location.pathname.startsWith("/buildings");
-    }
-    if (item.title === "Reports") {
-      return location.pathname === "/reports";
     }
     if (item.title === "Master data") {
       return location.pathname.startsWith("/master-data") || location.pathname.startsWith("/templates");
@@ -203,7 +195,11 @@ export const AppSidebar = () => {
                       <ul className="ml-6 mt-1 space-y-1 border-l border-sidebar-border pl-3">
                         {item.submenu.map(subItem => {
                           const hasChildren = subItem.children && subItem.children.length > 0;
-                          const childActive = hasChildren && subItem.children!.some(c => location.pathname === c.path);
+                          const childActive = hasChildren && subItem.children!.some(c => 
+                            c.path.includes("?") 
+                              ? location.pathname + location.search === c.path 
+                              : location.pathname === c.path
+                          );
                           const subActive = !hasChildren && (
                             subItem.path.includes("?")
                               ? location.pathname + location.search === subItem.path
@@ -237,13 +233,18 @@ export const AppSidebar = () => {
                                   <CollapsibleContent>
                                     <ul className="ml-4 mt-0.5 space-y-0.5 border-l border-sidebar-border pl-3">
                                       {subItem.children!.map(child => {
-                                        const cActive = location.pathname === child.path;
+                                        const cActive = child.path.includes("?")
+                                          ? location.pathname + location.search === child.path
+                                          : location.pathname === child.path;
                                         return (
                                           <li key={child.path}>
                                             <NavLink
                                               to={child.path}
-                                              className={cn("flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors", "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
-                                              activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                              className={cn(
+                                                "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors",
+                                                "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                                cActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                              )}
                                             >
                                               <span>{child.title}</span>
                                             </NavLink>
