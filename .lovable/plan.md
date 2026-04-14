@@ -1,20 +1,20 @@
 
 
-## Plan: Fix side panel layout on Contracts page to prevent horizontal scroll
+## Plan: Fix sidebar compression when contracts side panel opens
 
 ### Problem
-When the side panel opens on `/contracts`, the table's many columns cause horizontal scroll instead of the main content area shrinking responsively.
+When the side panel opens on the `/contracts` page, the left navigation sidebar gets compressed because it lacks `flex-shrink-0` in the App layout. The sidebar labels get truncated ("dings" instead of "Buildings").
 
-### Changes to `src/pages/ContractsList.tsx`
+### Root cause
+In `App.tsx`, the layout is `<div className="flex w-full min-h-screen">` containing `<AppSidebar />` and the main content area. The sidebar in `AppSidebar.tsx` uses `w-64` but no `flex-shrink-0`, so when the contracts page adds a 380px side panel, the flex layout shrinks the sidebar.
 
-1. **Remove outer `min-h-screen` wrapper** (line 416) — replace with just `className="bg-background"` or merge into the flex container directly. The `h-[calc(100vh-64px)]` on the inner flex already handles height.
+### Fix
 
-2. **Add `overflow-x-auto`** to the table's container div (line 575: `<div className="border border-border rounded-lg overflow-hidden">`) → change to `overflow-auto` so the table scrolls horizontally within the main content area if needed, rather than pushing the whole page wider.
+**`src/components/AppSidebar.tsx`** (line 175):
+- Add `flex-shrink-0` to the `<aside>` root element alongside the existing `w-64`/`w-16` classes.
 
-3. **Add `overflow-hidden`** to the outer flex container (line 417) to prevent any content from escaping: `<div className="flex h-[calc(100vh-64px)] overflow-hidden">`
-
-These three small changes ensure the side panel compresses the main area and any table overflow is handled within bounds.
+This is a one-line change that prevents the sidebar from ever being compressed by flex layout pressure from any page's content.
 
 ### Files to edit
-- `src/pages/ContractsList.tsx` (3 lines)
+- `src/components/AppSidebar.tsx` — add `flex-shrink-0` to the aside element
 
