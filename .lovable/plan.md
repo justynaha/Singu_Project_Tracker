@@ -1,43 +1,39 @@
 
 
-## Plan: Split CAPEX Tracker groups into IC / Ad Hoc subsections
+## Plan: Visual improvements to CAPEX Tracker table
 
 ### What changes
 
-Within each site group (Western Europe, Poland, Hungary, Other), split projects into two subsections based on their `budget_type` field: **IC** and **Ad Hoc**. Each subsection gets its own subtotal row, and each site group gets a total row aggregating both subsections.
-
-### Visual result
-```text
-┌──────────────────────────────────────────────────────┐
-│ ▼ Western Europe (5 projects)                        │  ← group header
-│   IC                                                 │  ← subsection header (lighter bg)
-│     #13536  Project A   100  200  ...  1,200.00      │
-│     #13537  Project B   ...                          │
-│     Subtotal IC — Western Europe     ...  2,000.00   │  ← subtle subtotal
-│   Ad Hoc                                             │  ← subsection header
-│     #13538  Project C   ...                          │
-│     Subtotal Ad Hoc — Western Europe ...  1,600.00   │
-│   Total — Western Europe             ...  3,600.00   │  ← orange bg (existing subtotal style)
-│ ▼ Poland (3 projects)                                │
-│   ...                                                │
-└──────────────────────────────────────────────────────┘
-```
+1. **Add empty separator row between site groups** — a blank row after each group's Total row to visually split sections
+2. **Color-code IC subsections blue** — IC header row and IC subtotal row get blue background (`bg-blue-50` / `bg-blue-100`)
+3. **Color-code Ad Hoc subsections orange** — Ad Hoc header and subtotal keep orange (`bg-orange-50`)
+4. **Add Country and Site columns** — insert two new columns between `#` and `Project Name` in the table header, project rows, and all summary/subtotal rows. Values come from the project's `site` field and the `siteToCountry` mapping.
 
 ### Implementation — single file: `src/pages/MonthlyBreakdownList.tsx`
 
-**1. Update `groupedProjects` useMemo (~line 283)**
-- Within each site group, split `gProjects` into two arrays: `icProjects` (budget_type === 'IC') and `adHocProjects` (budget_type === 'Ad Hoc')
-- Calculate separate subtotals for IC and Ad Hoc (monthly + total)
-- Keep the existing group-level subtotals as the "Total" for the whole section
-- Return shape: `{ group, label, projects, subtotals, icProjects, icSubtotals, adHocProjects, adHocSubtotals }`
+**1. Table header (~line 580-587)**
+- Add `<TableHead>Country</TableHead>` and `<TableHead>Site</TableHead>` after the `#` column
+- Update `colCount` calculation (+2)
+- Update sticky `left` offset for Project Name column
 
-**2. Update table rendering (~line 570-623)**
-- Replace the flat project list inside each group with two subsection blocks:
-  - **IC subsection**: header row (text "IC", lighter bg like bg-muted/20), IC project rows, IC subtotal row (bg-orange-50 or similar, labeled "Subtotal IC — {group}")
-  - **Ad Hoc subsection**: same pattern with "Ad Hoc" label
-  - Skip a subsection entirely if it has no projects
-- Rename the existing orange subtotal row to "Total — {group}" (keeps bg-orange-100)
+**2. Project rows (~line 629-643)**
+- Add Country and Site cells after `#` cell
+- Country = `siteToCountry[p.site]` or "—"
+- Site = `p.site` or "—"
 
-**3. Update XLS export (~line 314-349)**
-- Within each group, export IC header + IC projects + IC subtotal, then Ad Hoc header + Ad Hoc projects + Ad Hoc subtotal, then group total row
+**3. Subsection styling (~line 618, 646)**
+- IC header: `bg-blue-50` instead of `bg-muted/20`
+- IC subtotal: `bg-blue-100` instead of `bg-orange-50`
+- Ad Hoc header: keep `bg-orange-50`
+- Ad Hoc subtotal: keep `bg-orange-50`
+
+**4. Separator row (~after line 676)**
+- After each group's Total row, render an empty `<TableRow>` with reduced height (`h-4`) and no border
+
+**5. Summary/subtotal rows**
+- Add empty Country and Site cells to all subtotal, total, and grand total rows to maintain column alignment
+
+**6. XLS export (~line 323-400)**
+- Add Country and Site columns to exported rows
+- Maintain separator rows in export
 
