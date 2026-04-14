@@ -172,9 +172,12 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
 
   // Column visibility state
   const [visibleColumns, setVisibleColumns] = useState({
+    contractId: false,
     date: true,
     status: true,
     contractor: true,
+    description: false,
+    agreementSigned: false,
     contractedLc: true,
     invoicedLc: true,
     balanceLc: true,
