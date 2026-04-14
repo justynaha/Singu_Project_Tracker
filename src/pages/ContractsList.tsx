@@ -339,6 +339,8 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       if (filterBudgetLine && proj.budget_line !== filterBudgetLine) return false;
       if (filterFiscalYear && proj.fiscal_year !== filterFiscalYear) return false;
       if (filterStatus && c.status !== filterStatus) return false;
+      if (filterBudgetType && proj.budget_type !== filterBudgetType) return false;
+      if (filterBudgetClassification && proj.budget_classification !== filterBudgetClassification) return false;
       return true;
     });
   }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
