@@ -121,13 +121,35 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   };
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchAll = async () => {
       setBdLoading(true);
-      const { data, error } = await supabase.from("monthly_breakdown").select("project_id, apr, may, jun, jul, aug, sep, oct, nov, dec, jan, feb, mar");
-      if (!error) setBreakdowns((data || []) as BreakdownRow[]);
+      const [bdRes, cRes, iRes] = await Promise.all([
+        supabase.from("monthly_breakdown").select("project_id, apr, may, jun, jul, aug, sep, oct, nov, dec, jan, feb, mar"),
+        supabase.from("contracts").select("project_id, amount_lc"),
+        supabase.from("invoices").select("amount_lc, contract_id"),
+      ]);
+      if (!bdRes.error) setBreakdowns((bdRes.data || []) as BreakdownRow[]);
+      if (!cRes.error) setContracts((cRes.data || []) as ContractRow[]);
+
+      // Map invoices to project_id via contracts
+      if (!iRes.error && !cRes.error) {
+        const contractProjectMap = new Map<string, string>();
+        (cRes.data || []).forEach((c: any) => contractProjectMap.set(c.id ?? "", c.project_id));
+        // Need contract ids - refetch with id
+        const cFull = await supabase.from("contracts").select("id, project_id");
+        if (!cFull.error) {
+          const cpMap = new Map<string, string>();
+          (cFull.data || []).forEach((c: any) => cpMap.set(c.id, c.project_id));
+          const mapped = (iRes.data || []).map((inv: any) => ({
+            amount_lc: inv.amount_lc || 0,
+            project_id: cpMap.get(inv.contract_id) || "",
+          }));
+          setInvoicesWithProject(mapped);
+        }
+      }
       setBdLoading(false);
     };
-    fetch();
+    fetchAll();
   }, []);
 
   // Project number map (sorted by created_at asc)
