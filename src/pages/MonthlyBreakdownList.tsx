@@ -614,8 +614,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           return (
                             <React.Fragment key={`group-${group.group}`}>
                               {/* Group header */}
-                              <TableRow className="h-10 bg-muted/40 cursor-pointer" onClick={() => toggleGroup(group.group)}>
-                                <TableCell colSpan={colCount} className="py-0 px-3 font-bold text-sm text-left sticky left-0 z-10 bg-muted/40">
+                              <TableRow className="h-10 bg-gray-100 cursor-pointer" onClick={() => toggleGroup(group.group)}>
+                                <TableCell colSpan={colCount} className="py-0 px-3 font-bold text-sm text-left sticky left-0 z-10 bg-gray-100">
                                   <span className="inline-flex items-center gap-1.5">
                                     <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "-rotate-90")} />
                                     {group.label} ({group.projects.length} project{group.projects.length !== 1 ? "s" : ""})
@@ -702,8 +702,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     {filteredProjects.length > 0 && (
                       <>
                         {/* Grand Total */}
-                        <TableRow className="h-10 bg-muted/50 font-bold">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-muted/50 z-10 text-left" colSpan={fixedColCount}>
+                        <TableRow className="h-10 bg-gray-200 font-bold">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-gray-200 z-10 text-left" colSpan={fixedColCount}>
                             Grand Total (EUR)
                           </TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && (
