@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Search, ChevronLeft, ChevronRight, Check, ChevronsUpDown, X, Download, Columns3 } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Search, ChevronLeft, ChevronRight, ChevronDown, Check, ChevronsUpDown, X, Download, Columns3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +92,12 @@ interface InvoiceWithProject {
   project_id: string;
 }
 
+const SITE_GROUP_DISPLAY: Record<string, string> = {
+  WE: "Western Europe",
+  PL: "Poland",
+  HU: "Hungary",
+};
+
 export default function MonthlyBreakdownList({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const { projects, loading: projectsLoading } = useProjects();
@@ -102,6 +108,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const itemsPerPage = 20;
 
   // Pending / applied filter state
@@ -265,30 +272,80 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     return { grandBudget, planned3M, grandContracted, grandInvoiced, grandOngoing, grandSavings, grandPostponed };
   }, [filteredProjects, grandTotals, contracts, invoicesWithProject]);
 
+  const toggleGroup = (group: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group); else next.add(group);
+      return next;
+    });
+  };
+
+  const groupedProjects = useMemo(() => {
+    const groups: Record<string, typeof filteredProjects> = {};
+    filteredProjects.forEach(p => {
+      const country = p.site ? siteToCountry[p.site] : null;
+      const sg = country ? (COUNTRY_TO_SITE_GROUP[country] || "Other") : "Other";
+      if (!groups[sg]) groups[sg] = [];
+      groups[sg].push(p);
+    });
+    const order = ["WE", "PL", "HU", "Other"];
+    return order.filter(k => groups[k]?.length).map(k => {
+      const gProjects = groups[k];
+      const subtotals: Record<string, number> = {};
+      MONTH_KEYS.forEach(mk => { subtotals[mk] = 0; });
+      subtotals.total = 0;
+      gProjects.forEach(p => {
+        const bd = breakdownMap.get(p.id);
+        if (!bd) return;
+        let rowTotal = 0;
+        MONTH_KEYS.forEach(mk => {
+          const v = (bd as any)[mk] as number | null;
+          if (v) { subtotals[mk] += v; rowTotal += v; }
+        });
+        subtotals.total += rowTotal;
+      });
+      return { group: k, label: SITE_GROUP_DISPLAY[k] || k, projects: gProjects, subtotals };
+    });
+  }, [filteredProjects, breakdownMap]);
+
   const loading = projectsLoading || bdLoading;
 
   // XLS Export
   const handleExportXls = () => {
-    const rows = filteredProjects.map(p => {
-      const bd = breakdownMap.get(p.id);
-      let rowTotal = 0;
-      const row: Record<string, any> = {
-        "#": projectNumberMap.get(p.id) ?? "",
-        "Project Name": p.name,
-      };
-      if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
-      if (visibleExtraColumns.budgetClassification) row["Budget Classification"] = p.budget_classification || "";
-      MONTH_KEYS.forEach((k, i) => {
-        if (visibleMonths[k]) {
-          const v = bd ? (bd as any)[k] || 0 : 0;
-          row[MONTH_HEADERS[i]] = v;
-          rowTotal += v;
-        } else {
-          if (bd) rowTotal += (bd as any)[k] || 0;
-        }
+    const rows: Record<string, any>[] = [];
+
+    // Grouped project rows with headers and subtotals
+    groupedProjects.forEach(group => {
+      // Group header row
+      rows.push({ "#": "", "Project Name": `${group.label} (${group.projects.length} project${group.projects.length !== 1 ? "s" : ""})` });
+
+      group.projects.forEach(p => {
+        const bd = breakdownMap.get(p.id);
+        let rowTotal = 0;
+        const row: Record<string, any> = {
+          "#": projectNumberMap.get(p.id) ?? "",
+          "Project Name": p.name,
+        };
+        if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
+        if (visibleExtraColumns.budgetClassification) row["Budget Classification"] = p.budget_classification || "";
+        MONTH_KEYS.forEach((k, i) => {
+          if (visibleMonths[k]) {
+            const v = bd ? (bd as any)[k] || 0 : 0;
+            row[MONTH_HEADERS[i]] = v;
+            rowTotal += v;
+          } else {
+            if (bd) rowTotal += (bd as any)[k] || 0;
+          }
+        });
+        if (visibleMonths.total) row["Total"] = rowTotal;
+        rows.push(row);
       });
-      if (visibleMonths.total) row["Total"] = rowTotal;
-      return row;
+
+      // Subtotal row
+      const subRow: Record<string, any> = { "#": "", "Project Name": `Subtotal — ${group.label}` };
+      MONTH_KEYS.forEach((k, i) => { if (visibleMonths[k]) subRow[MONTH_HEADERS[i]] = group.subtotals[k] || 0; });
+      if (visibleMonths.total) subRow["Total"] = group.subtotals.total || 0;
+      rows.push(subRow);
     });
 
     // Grand Total row
@@ -509,27 +566,63 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         <TableCell colSpan={2 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0) + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0)} className="text-center text-muted-foreground py-12">No projects found</TableCell>
                       </TableRow>
                     ) : (
-                      filteredProjects.map(p => {
-                        const bd = breakdownMap.get(p.id);
-                        let rowTotal = 0;
-                        if (bd) MONTH_KEYS.forEach(k => { rowTotal += (bd as any)[k] || 0; });
-                        return (
-                          <TableRow key={p.id} className="h-10">
-                            <TableCell className="py-0 px-3 sticky left-0 bg-background z-10">
-                              <span className="text-primary font-medium cursor-pointer hover:underline" onClick={() => navigate(`/project/${p.id}`)}>
-                                {projectNumberMap.get(p.id) ?? "—"}
-                              </span>
-                            </TableCell>
-                            <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 font-medium">{p.name}</TableCell>
-                            {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 text-sm">{p.budget_type || "—"}</TableCell>}
-                            {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 text-sm">{p.budget_classification || "—"}</TableCell>}
-                            {MONTH_KEYS.map(k => visibleMonths[k] && (
-                              <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
-                            ))}
-                            {visibleMonths.total && <TableCell className="py-0 px-3 text-right font-bold tabular-nums bg-muted/30">{formatAmount(rowTotal || null)}</TableCell>}
-                          </TableRow>
-                        );
-                      })
+                      <>
+                        {groupedProjects.map(group => {
+                          const isCollapsed = collapsedGroups.has(group.group);
+                          const colCount = 2 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0) + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0);
+                          const colsBeforeTotal = colCount - (visibleMonths.total ? 1 : 0);
+                          return (
+                            <React.Fragment key={`group-${group.group}`}>
+                              {/* Group header */}
+                              <TableRow className="h-10 bg-muted/40 cursor-pointer" onClick={() => toggleGroup(group.group)}>
+                                <TableCell colSpan={colCount} className="py-0 px-3 font-bold text-sm">
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "-rotate-90")} />
+                                    {group.label} ({group.projects.length} project{group.projects.length !== 1 ? "s" : ""})
+                                  </span>
+                                </TableCell>
+                              </TableRow>
+                              {/* Project rows */}
+                              {!isCollapsed && group.projects.map(p => {
+                                const bd = breakdownMap.get(p.id);
+                                let rowTotal = 0;
+                                if (bd) MONTH_KEYS.forEach(k => { rowTotal += (bd as any)[k] || 0; });
+                                return (
+                                  <TableRow key={p.id} className="h-10">
+                                    <TableCell className="py-0 px-3 sticky left-0 bg-background z-10">
+                                      <span className="text-primary font-medium cursor-pointer hover:underline" onClick={() => navigate(`/project/${p.id}`)}>
+                                        {projectNumberMap.get(p.id) ?? "—"}
+                                      </span>
+                                    </TableCell>
+                                    <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 font-medium">{p.name}</TableCell>
+                                    {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 text-sm">{p.budget_type || "—"}</TableCell>}
+                                    {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 text-sm">{p.budget_classification || "—"}</TableCell>}
+                                    {MONTH_KEYS.map(k => visibleMonths[k] && (
+                                      <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
+                                    ))}
+                                    {visibleMonths.total && <TableCell className="py-0 px-3 text-right font-bold tabular-nums bg-muted/30">{formatAmount(rowTotal || null)}</TableCell>}
+                                  </TableRow>
+                                );
+                              })}
+                              {/* Subtotal row */}
+                              <TableRow className="h-10 bg-orange-100">
+                                <TableCell className="py-0 px-3 sticky left-0 bg-orange-100 z-10" />
+                                <TableCell className="py-0 px-3 sticky left-[60px] bg-orange-100 z-10 font-semibold text-sm italic" colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                  Subtotal — {group.label}
+                                </TableCell>
+                                {MONTH_KEYS.map(k => visibleMonths[k] && (
+                                  <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-100">{formatAmount(group.subtotals[k] || null)}</TableCell>
+                                ))}
+                                {visibleMonths.total && (
+                                  <TableCell className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-100">
+                                    {formatAmount(group.subtotals.total || null)}
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                            </React.Fragment>
+                          );
+                        })}
+                      </>
                     )}
                     {filteredProjects.length > 0 && (
                       <>
