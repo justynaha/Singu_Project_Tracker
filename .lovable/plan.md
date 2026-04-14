@@ -1,26 +1,27 @@
 
 
-## Plan: Add sample contracts and invoices to 24 projects
+## Plan: Add Country, Site, Project Name to column visibility toggles
 
-### What
-Insert 1-3 contracts and 1-2 invoices per contract for the 24 projects that currently have no contracts. All these projects use EUR currency.
+### Changes in `src/pages/MonthlyBreakdownList.tsx`
 
-### How
-Use the database insert tool to run two SQL statements:
+1. **Expand `visibleExtraColumns` state** to include `country`, `site`, and `projectName` (all defaulting to `true`):
+   ```ts
+   { budgetType: true, budgetClassification: true, country: true, site: true, projectName: true }
+   ```
 
-**1. Insert ~45 contracts** across 24 projects with realistic data:
-- Contract numbers like `CNT-2026-XXX`
-- Dates in Q1-Q2 2026
-- Amounts between 30-80% of project budget (split across contracts)
-- Mix of statuses: mostly "Ongoing", some "Completed"
-- Realistic contractor names (construction/industrial companies)
+2. **Add entries to `extraColumnDefs`** array (before Budget Type):
+   ```ts
+   { key: "country", label: "Country" },
+   { key: "site", label: "Site" },
+   { key: "projectName", label: "Project Name" },
+   ```
 
-**2. Insert ~60 invoices** linked to the contracts:
-- Invoice numbers like `INV-2026-XXX`
-- Amounts as portions of contract value (30-70%)
-- 1-2 invoices per contract
+3. **Conditionally render** the Country, Site, and Project Name `<TableHead>` and `<TableCell>` elements based on `visibleExtraColumns.country`, `.site`, `.projectName`.
 
-### Technical details
-- All amounts in EUR (`amount_lc`), `amount_eur` set to same value
-- No file changes needed — data-only operation via insert tool
+4. **Update all `colSpan` and `colCount` calculations** to account for the three new toggleable columns instead of the current hardcoded `4` base count. The base becomes `1` (for #) plus conditionally added country/site/projectName.
+
+5. **Update export logic** to conditionally include Country, Site, Project Name columns.
+
+### Files to edit
+- `src/pages/MonthlyBreakdownList.tsx`
 
