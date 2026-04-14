@@ -1,31 +1,34 @@
 
 
-## Plan: Add Country, Description columns + Group by Site Group in Contract Tracker
+## Plan: Seed Logistics Projects with Plans, Contracts, and Invoices
 
-### Changes to `src/pages/ContractsList.tsx`
+### Overview
+Insert ~20 logistics-specific projects (3-6 per country: Poland, Hungary, Spain, Italy) with project plans (milestones + tasks), contracts, and invoices using a seed script executed via `code--exec`.
 
-**1. Add new columns to `visibleColumns` and `columnDefs`**
-- Add `country` (derived from `siteToCountry[proj.site]`) after `site`
-- Add `description` (from `contract.description`) after `agreementSigned`
+### Data Structure
 
-**2. Group rows by Site Group**
-- After filtering, sort/group `filtered` contracts by site group (using `COUNTRY_TO_SITE_GROUP` mapping: WE → "Western Europe", HU → "Hungary", PL → "Poland")
-- Render a group header row (`TableRow` spanning all columns with the site group name in bold, light background) before each group's contracts
-- Site group display names map: `WE` → "Western Europe", `PL` → "Poland", `HU` → "Hungary"
+**Projects** (~20 total, distributed across sites):
+- Poland (6): Bedzin, Blonie 2, Gdańsk-Airport, Nadarzyn, Piotrków 1, Szczecin
+- Hungary (4): Százhalombatta, Üllő, Fogars
+- Spain (4): Les Franqueses, Sallent, Valls
+- Italy (3): Bologna Castel San Pietro
 
-**3. Update table rendering**
-- In the `<TableHeader>`, add `Country` and `Description` heads at the right positions
-- In the body, iterate over grouped data: for each group, render a header row then the contract rows
-- In each contract row, add the `country` and `description` cells
-- Update `visibleBeforeFinancial` to account for the two new columns
-- Update footer `colSpan` accordingly
+Logistics-specific project names like: "Dock Leveler Replacement", "Automated Sorting Line Installation", "Loading Bay LED Upgrade", "Forklift Charging Station Expansion", "Warehouse Fire Suppression System", "Cold Storage Unit Retrofit", "Conveyor Belt Modernization", "Truck Parking Area Resurfacing", etc.
 
-**4. Update XLS export**
-- Include `Country` and `Description` columns in the exported data (respecting visibility)
+**Per project:**
+- 5-6 milestones (e.g. Design, Procurement, Installation, Testing, Handover) with `include_in_cashflow=true`
+- 0-4 tasks under each milestone
+- `milestone_cashflow` records for each milestone
+- 1-3 contracts with contractor names, amounts
+- 0-3 invoices per contract
 
-### Column order (after change)
-`[actions] | Contract ID | Project Number | Project Title | Site | Country | Date | Contractor | Status | Agreement Signed | Description | Contracted (EUR) | Invoiced (EUR) | Balance (EUR)`
+### Technical Details
+- Script will use `psql` to insert data via SQL
+- Projects will have `budget_line`, `fiscal_year`, `currency` (PLN for Poland, HUF for Hungary, EUR for Spain/Italy), `status` varied across Open/In Progress/Completed
+- Timeline items: milestones with start/end dates spread across 2025-2026
+- Contracts: realistic contractor names, amounts in local currency
+- All IDs generated via `gen_random_uuid()`
 
-### Files to edit
-- `src/pages/ContractsList.tsx` (~60 lines changed/added)
+### Files
+- No codebase changes — data insertion only via SQL script
 
