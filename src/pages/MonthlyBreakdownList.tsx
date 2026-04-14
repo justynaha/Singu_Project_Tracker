@@ -672,10 +672,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               ))}
                               {/* Group total row */}
                               <TableRow className="h-10 bg-orange-100">
-                                <TableCell className="py-0 px-3 sticky left-0 bg-orange-100 z-10" />
-                                <TableCell className="py-0 px-3 bg-orange-100" />
-                                <TableCell className="py-0 px-3 bg-orange-100" />
-                                <TableCell className="py-0 px-3 sticky left-[60px] bg-orange-100 z-10 font-semibold text-sm text-left italic" colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                <TableCell className="py-0 px-3 sticky left-0 bg-orange-100 z-10 font-semibold text-sm text-left italic" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                   Total — {group.label}
                                 </TableCell>
                                 {MONTH_KEYS.map(k => visibleMonths[k] && (
