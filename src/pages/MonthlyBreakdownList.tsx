@@ -331,7 +331,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
 
         {/* Filters */}
         <div className="mb-4">
-            <div className="p-4 border border-border rounded-lg bg-card space-y-4">
+            <div className="space-y-4">
               <div className="flex items-end gap-4 flex-wrap">
                 <div className="flex-1 min-w-[150px]">
                   <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
