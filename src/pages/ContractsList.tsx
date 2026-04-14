@@ -849,6 +849,15 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                               </TableRow>
                             );
                           })}
+                          {/* Subtotal row for group */}
+                          <TableRow key={`subtotal-${group.group}`} className="h-10 bg-muted/20">
+                            <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic">
+                              Subtotal — {group.label}
+                            </TableCell>
+                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right font-semibold">{formatAmount(group.subtotals.contracted)}</TableCell>}
+                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right font-semibold">{formatAmount(group.subtotals.invoiced)}</TableCell>}
+                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-semibold">{formatAmount(group.subtotals.balance)}</TableCell>}
+                          </TableRow>
                         </>
                       ))
                     )}
