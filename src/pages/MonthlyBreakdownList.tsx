@@ -280,6 +280,23 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     });
   };
 
+  const calculateSubtotals = (projs: typeof filteredProjects) => {
+    const st: Record<string, number> = {};
+    MONTH_KEYS.forEach(mk => { st[mk] = 0; });
+    st.total = 0;
+    projs.forEach(p => {
+      const bd = breakdownMap.get(p.id);
+      if (!bd) return;
+      let rowTotal = 0;
+      MONTH_KEYS.forEach(mk => {
+        const v = (bd as any)[mk] as number | null;
+        if (v) { st[mk] += v; rowTotal += v; }
+      });
+      st.total += rowTotal;
+    });
+    return st;
+  };
+
   const groupedProjects = useMemo(() => {
     const groups: Record<string, typeof filteredProjects> = {};
     filteredProjects.forEach(p => {
@@ -291,20 +308,12 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     const order = ["WE", "PL", "HU", "Other"];
     return order.filter(k => groups[k]?.length).map(k => {
       const gProjects = groups[k];
-      const subtotals: Record<string, number> = {};
-      MONTH_KEYS.forEach(mk => { subtotals[mk] = 0; });
-      subtotals.total = 0;
-      gProjects.forEach(p => {
-        const bd = breakdownMap.get(p.id);
-        if (!bd) return;
-        let rowTotal = 0;
-        MONTH_KEYS.forEach(mk => {
-          const v = (bd as any)[mk] as number | null;
-          if (v) { subtotals[mk] += v; rowTotal += v; }
-        });
-        subtotals.total += rowTotal;
-      });
-      return { group: k, label: SITE_GROUP_DISPLAY[k] || k, projects: gProjects, subtotals };
+      const subtotals = calculateSubtotals(gProjects);
+      const icProjects = gProjects.filter(p => p.budget_type === 'IC');
+      const adHocProjects = gProjects.filter(p => p.budget_type !== 'IC');
+      const icSubtotals = calculateSubtotals(icProjects);
+      const adHocSubtotals = calculateSubtotals(adHocProjects);
+      return { group: k, label: SITE_GROUP_DISPLAY[k] || k, projects: gProjects, subtotals, icProjects, icSubtotals, adHocProjects, adHocSubtotals };
     });
   }, [filteredProjects, breakdownMap]);
 
