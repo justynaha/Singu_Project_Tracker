@@ -640,6 +640,28 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="flex items-end gap-4">
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground mb-2 block">Budget type</Label>
+                    <Select value={pendingBudgetType || "all"} onValueChange={v => setPendingBudgetType(v === "all" ? "" : v)}>
+                      <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All types</SelectItem>
+                        {filterOptions.budgetTypes.map(bt => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground mb-2 block">Budget classification</Label>
+                    <Select value={pendingBudgetClassification || "all"} onValueChange={v => setPendingBudgetClassification(v === "all" ? "" : v)}>
+                      <SelectTrigger><SelectValue placeholder="All classifications" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All classifications</SelectItem>
+                        {filterOptions.budgetClassifications.map(bc => <SelectItem key={bc} value={bc}>{bc}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button className="shrink-0" onClick={applyFilters}>
                     <Search className="h-4 w-4 mr-2" />Search
                   </Button>
