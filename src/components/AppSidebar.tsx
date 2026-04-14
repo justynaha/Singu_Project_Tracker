@@ -153,12 +153,14 @@ export const AppSidebar = () => {
 
   const isGroupActive = (item: NavItem) => {
     if (item.title === "Project Tracker") {
-      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/") || location.pathname === "/contracts" || location.pathname === "/monthly-breakdown";
+      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/");
     }
     if (item.title === "Buildings") {
       return location.pathname.startsWith("/buildings");
     }
-    if (item.title === "Master data") {
+    if (item.title === "Reports") {
+      return location.pathname === "/reports";
+    }
       return location.pathname.startsWith("/master-data") || location.pathname.startsWith("/templates");
     }
     if (item.submenu) {
