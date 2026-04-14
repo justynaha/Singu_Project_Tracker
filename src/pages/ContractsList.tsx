@@ -343,7 +343,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       if (filterBudgetClassification && proj.budget_classification !== filterBudgetClassification) return false;
       return true;
     });
-  }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
+  }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus, filterBudgetType, filterBudgetClassification]);
 
   const groupedFiltered = useMemo(() => {
     const groups: Record<string, ContractRow[]> = {};
