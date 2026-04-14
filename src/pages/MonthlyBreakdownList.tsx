@@ -583,7 +583,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="h-10">
+                    <TableRow className="h-10 sticky top-0 z-20 bg-background">
                       <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
                       <TableHead className="h-10 py-0 px-3">Country</TableHead>
                       <TableHead className="h-10 py-0 px-3">Site</TableHead>
