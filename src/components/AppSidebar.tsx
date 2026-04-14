@@ -148,7 +148,7 @@ export const AppSidebar = () => {
 
   const isGroupActive = (item: NavItem) => {
     if (item.title === "Project Tracker") {
-      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/");
+      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/") || location.pathname === "/reports";
     }
     if (item.title === "Buildings") {
       return location.pathname.startsWith("/buildings");
