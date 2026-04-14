@@ -213,7 +213,9 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     const budgetLines = [...new Set(projects.map(p => p.budget_line).filter(Boolean))].sort();
     const statuses = [...new Set(projects.map(p => p.status).filter(Boolean))].sort();
     const fiscalYears = [...new Set(projects.map(p => p.fiscal_year).filter(Boolean))].sort();
-    return { sites, countries, budgetLines, statuses, fiscalYears };
+    const budgetTypes = [...new Set(projects.map(p => p.budget_type).filter(Boolean))].sort() as string[];
+    const budgetClassifications = [...new Set(projects.map(p => p.budget_classification).filter(Boolean))].sort() as string[];
+    return { sites, countries, budgetLines, statuses, fiscalYears, budgetTypes, budgetClassifications };
   }, [projects]);
 
   const filteredProjects = useMemo(() => {
@@ -227,9 +229,11 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       const matchesStatus = !filterStatus || p.status === filterStatus;
       const matchesFiscalYear = !filterFiscalYear || p.fiscal_year === filterFiscalYear;
       const matchesSiteGroup = filterSiteGroups.length === 0 || (country && filterSiteGroups.includes(COUNTRY_TO_SITE_GROUP[country] || ""));
-      return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatus && matchesFiscalYear && matchesSiteGroup;
+      const matchesBudgetType = !filterBudgetType || p.budget_type === filterBudgetType;
+      const matchesBudgetClassification = !filterBudgetClassification || p.budget_classification === filterBudgetClassification;
+      return matchesSearch && matchesCountry && matchesBudgetLine && matchesSite && matchesStatus && matchesFiscalYear && matchesSiteGroup && matchesBudgetType && matchesBudgetClassification;
     });
-  }, [projects, searchQuery, filterCountry, filterBudgetLine, filterSite, filterStatus, filterFiscalYear, filterSiteGroups]);
+  }, [projects, searchQuery, filterCountry, filterBudgetLine, filterSite, filterStatus, filterFiscalYear, filterSiteGroups, filterBudgetType, filterBudgetClassification]);
 
   const grandTotals = useMemo(() => {
     const totals: Record<string, number> = {};
