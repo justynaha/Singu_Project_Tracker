@@ -402,7 +402,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         {/* Project Budget */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Project Budget</TableCell>
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Budget</TableCell>
                           {MONTH_KEYS.map(k => (
                             <TableCell key={k} className="py-0 px-3" />
                           ))}
