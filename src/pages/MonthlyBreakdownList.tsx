@@ -612,13 +612,13 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               </TableRow>
                               {/* Subsections: IC and Ad Hoc */}
                               {!isCollapsed && [
-                                { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals },
-                                { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals },
+                                { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals, headerBg: "bg-blue-50", subtotalBg: "bg-blue-100" },
+                                { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals, headerBg: "bg-orange-50", subtotalBg: "bg-orange-50" },
                               ].map(sub => sub.projects.length === 0 ? null : (
                                 <React.Fragment key={`sub-${group.group}-${sub.label}`}>
                                   {/* Subsection header */}
-                                  <TableRow className="h-10 bg-muted/20">
-                                    <TableCell colSpan={colCount} className="py-0 px-3 pl-8 text-sm font-semibold text-muted-foreground">
+                                  <TableRow className={cn("h-10", sub.headerBg)}>
+                                    <TableCell colSpan={colCount} className={cn("py-0 px-3 pl-8 text-sm font-semibold text-muted-foreground", sub.headerBg)}>
                                       {sub.label}
                                     </TableCell>
                                   </TableRow>
@@ -627,6 +627,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                     const bd = breakdownMap.get(p.id);
                                     let rowTotal = 0;
                                     if (bd) MONTH_KEYS.forEach(k => { rowTotal += (bd as any)[k] || 0; });
+                                    const country = p.site ? siteToCountry[p.site] || "—" : "—";
+                                    const site = p.site || "—";
                                     return (
                                       <TableRow key={p.id} className="h-10">
                                         <TableCell className="py-0 px-3 sticky left-0 bg-background z-10">
@@ -634,6 +636,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                             {projectNumberMap.get(p.id) ?? "—"}
                                           </span>
                                         </TableCell>
+                                        <TableCell className="py-0 px-3 text-sm">{country}</TableCell>
+                                        <TableCell className="py-0 px-3 text-sm">{site}</TableCell>
                                         <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 font-medium">{p.name}</TableCell>
                                         {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 text-sm">{p.budget_type || "—"}</TableCell>}
                                         {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 text-sm">{p.budget_classification || "—"}</TableCell>}
@@ -645,16 +649,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                     );
                                   })}
                                   {/* Subsection subtotal */}
-                                  <TableRow className="h-10 bg-orange-50">
-                                    <TableCell className="py-0 px-3 sticky left-0 bg-orange-50 z-10" />
-                                    <TableCell className="py-0 px-3 sticky left-[60px] bg-orange-50 z-10 font-semibold text-sm italic" colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                  <TableRow className={cn("h-10", sub.subtotalBg)}>
+                                    <TableCell className={cn("py-0 px-3 sticky left-0 z-10", sub.subtotalBg)} />
+                                    <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
+                                    <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
+                                    <TableCell className={cn("py-0 px-3 sticky left-[60px] z-10 font-semibold text-sm italic", sub.subtotalBg)} colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                       Subtotal {sub.label} — {group.label}
                                     </TableCell>
                                     {MONTH_KEYS.map(k => visibleMonths[k] && (
-                                      <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-50">{formatAmount(sub.subtotals[k] || null)}</TableCell>
+                                      <TableCell key={k} className={cn("py-0 px-3 text-right tabular-nums font-semibold", sub.subtotalBg)}>{formatAmount(sub.subtotals[k] || null)}</TableCell>
                                     ))}
                                     {visibleMonths.total && (
-                                      <TableCell className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-50">
+                                      <TableCell className={cn("py-0 px-3 text-right tabular-nums font-semibold", sub.subtotalBg)}>
                                         {formatAmount(sub.subtotals.total || null)}
                                       </TableCell>
                                     )}
@@ -664,6 +670,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               {/* Group total row */}
                               <TableRow className="h-10 bg-orange-100">
                                 <TableCell className="py-0 px-3 sticky left-0 bg-orange-100 z-10" />
+                                <TableCell className="py-0 px-3 bg-orange-100" />
+                                <TableCell className="py-0 px-3 bg-orange-100" />
                                 <TableCell className="py-0 px-3 sticky left-[60px] bg-orange-100 z-10 font-semibold text-sm italic" colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                   Total — {group.label}
                                 </TableCell>
@@ -675,6 +683,10 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                     {formatAmount(group.subtotals.total || null)}
                                   </TableCell>
                                 )}
+                              </TableRow>
+                              {/* Separator row */}
+                              <TableRow className="h-4 border-0">
+                                <TableCell colSpan={colCount} className="p-0 border-0" />
                               </TableRow>
                             </React.Fragment>
                           );
