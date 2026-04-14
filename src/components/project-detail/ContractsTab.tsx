@@ -629,7 +629,7 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
             <TabsContent value="details" className="flex-1 overflow-y-auto mt-0">
               {/* Details */}
               <div className="px-5 py-4 border-b border-border space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Details</p>
+                
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Contract ID</span>
                   <span className="text-sm font-medium">{selectedContract.contract_number}</span>
