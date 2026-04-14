@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Download, Lock, LockOpen } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -314,7 +315,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                       className="px-3 py-3 text-right font-bold text-foreground text-lg"
                     >
                       {totalBudget && totalBudget > 0 && (
-                        <span className="text-sm font-normal text-muted-foreground mr-2">
+                        <span className={cn("text-sm mr-2", convertValue(total, currency) > convertValue(totalBudget, currency) ? "text-destructive font-bold" : "text-muted-foreground font-normal")}>
                           ({Math.round((convertValue(total, currency) / convertValue(totalBudget, currency)) * 100)}% of budget)
                         </span>
                       )}
