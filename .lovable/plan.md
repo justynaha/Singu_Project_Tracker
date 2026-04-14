@@ -1,29 +1,37 @@
 
 
-## Plan: Fix header width, unify row height, and prevent text wrapping in tables
+## Plan: Reorder columns by currency group + add Columns visibility button
+
+### Overview
+Reorder the contract table columns so financial values are grouped by currency (all LC columns first, then all EUR columns), and add a "Columns" popover button above the table letting users toggle column visibility.
 
 ### Changes
 
-**1. `src/components/AppHeader.tsx`** — Prevent horizontal scroll on header
-- Add `overflow-hidden` and `min-w-0` to the header element so it never exceeds the available width and stays pinned regardless of content below.
+**1. `src/components/project-detail/ContractsTab.tsx`**
 
-**2. `src/components/ui/table.tsx`** — Global table cell styling
-- Add `whitespace-nowrap` to `TableCell` and `TableHead` defaults so text never wraps.
-- Add `truncate` (which includes `overflow-hidden text-ellipsis`) to `TableCell` so long text gets trimmed with "...".
-- Set `max-w-[200px]` on `TableCell` as a default constraint for truncation to kick in.
+**Column reordering** — Change header and body column order from the current interleaved pattern to:
+- `Date | Status | Contractor | Contracted (PLN) | Invoiced (PLN) | Balance (PLN) | Contracted (EUR) | Invoiced (EUR) | Balance (EUR)`
+- When currency is EUR, only show one set: `Contracted | Invoiced | Balance`
 
-**3. `src/pages/ContractsList.tsx`** — Unified 40px row height
-- Add `h-10` (40px) to each `TableRow` in both `TableHeader` and `TableBody`.
-- Reduce cell padding: override `TableCell` with `py-0 px-3` to fit within 40px.
-- Same for `TableHead`: `h-10 py-0 px-3`.
-- On the `TableFooter` row, apply same height.
+**Column visibility state** — Add state:
+```tsx
+const [visibleColumns, setVisibleColumns] = useState({
+  date: true,
+  status: true,
+  contractor: true,
+  contractedLc: true,
+  invoicedLc: true,
+  balanceLc: true,
+  contractedEur: true,
+  invoicedEur: true,
+  balanceEur: true,
+});
+```
 
-**4. `src/pages/MonthlyBreakdownList.tsx`** — Unified 40px row height
-- Same `h-10` and compact padding treatment on all table rows, headers, and cells.
+**Columns button** — Add a `Popover` with a "Columns" button (styled like the screenshot — blue with a grid icon) next to the "Add contract" button. The popover lists each column with a `Switch` toggle. Column labels are context-appropriate: "Date", "Status", "Contractor", "Contracted (PLN)", "Invoiced (PLN)", "Balance (PLN)", "Contracted (EUR)", "Invoiced (EUR)", "Balance (EUR)". When currency is EUR, LC columns are hidden from the popover.
+
+**Conditional rendering** — Wrap each `<TableHead>` and corresponding `<TableCell>` / footer cell with `{visibleColumns.xxx && (...)}`.
 
 ### Files to edit
-- `src/components/AppHeader.tsx` (1 line)
-- `src/components/ui/table.tsx` (2 lines)
-- `src/pages/ContractsList.tsx` (~15 lines)
-- `src/pages/MonthlyBreakdownList.tsx` (~8 lines)
+- `src/components/project-detail/ContractsTab.tsx`
 
