@@ -247,14 +247,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     setFilterBudgetLine(pendingBudgetLine);
     setFilterStatus(pendingStatus);
     setFilterFiscalYear(pendingFiscalYear);
+    setFilterBudgetType(pendingBudgetType);
+    setFilterBudgetClassification(pendingBudgetClassification);
     setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setPendingSiteGroups([]); setPendingCountry(""); setPendingSite("");
     setPendingBudgetLine(""); setPendingStatus(""); setPendingFiscalYear("");
+    setPendingBudgetType(""); setPendingBudgetClassification("");
     setFilterSiteGroups([]); setFilterCountry(""); setFilterSite("");
     setFilterBudgetLine(""); setFilterStatus(""); setFilterFiscalYear("");
+    setFilterBudgetType(""); setFilterBudgetClassification("");
   };
 
   const togglePendingSiteGroup = (group: string) => {
