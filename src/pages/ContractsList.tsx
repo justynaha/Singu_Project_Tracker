@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Search, ChevronLeft, ChevronRight, MoreVertical, Plus, Pencil, X, Trash2, Paperclip, ChevronsUpDown, Check, Download, Columns3 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ChevronDown, Plus, Pencil, X, Trash2, Paperclip, ChevronsUpDown, Check, Download, Columns3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -523,8 +523,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const selectedInvoices = selectedContract ? (invoicesByContract[selectedContract.id] || []) : [];
   const selectedTotalInvoicedLc = selectedInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
 
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroup = (groupKey: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupKey)) next.delete(groupKey);
+      else next.add(groupKey);
+      return next;
+    });
+  };
+
   const visibleBeforeFinancial = [
-    true,
     visibleColumns.contractId,
     visibleColumns.projectNumber,
     visibleColumns.projectTitle,
@@ -762,7 +772,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                 <Table>
                   <TableHeader>
                     <TableRow className="h-10">
-                      <TableHead className="w-10 h-10 py-0 px-3" />
                       {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3">Contract ID</TableHead>}
                       {visibleColumns.projectNumber && <TableHead className="h-10 py-0 px-3">Project Number</TableHead>}
                       {visibleColumns.projectTitle && <TableHead className="h-10 py-0 px-3">Project Title</TableHead>}
@@ -784,14 +793,20 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                         <TableCell colSpan={1 + Object.values(visibleColumns).filter(Boolean).length} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
                       </TableRow>
                     ) : (
-                      groupedFiltered.map((group) => (
+                      groupedFiltered.map((group) => {
+                        const projectCount = new Set(group.contracts.map(c => c.project_id)).size;
+                        const isCollapsed = collapsedGroups.has(group.group);
+                        return (
                         <>
-                          <TableRow key={`group-${group.group}`} className="h-10 bg-muted/40">
-                            <TableCell colSpan={1 + Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm">
-                              {group.label}
+                          <TableRow key={`group-${group.group}`} className="h-10 bg-muted/40 cursor-pointer" onClick={() => toggleGroup(group.group)}>
+                            <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm">
+                              <span className="inline-flex items-center gap-1.5">
+                                <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "-rotate-90")} />
+                                {group.label} ({projectCount} project{projectCount !== 1 ? "s" : ""})
+                              </span>
                             </TableCell>
                           </TableRow>
-                          {group.contracts.map((c) => {
+                          {!isCollapsed && group.contracts.map((c) => {
                             const proj = projectMap.get(c.project_id);
                             const cur = proj?.currency || "EUR";
                             const contractedEur = convertToEur(c.amount_lc || 0, cur);
@@ -807,23 +822,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                 className={cn("h-10 cursor-pointer", isSelected && "bg-muted/50")}
                                 onClick={() => setSelectedContract(isSelected ? null : c)}
                               >
-                                <TableCell className="w-10 py-0 px-1" onClick={e => e.stopPropagation()}>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                                        <MoreVertical className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start">
-                                      <DropdownMenuItem onClick={() => openEditModal(c)}>
-                                        <Pencil className="h-3.5 w-3.5 mr-2" />Edit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => openInvoiceModal(c.id)}>
-                                        <Plus className="h-3.5 w-3.5 mr-2" />Add Invoice
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </TableCell>
                                 {visibleColumns.contractId && <TableCell className="py-0 px-3 font-medium">{c.contract_number}</TableCell>}
                                 {visibleColumns.projectNumber && (
                                   <TableCell className="py-0 px-3">
@@ -850,7 +848,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                             );
                           })}
                           {/* Subtotal row for group */}
-                          <TableRow key={`subtotal-${group.group}`} className="h-10 bg-muted/20">
+                          <TableRow key={`subtotal-${group.group}`} className="h-10 bg-orange-100">
                             <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic">
                               Subtotal — {group.label}
                             </TableCell>
@@ -859,13 +857,14 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                             {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-semibold">{formatAmount(group.subtotals.balance)}</TableCell>}
                           </TableRow>
                         </>
-                      ))
+                        );
+                      })
                     )}
                   </TableBody>
                   {filtered.length > 0 && (
                     <TableFooter>
-                      <TableRow className="h-10">
-                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold">Grand Total</TableCell>
+                      <TableRow className="h-10 bg-amber-900 text-white">
+                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold text-white">Grand Total</TableCell>
                         {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.contracted)}</TableCell>}
                         {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.invoiced)}</TableCell>}
                         {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.balance)}</TableCell>}
