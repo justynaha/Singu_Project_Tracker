@@ -413,8 +413,8 @@ export default function ContractsList() {
   const selectedTotalInvoicedLc = selectedInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex h-[calc(100vh-64px)]">
+    <div className="bg-background">
+      <div className="flex h-[calc(100vh-64px)] overflow-hidden">
         {/* Main content */}
         <div className="flex-1 min-w-0 overflow-y-auto p-6">
           <div className="flex items-center justify-between mb-6">
@@ -572,7 +572,7 @@ export default function ContractsList() {
             </div>
           ) : (
             <>
-              <div className="border border-border rounded-lg overflow-hidden">
+              <div className="border border-border rounded-lg overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
