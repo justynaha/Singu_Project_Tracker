@@ -60,10 +60,22 @@ interface BreakdownRow {
   jan: number | null; feb: number | null; mar: number | null;
 }
 
+interface ContractRow {
+  project_id: string;
+  amount_lc: number | null;
+}
+
+interface InvoiceWithProject {
+  amount_lc: number;
+  project_id: string;
+}
+
 export default function MonthlyBreakdownList({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const { projects, loading: projectsLoading } = useProjects();
   const [breakdowns, setBreakdowns] = useState<BreakdownRow[]>([]);
+  const [contracts, setContracts] = useState<ContractRow[]>([]);
+  const [invoicesWithProject, setInvoicesWithProject] = useState<InvoiceWithProject[]>([]);
   const [bdLoading, setBdLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
