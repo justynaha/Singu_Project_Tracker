@@ -216,8 +216,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     return { grandBudget, planned3M, grandContracted, grandInvoiced };
   }, [filteredProjects, grandTotals, contracts, invoicesWithProject]);
 
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-  const paginated = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const loading = projectsLoading || bdLoading;
 
   return (

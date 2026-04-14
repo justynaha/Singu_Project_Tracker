@@ -288,8 +288,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     });
   }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = 1; // unused, kept for reference
 
   // Totals
   const totals = useMemo(() => {
