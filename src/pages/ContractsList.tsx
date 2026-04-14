@@ -570,6 +570,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
           </div>
 
           <div className="mb-4">
+              <div className="space-y-4">
               <div className="flex items-end gap-3 flex-wrap">
                   <div className="min-w-[120px]">
                     <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
