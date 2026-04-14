@@ -170,6 +170,19 @@ interface Invoice {
 export default function ContractsTab({ contracts, currency = "EUR", onCreateContract, onUpdateContract }: ContractsTabProps) {
   const showLcColumn = currency.toUpperCase() !== "EUR";
 
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState({
+    date: true,
+    status: true,
+    contractor: true,
+    contractedLc: true,
+    invoicedLc: true,
+    balanceLc: true,
+    contractedEur: true,
+    invoicedEur: true,
+    balanceEur: true,
+  });
+
   // Create/Add contract modal state
   const [showModal, setShowModal] = useState(false);
   const [contractNumber, setContractNumber] = useState("");
