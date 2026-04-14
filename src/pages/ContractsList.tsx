@@ -852,9 +852,9 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                             <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic">
                               Subtotal — {group.label}
                             </TableCell>
-                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right"><span className="font-normal">EUR </span><span className="font-semibold">{formatAmount(group.subtotals.contracted)}</span></TableCell>}
-                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right"><span className="font-normal">EUR </span><span className="font-semibold">{formatAmount(group.subtotals.invoiced)}</span></TableCell>}
-                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right"><span className="font-normal">EUR </span><span className="font-semibold">{formatAmount(group.subtotals.balance)}</span></TableCell>}
+                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.contracted)}</span></TableCell>}
+                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.invoiced)}</span></TableCell>}
+                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.balance)}</span></TableCell>}
                           </TableRow>
                         </>
                         );
