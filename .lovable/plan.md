@@ -1,23 +1,29 @@
 
 
-## Plan: Red % when over budget + summary rows on capex tracker report
+## Plan: XLS Export, Column Reorder, and Columns Button for Reports
 
 ### Changes
 
-**1. `src/components/project-detail/MonthlyBreakdownTab.tsx`** — Red % when over budget
-- In the Total row, add conditional styling: if `total > totalBudget`, render the `(X% of budget)` text with `text-destructive` (red) instead of `text-muted-foreground`.
+**1. `src/pages/ContractsList.tsx`** — XLS export, column reorder, Columns button
 
-**2. `src/pages/MonthlyBreakdownList.tsx`** — Add summary rows below Grand Total
-- Compute `grandBudget` by summing `total_budget` from all filtered projects.
-- Compute `grandContracted` and `grandInvoiced` by summing `amount_lc` from contracts (fetch contracts data alongside breakdowns).
-- After the "Grand Total" row, add four new rows with the same `h-10` styling and `text-sm text-muted-foreground`:
-  - **Project Budget** — shows `grandBudget` in the Total column, with `(X% of budget)` next to Grand Total (red if over).
-  - **Planned 3M** — sum of Apr+May+Jun across filtered projects, shows `(X% total)`.
-  - **Contracted** — sum of all contract `amount_lc` for filtered projects, shows `(X% total)`.
-  - **Invoiced** — sum of all invoice `amount_lc` for filtered projects, shows `(X% total)`.
-- Fetch contracts and invoices data in a useEffect (similar to breakdowns fetch).
+- **Column reorder**: Move "Status" and "Agreement Signed" columns to appear right after "Contractor" (before financial columns).
+- **Columns button**: Add `visibleColumns` state with toggles for all table columns (matching the pattern from ContractsTab — Popover with Switch toggles). Place it in a toolbar row above the table, right-aligned.
+- **XLS export button**: Add "Export XLS" button next to "Columns" button. On click, generate an XLSX file client-side using the `xlsx` library (SheetJS). Export all currently filtered rows with the same columns visible in the table. Include the footer totals row.
+- **Footer row**: Update `colSpan` to match new column order.
+
+**2. `src/pages/MonthlyBreakdownList.tsx`** — XLS export, Columns button
+
+- **Columns button**: Add `visibleColumns` state for toggling month columns and Total column. Same Popover+Switch pattern.
+- **XLS export button**: Add "Export XLS" button next to "Columns". Export all filtered projects with month values, total, and summary rows (Grand Total, Budget, Planned 3M, Contracted, Invoiced).
+- Both buttons placed in a toolbar row between filters and the table, right-aligned.
+
+**3. Install `xlsx` package** for client-side Excel generation (`npm install xlsx`).
+
+### Column order for Contract Tracker (after change)
+`[actions] | Contract ID | Project Number | Project Title | Site | Date | Contractor | Status | Agreement Signed | Contracted (EUR) | Invoiced (EUR) | Balance (EUR)`
 
 ### Files to edit
-- `src/components/project-detail/MonthlyBreakdownTab.tsx` (~2 lines)
-- `src/pages/MonthlyBreakdownList.tsx` (~50 lines)
+- `src/pages/ContractsList.tsx` (~80 lines changed)
+- `src/pages/MonthlyBreakdownList.tsx` (~60 lines added)
+- `package.json` (add `xlsx` dependency)
 
