@@ -272,6 +272,42 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     return { grandBudget, planned3M, grandContracted, grandInvoiced, grandOngoing, grandSavings, grandPostponed };
   }, [filteredProjects, grandTotals, contracts, invoicesWithProject]);
 
+  const toggleGroup = (group: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group); else next.add(group);
+      return next;
+    });
+  };
+
+  const groupedProjects = useMemo(() => {
+    const groups: Record<string, typeof filteredProjects> = {};
+    filteredProjects.forEach(p => {
+      const country = p.site ? siteToCountry[p.site] : null;
+      const sg = country ? (COUNTRY_TO_SITE_GROUP[country] || "Other") : "Other";
+      if (!groups[sg]) groups[sg] = [];
+      groups[sg].push(p);
+    });
+    const order = ["WE", "PL", "HU", "Other"];
+    return order.filter(k => groups[k]?.length).map(k => {
+      const gProjects = groups[k];
+      const subtotals: Record<string, number> = {};
+      MONTH_KEYS.forEach(mk => { subtotals[mk] = 0; });
+      subtotals.total = 0;
+      gProjects.forEach(p => {
+        const bd = breakdownMap.get(p.id);
+        if (!bd) return;
+        let rowTotal = 0;
+        MONTH_KEYS.forEach(mk => {
+          const v = (bd as any)[mk] as number | null;
+          if (v) { subtotals[mk] += v; rowTotal += v; }
+        });
+        subtotals.total += rowTotal;
+      });
+      return { group: k, label: SITE_GROUP_DISPLAY[k] || k, projects: gProjects, subtotals };
+    });
+  }, [filteredProjects, breakdownMap]);
+
   const loading = projectsLoading || bdLoading;
 
   // XLS Export
