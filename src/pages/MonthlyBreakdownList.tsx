@@ -552,6 +552,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">
                             Grand Total
                           </TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 bg-muted/50" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 bg-muted/50" />}
                           {MONTH_KEYS.map(k => visibleMonths[k] && (
                             <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                           ))}
