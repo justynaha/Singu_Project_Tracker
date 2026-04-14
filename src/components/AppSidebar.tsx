@@ -172,7 +172,7 @@ export const AppSidebar = () => {
   };
 
   return (
-    <aside className={cn("bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col h-screen sticky top-0", isCollapsed ? "w-16" : "w-64")}>
+    <aside className={cn("bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col h-screen sticky top-0 flex-shrink-0", isCollapsed ? "w-16" : "w-64")}>
       <button onClick={() => setIsCollapsed(!isCollapsed)} className="absolute -right-3 top-4 bg-card border border-border rounded-full p-1 shadow-md hover:bg-secondary transition-colors z-10">
         <ChevronLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
       </button>
