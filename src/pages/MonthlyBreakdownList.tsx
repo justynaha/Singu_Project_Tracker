@@ -341,8 +341,12 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
         sub.projects.forEach(p => {
           const bd = breakdownMap.get(p.id);
           let rowTotal = 0;
+          const country = p.site ? siteToCountry[p.site] || "" : "";
+          const site = p.site || "";
           const row: Record<string, any> = {
             "#": projectNumberMap.get(p.id) ?? "",
+            "Country": country,
+            "Site": site,
             "Project Name": p.name,
           };
           if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
