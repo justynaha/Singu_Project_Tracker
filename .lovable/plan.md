@@ -1,39 +1,25 @@
 
 
-## Plan: Visual improvements to CAPEX Tracker table
+## Plan: Fix CAPEX Tracker alignment and sticky first column
 
-### What changes
+### Issues identified
 
-1. **Add empty separator row between site groups** — a blank row after each group's Total row to visually split sections
-2. **Color-code IC subsections blue** — IC header row and IC subtotal row get blue background (`bg-blue-50` / `bg-blue-100`)
-3. **Color-code Ad Hoc subsections orange** — Ad Hoc header and subtotal keep orange (`bg-orange-50`)
-4. **Add Country and Site columns** — insert two new columns between `#` and `Project Name` in the table header, project rows, and all summary/subtotal rows. Values come from the project's `site` field and the `siteToCountry` mapping.
+1. **Text alignment**: `TableCell` in `table.tsx` uses `align-middle` but no explicit `text-left`. Some cells (especially those with `colSpan`) may not be left-aligned consistently. Subsection headers ("IC", "Ad Hoc"), subtotal labels, and group headers all use `colSpan` which can cause centering.
 
-### Implementation — single file: `src/pages/MonthlyBreakdownList.tsx`
+2. **First column not fixed**: The `#` column is sticky at `left-0` with `z-10`, but Country and Site columns are not sticky, so they scroll. The user wants the `#` column to remain fixed (it already is sticky, but may need verification that it works properly with correct width).
 
-**1. Table header (~line 580-587)**
-- Add `<TableHead>Country</TableHead>` and `<TableHead>Site</TableHead>` after the `#` column
-- Update `colCount` calculation (+2)
-- Update sticky `left` offset for Project Name column
+### Changes — single file: `src/pages/MonthlyBreakdownList.tsx`
 
-**2. Project rows (~line 629-643)**
-- Add Country and Site cells after `#` cell
-- Country = `siteToCountry[p.site]` or "—"
-- Site = `p.site` or "—"
+**1. Ensure all text cells are left-aligned**
+- Add `text-left` to all `TableCell` elements that contain text labels (subsection headers, subtotal labels, group headers, summary rows)
+- Specifically target: group header row (line 612), subsection header (line 627), subtotal label (line 662), group total label (line 681), grand total (line 709), budget/contracted/invoiced labels
 
-**3. Subsection styling (~line 618, 646)**
-- IC header: `bg-blue-50` instead of `bg-muted/20`
-- IC subtotal: `bg-blue-100` instead of `bg-orange-50`
-- Ad Hoc header: keep `bg-orange-50`
-- Ad Hoc subtotal: keep `bg-orange-50`
+**2. Verify first column stickiness**
+- The `#` column already has `sticky left-0 bg-background z-10` — confirm this is applied consistently across ALL row types (project rows, subtotal rows, group headers, separator rows)
+- For group header rows and subsection headers that use `colSpan={colCount}`, the sticky behavior applies to the whole merged cell — add `sticky left-0 z-10` to these as well if missing
 
-**4. Separator row (~after line 676)**
-- After each group's Total row, render an empty `<TableRow>` with reduced height (`h-4`) and no border
+### Also in `src/components/ui/table.tsx`
 
-**5. Summary/subtotal rows**
-- Add empty Country and Site cells to all subtotal, total, and grand total rows to maintain column alignment
-
-**6. XLS export (~line 323-400)**
-- Add Country and Site columns to exported rows
-- Maintain separator rows in export
+**3. Add `text-left` to TableCell default class**
+- Change `TableCell` className to include `text-left` so all cells default to left alignment unless overridden (e.g. `text-right` for numeric columns)
 
