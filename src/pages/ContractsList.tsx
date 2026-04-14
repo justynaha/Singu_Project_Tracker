@@ -180,10 +180,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     projectNumber: true,
     projectTitle: true,
     site: true,
+    country: true,
     date: true,
     contractor: true,
     status: true,
     agreementSigned: true,
+    description: true,
     contracted: true,
     invoiced: true,
     balance: true,
@@ -194,14 +196,22 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     { key: "projectNumber", label: "Project Number" },
     { key: "projectTitle", label: "Project Title" },
     { key: "site", label: "Site" },
+    { key: "country", label: "Country" },
     { key: "date", label: "Date" },
     { key: "contractor", label: "Contractor" },
     { key: "status", label: "Status" },
     { key: "agreementSigned", label: "Agreement Signed" },
+    { key: "description", label: "Description" },
     { key: "contracted", label: "Contracted (EUR)" },
     { key: "invoiced", label: "Invoiced (EUR)" },
     { key: "balance", label: "Balance (EUR)" },
   ];
+
+  const SITE_GROUP_DISPLAY: Record<string, string> = {
+    WE: "Western Europe",
+    PL: "Poland",
+    HU: "Hungary",
+  };
 
   const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
 
@@ -301,6 +311,19 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       return true;
     });
   }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
+
+  const groupedFiltered = useMemo(() => {
+    const groups: Record<string, ContractRow[]> = {};
+    filtered.forEach(c => {
+      const proj = projectMap.get(c.project_id);
+      const country = proj?.site ? siteToCountry[proj.site] : null;
+      const sg = country ? (COUNTRY_TO_SITE_GROUP[country] || "Other") : "Other";
+      if (!groups[sg]) groups[sg] = [];
+      groups[sg].push(c);
+    });
+    const order = ["WE", "PL", "HU", "Other"];
+    return order.filter(k => groups[k]?.length).map(k => ({ group: k, label: SITE_GROUP_DISPLAY[k] || k, contracts: groups[k] }));
+  }, [filtered, projectMap]);
 
   const totals = useMemo(() => {
     let contracted = 0, invoiced = 0;
@@ -426,10 +449,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       if (visibleColumns.projectNumber) row["Project Number"] = projectNumberMap.get(c.project_id) ?? "";
       if (visibleColumns.projectTitle) row["Project Title"] = proj?.name || "";
       if (visibleColumns.site) row["Site"] = proj?.site || "";
+      if (visibleColumns.country) row["Country"] = proj?.site ? siteToCountry[proj.site] || "" : "";
       if (visibleColumns.date) row["Date"] = c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "";
       if (visibleColumns.contractor) row["Contractor"] = c.contractor || "";
       if (visibleColumns.status) row["Status"] = c.status;
       if (visibleColumns.agreementSigned) row["Agreement Signed"] = c.agreement_signed ? "Yes" : "No";
+      if (visibleColumns.description) row["Description"] = c.description || "";
       if (visibleColumns.contracted) row["Contracted (EUR)"] = contractedEur;
       if (visibleColumns.invoiced) row["Invoiced (EUR)"] = invoicedEur;
       if (visibleColumns.balance) row["Balance (EUR)"] = balanceEur;
@@ -461,10 +486,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     visibleColumns.projectNumber,
     visibleColumns.projectTitle,
     visibleColumns.site,
+    visibleColumns.country,
     visibleColumns.date,
     visibleColumns.contractor,
     visibleColumns.status,
     visibleColumns.agreementSigned,
+    visibleColumns.description,
   ].filter(Boolean).length;
 
   return (
@@ -663,10 +690,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                       {visibleColumns.projectNumber && <TableHead className="h-10 py-0 px-3">Project Number</TableHead>}
                       {visibleColumns.projectTitle && <TableHead className="h-10 py-0 px-3">Project Title</TableHead>}
                       {visibleColumns.site && <TableHead className="h-10 py-0 px-3">Site</TableHead>}
+                      {visibleColumns.country && <TableHead className="h-10 py-0 px-3">Country</TableHead>}
                       {visibleColumns.date && <TableHead className="h-10 py-0 px-3">Date</TableHead>}
                       {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
                       {visibleColumns.status && <TableHead className="h-10 py-0 px-3">Status</TableHead>}
                       {visibleColumns.agreementSigned && <TableHead className="h-10 py-0 px-3">Agreement Signed</TableHead>}
+                      {visibleColumns.description && <TableHead className="h-10 py-0 px-3">Description</TableHead>}
                       {visibleColumns.contracted && <TableHead className="h-10 py-0 px-3 text-right">Contracted (EUR)</TableHead>}
                       {visibleColumns.invoiced && <TableHead className="h-10 py-0 px-3 text-right">Invoiced (EUR)</TableHead>}
                       {visibleColumns.balance && <TableHead className="h-10 py-0 px-3 text-right">Balance (EUR)</TableHead>}
@@ -678,61 +707,73 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                         <TableCell colSpan={1 + Object.values(visibleColumns).filter(Boolean).length} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
                       </TableRow>
                     ) : (
-                      filtered.map((c) => {
-                        const proj = projectMap.get(c.project_id);
-                        const cur = proj?.currency || "EUR";
-                        const contractedEur = convertToEur(c.amount_lc || 0, cur);
-                        const cInvoices = invoicesByContract[c.id] || [];
-                        const invoicedEur = cInvoices.reduce((s, inv) => s + convertToEur(inv.amount_lc, cur), 0);
-                        const balanceEur = contractedEur - invoicedEur;
-                        const isSelected = selectedContract?.id === c.id;
-
-                        return (
-                          <TableRow
-                            key={c.id}
-                            className={cn("h-10 cursor-pointer", isSelected && "bg-muted/50")}
-                            onClick={() => setSelectedContract(isSelected ? null : c)}
-                          >
-                            <TableCell className="w-10 py-0 px-1" onClick={e => e.stopPropagation()}>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start">
-                                  <DropdownMenuItem onClick={() => openEditModal(c)}>
-                                    <Pencil className="h-3.5 w-3.5 mr-2" />Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => openInvoiceModal(c.id)}>
-                                    <Plus className="h-3.5 w-3.5 mr-2" />Add Invoice
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                      groupedFiltered.map((group) => (
+                        <>
+                          <TableRow key={`group-${group.group}`} className="h-10 bg-muted/40">
+                            <TableCell colSpan={1 + Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm">
+                              {group.label}
                             </TableCell>
-                            {visibleColumns.contractId && <TableCell className="py-0 px-3 font-medium">{c.contract_number}</TableCell>}
-                            {visibleColumns.projectNumber && (
-                              <TableCell className="py-0 px-3">
-                                <span
-                                  className="text-primary font-medium cursor-pointer hover:underline"
-                                  onClick={(e) => { e.stopPropagation(); navigate(`/project/${c.project_id}`); }}
-                                >
-                                  {projectNumberMap.get(c.project_id) ?? "—"}
-                                </span>
-                              </TableCell>
-                            )}
-                            {visibleColumns.projectTitle && <TableCell className="py-0 px-3">{proj?.name || "Unknown"}</TableCell>}
-                            {visibleColumns.site && <TableCell className="py-0 px-3">{proj?.site || "—"}</TableCell>}
-                            {visibleColumns.date && <TableCell className="py-0 px-3">{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>}
-                            {visibleColumns.contractor && <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>}
-                            {visibleColumns.status && <TableCell className="py-0 px-3"><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>}
-                            {visibleColumns.agreementSigned && <TableCell className="py-0 px-3">{c.agreement_signed ? "Yes" : "No"}</TableCell>}
-                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right">{formatAmount(contractedEur)}</TableCell>}
-                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(invoicedEur) : "—"}</TableCell>}
-                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>}
                           </TableRow>
-                        );
-                      })
+                          {group.contracts.map((c) => {
+                            const proj = projectMap.get(c.project_id);
+                            const cur = proj?.currency || "EUR";
+                            const contractedEur = convertToEur(c.amount_lc || 0, cur);
+                            const cInvoices = invoicesByContract[c.id] || [];
+                            const invoicedEur = cInvoices.reduce((s, inv) => s + convertToEur(inv.amount_lc, cur), 0);
+                            const balanceEur = contractedEur - invoicedEur;
+                            const isSelected = selectedContract?.id === c.id;
+                            const country = proj?.site ? siteToCountry[proj.site] || "—" : "—";
+
+                            return (
+                              <TableRow
+                                key={c.id}
+                                className={cn("h-10 cursor-pointer", isSelected && "bg-muted/50")}
+                                onClick={() => setSelectedContract(isSelected ? null : c)}
+                              >
+                                <TableCell className="w-10 py-0 px-1" onClick={e => e.stopPropagation()}>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start">
+                                      <DropdownMenuItem onClick={() => openEditModal(c)}>
+                                        <Pencil className="h-3.5 w-3.5 mr-2" />Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => openInvoiceModal(c.id)}>
+                                        <Plus className="h-3.5 w-3.5 mr-2" />Add Invoice
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                                {visibleColumns.contractId && <TableCell className="py-0 px-3 font-medium">{c.contract_number}</TableCell>}
+                                {visibleColumns.projectNumber && (
+                                  <TableCell className="py-0 px-3">
+                                    <span
+                                      className="text-primary font-medium cursor-pointer hover:underline"
+                                      onClick={(e) => { e.stopPropagation(); navigate(`/project/${c.project_id}`); }}
+                                    >
+                                      {projectNumberMap.get(c.project_id) ?? "—"}
+                                    </span>
+                                  </TableCell>
+                                )}
+                                {visibleColumns.projectTitle && <TableCell className="py-0 px-3">{proj?.name || "Unknown"}</TableCell>}
+                                {visibleColumns.site && <TableCell className="py-0 px-3">{proj?.site || "—"}</TableCell>}
+                                {visibleColumns.country && <TableCell className="py-0 px-3">{country}</TableCell>}
+                                {visibleColumns.date && <TableCell className="py-0 px-3">{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>}
+                                {visibleColumns.contractor && <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>}
+                                {visibleColumns.status && <TableCell className="py-0 px-3"><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>}
+                                {visibleColumns.agreementSigned && <TableCell className="py-0 px-3">{c.agreement_signed ? "Yes" : "No"}</TableCell>}
+                                {visibleColumns.description && <TableCell className="py-0 px-3 max-w-[200px] truncate">{c.description || "—"}</TableCell>}
+                                {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right">{formatAmount(contractedEur)}</TableCell>}
+                                {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(invoicedEur) : "—"}</TableCell>}
+                                {visibleColumns.balance && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>}
+                              </TableRow>
+                            );
+                          })}
+                        </>
+                      ))
                     )}
                   </TableBody>
                   {filtered.length > 0 && (
