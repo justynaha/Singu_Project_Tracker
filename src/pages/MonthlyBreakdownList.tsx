@@ -609,7 +609,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             <React.Fragment key={`group-${group.group}`}>
                               {/* Group header */}
                               <TableRow className="h-10 bg-muted/40 cursor-pointer" onClick={() => toggleGroup(group.group)}>
-                                <TableCell colSpan={colCount} className="py-0 px-3 font-bold text-sm">
+                                <TableCell colSpan={colCount} className="py-0 px-3 font-bold text-sm text-left sticky left-0 z-10 bg-muted/40">
                                   <span className="inline-flex items-center gap-1.5">
                                     <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "-rotate-90")} />
                                     {group.label} ({group.projects.length} project{group.projects.length !== 1 ? "s" : ""})
@@ -624,7 +624,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                 <React.Fragment key={`sub-${group.group}-${sub.label}`}>
                                   {/* Subsection header */}
                                   <TableRow className={cn("h-10", sub.headerBg)}>
-                                    <TableCell colSpan={colCount} className={cn("py-0 px-3 pl-8 text-sm font-semibold text-muted-foreground", sub.headerBg)}>
+                                    <TableCell colSpan={colCount} className={cn("py-0 px-3 pl-8 text-sm text-left font-semibold text-muted-foreground sticky left-0 z-10", sub.headerBg)}>
                                       {sub.label}
                                     </TableCell>
                                   </TableRow>
@@ -659,7 +659,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                     <TableCell className={cn("py-0 px-3 sticky left-0 z-10", sub.subtotalBg)} />
                                     <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
                                     <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
-                                    <TableCell className={cn("py-0 px-3 sticky left-[60px] z-10 font-semibold text-sm italic", sub.subtotalBg)} colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                    <TableCell className={cn("py-0 px-3 sticky left-[60px] z-10 font-semibold text-sm text-left italic", sub.subtotalBg)} colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                       Subtotal {sub.label} — {group.label}
                                     </TableCell>
                                     {MONTH_KEYS.map(k => visibleMonths[k] && (
@@ -678,7 +678,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                 <TableCell className="py-0 px-3 sticky left-0 bg-orange-100 z-10" />
                                 <TableCell className="py-0 px-3 bg-orange-100" />
                                 <TableCell className="py-0 px-3 bg-orange-100" />
-                                <TableCell className="py-0 px-3 sticky left-[60px] bg-orange-100 z-10 font-semibold text-sm italic" colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                <TableCell className="py-0 px-3 sticky left-[60px] bg-orange-100 z-10 font-semibold text-sm text-left italic" colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                   Total — {group.label}
                                 </TableCell>
                                 {MONTH_KEYS.map(k => visibleMonths[k] && (
@@ -692,7 +692,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               </TableRow>
                               {/* Separator row */}
                               <TableRow className="h-4 border-0">
-                                <TableCell colSpan={colCount} className="p-0 border-0" />
+                                <TableCell colSpan={colCount} className="p-0 border-0 sticky left-0" />
                               </TableRow>
                             </React.Fragment>
                           );
