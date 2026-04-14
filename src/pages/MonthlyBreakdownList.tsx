@@ -312,26 +312,40 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
 
   // XLS Export
   const handleExportXls = () => {
-    const rows = filteredProjects.map(p => {
-      const bd = breakdownMap.get(p.id);
-      let rowTotal = 0;
-      const row: Record<string, any> = {
-        "#": projectNumberMap.get(p.id) ?? "",
-        "Project Name": p.name,
-      };
-      if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
-      if (visibleExtraColumns.budgetClassification) row["Budget Classification"] = p.budget_classification || "";
-      MONTH_KEYS.forEach((k, i) => {
-        if (visibleMonths[k]) {
-          const v = bd ? (bd as any)[k] || 0 : 0;
-          row[MONTH_HEADERS[i]] = v;
-          rowTotal += v;
-        } else {
-          if (bd) rowTotal += (bd as any)[k] || 0;
-        }
+    const rows: Record<string, any>[] = [];
+
+    // Grouped project rows with headers and subtotals
+    groupedProjects.forEach(group => {
+      // Group header row
+      rows.push({ "#": "", "Project Name": `${group.label} (${group.projects.length} project${group.projects.length !== 1 ? "s" : ""})` });
+
+      group.projects.forEach(p => {
+        const bd = breakdownMap.get(p.id);
+        let rowTotal = 0;
+        const row: Record<string, any> = {
+          "#": projectNumberMap.get(p.id) ?? "",
+          "Project Name": p.name,
+        };
+        if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
+        if (visibleExtraColumns.budgetClassification) row["Budget Classification"] = p.budget_classification || "";
+        MONTH_KEYS.forEach((k, i) => {
+          if (visibleMonths[k]) {
+            const v = bd ? (bd as any)[k] || 0 : 0;
+            row[MONTH_HEADERS[i]] = v;
+            rowTotal += v;
+          } else {
+            if (bd) rowTotal += (bd as any)[k] || 0;
+          }
+        });
+        if (visibleMonths.total) row["Total"] = rowTotal;
+        rows.push(row);
       });
-      if (visibleMonths.total) row["Total"] = rowTotal;
-      return row;
+
+      // Subtotal row
+      const subRow: Record<string, any> = { "#": "", "Project Name": `Subtotal — ${group.label}` };
+      MONTH_KEYS.forEach((k, i) => { if (visibleMonths[k]) subRow[MONTH_HEADERS[i]] = group.subtotals[k] || 0; });
+      if (visibleMonths.total) subRow["Total"] = group.subtotals.total || 0;
+      rows.push(subRow);
     });
 
     // Grand Total row
