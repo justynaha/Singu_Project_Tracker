@@ -376,6 +376,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       MONTH_KEYS.forEach((k, i) => { if (visibleMonths[k]) totalRow[MONTH_HEADERS[i]] = group.subtotals[k] || 0; });
       if (visibleMonths.total) totalRow["Total"] = group.subtotals.total || 0;
       rows.push(totalRow);
+      // Separator row
+      rows.push({});
     });
 
     // Grand Total row
