@@ -633,8 +633,8 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
           </Table>
         )}
       </div>
-            <PopoverContent align="start" className="w-56 p-3">
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Toggle columns</p>
+
+
               <div className="space-y-2">
                 {([
                   { key: "date" as const, label: "Date" },
