@@ -236,13 +236,18 @@ export const AppSidebar = () => {
                                   <CollapsibleContent>
                                     <ul className="ml-4 mt-0.5 space-y-0.5 border-l border-sidebar-border pl-3">
                                       {subItem.children!.map(child => {
-                                        const cActive = location.pathname === child.path;
+                                        const cActive = child.path.includes("?")
+                                          ? location.pathname + location.search === child.path
+                                          : location.pathname === child.path;
                                         return (
                                           <li key={child.path}>
                                             <NavLink
                                               to={child.path}
-                                              className={cn("flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors", "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
-                                              activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                              className={cn(
+                                                "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors",
+                                                "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                                cActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                              )}
                                             >
                                               <span>{child.title}</span>
                                             </NavLink>
