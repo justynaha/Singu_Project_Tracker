@@ -510,6 +510,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     <TableRow className="h-10">
                       <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
                       <TableHead className="h-10 py-0 px-3 sticky left-[60px] bg-background z-10 min-w-[200px]">Project Name</TableHead>
+                      {visibleExtraColumns.budgetType && <TableHead className="h-10 py-0 px-3">Budget Type</TableHead>}
+                      {visibleExtraColumns.budgetClassification && <TableHead className="h-10 py-0 px-3">Budget Classification</TableHead>}
                       {MONTH_KEYS.map((k, i) => visibleMonths[k] && <TableHead key={k} className="h-10 py-0 px-3 text-right min-w-[100px]">{MONTH_HEADERS[i]}</TableHead>)}
                       {visibleMonths.total && <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-muted/30">Total</TableHead>}
                     </TableRow>
