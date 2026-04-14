@@ -288,8 +288,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     });
   }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = 1; // unused, kept for reference
 
   // Totals
   const totals = useMemo(() => {
@@ -593,12 +592,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginated.length === 0 ? (
+                    {filtered.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={12} className="text-center text-muted-foreground py-12">No contracts found</TableCell>
                       </TableRow>
                     ) : (
-                      paginated.map((c) => {
+                      filtered.map((c) => {
                         const proj = projectMap.get(c.project_id);
                         const cur = proj?.currency || "EUR";
                         const contractedEur = convertToEur(c.amount_lc || 0, cur);
@@ -668,22 +667,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                 </Table>
               </div>
 
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm">Page {currentPage} of {totalPages}</span>
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>

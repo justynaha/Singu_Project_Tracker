@@ -216,8 +216,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     return { grandBudget, planned3M, grandContracted, grandInvoiced };
   }, [filteredProjects, grandTotals, contracts, invoicesWithProject]);
 
-  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
-  const paginated = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const loading = projectsLoading || bdLoading;
 
   return (
@@ -356,12 +354,12 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginated.length === 0 ? (
+                    {filteredProjects.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={15} className="text-center text-muted-foreground py-12">No projects found</TableCell>
                       </TableRow>
                     ) : (
-                      paginated.map(p => {
+                      filteredProjects.map(p => {
                         const bd = breakdownMap.get(p.id);
                         let rowTotal = 0;
                         if (bd) MONTH_KEYS.forEach(k => { rowTotal += (bd as any)[k] || 0; });
@@ -381,7 +379,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         );
                       })
                     )}
-                    {paginated.length > 0 && (
+                    {filteredProjects.length > 0 && (
                       <>
                         {/* Grand Total */}
                         <TableRow className="h-10 bg-muted/50 font-bold">
@@ -451,22 +449,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
               </div>
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredProjects.length)} of {filteredProjects.length}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm">Page {currentPage} of {totalPages}</span>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>
