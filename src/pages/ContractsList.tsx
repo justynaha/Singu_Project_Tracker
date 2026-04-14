@@ -238,7 +238,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     HU: "Hungary",
   };
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification;
 
   const applyFilters = () => {
     setFilterSiteGroups(pendingSiteGroups);
