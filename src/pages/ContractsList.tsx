@@ -715,7 +715,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   </div>
                 )}
               </div>
-            )}
           </div>
 
           <div className="flex items-center justify-end gap-2 mb-3 pr-4">
