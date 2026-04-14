@@ -1,42 +1,52 @@
 
 
-## Plan: Add summary rows (Ongoing, Savings, Postponed) and reorder
+## Plan: Group Monthly Breakdown by Site Group with collapsible headers
 
 ### What changes
 
-**1. Add `savings` and `postponed` columns to `projects` table**
-- Database migration adding two nullable numeric columns: `savings` (default 0) and `postponed` (default 0)
-- These will be populated per-project in a future step
+Group the project rows in the Monthly Breakdown report table by Site Group (Western Europe, Poland, Hungary, Other) — the same grouping logic used in Contract Tracker. Each group gets a collapsible header row with a chevron icon, group name, and project count in parentheses.
 
-**2. Update `summaryTotals` computation in `MonthlyBreakdownList.tsx`**
-- Add `grandOngoing`: sum of `amount_lc` from contracts where `status = 'Ongoing'` for filtered projects
-- Add `grandSavings`: sum of `savings` from filtered projects
-- Add `grandPostponed`: sum of `postponed` from filtered projects
+### Implementation
 
-**3. Reorder and add summary rows in the table (lines ~531-606)**
+**File: `src/pages/MonthlyBreakdownList.tsx`**
 
-New order:
-1. **Grand Total (EUR)** — bold, bg-muted/50 (existing)
-2. **Budget (EUR)** — existing
-3. **Contracted (EUR)** — existing
-4. **Invoiced (EUR)** — existing
-5. **Ongoing (EUR)** — NEW, sum of contracts with status 'Ongoing'
-6. **Planned 3M (EUR)** — existing
-7. **Savings (EUR)** — NEW, sum of `projects.savings`
-8. **Postponed (EUR)** — NEW, sum of `projects.postponed`
+1. **Add state for collapsed groups**
+   - `collapsedGroups` (Set) + `toggleGroup` function — same pattern as ContractsList
 
-Each new row follows the same pattern: label in sticky column, percentage of total + value in the Total column.
+2. **Add `SITE_GROUP_DISPLAY` map** (already exists in ContractsList):
+   ```
+   WE → "Western Europe", PL → "Poland", HU → "Hungary"
+   ```
 
-**4. Update XLS export** (lines ~290-312)
-- Add Ongoing, Savings, Postponed rows and reorder to match the table
+3. **Add `groupedProjects` useMemo** — group `filteredProjects` by site group:
+   - For each project, determine country from `siteToCountry`, then site group from `COUNTRY_TO_SITE_GROUP`
+   - Group into `{ group, label, projects }[]` ordered WE → PL → HU → Other
+   - Calculate per-group subtotals for monthly values and total
 
-**5. Update `MonthlyBreakdownTab.tsx` (per-project view)**
-- Reorder summary rows to match: Total, Budget, Contracted, Invoiced, Ongoing, Planned 3M, Savings, Postponed
-- Add Ongoing row (filter contracts for that project with status 'Ongoing')
-- Add Savings and Postponed rows reading from project fields
+4. **Replace flat project rows with grouped rendering**:
+   - For each group, render a collapsible header row (bg-muted/40, chevron icon, label + project count)
+   - When expanded, render the project rows within that group
+   - After each group's projects, render a **Subtotal** row (bg-orange-100, same style as Contract Tracker subtotals) showing sum of monthly columns and total for that group
 
-### Technical details
-- Migration: `ALTER TABLE projects ADD COLUMN savings numeric DEFAULT 0; ALTER TABLE projects ADD COLUMN postponed numeric DEFAULT 0;`
-- Ongoing contracts filter: `contracts.filter(c => filteredIds.has(c.project_id) && c.status === 'Ongoing').reduce(...)`
-- The Supabase types will auto-update after migration
+5. **Keep existing summary rows** (Grand Total, Budget, Contracted, etc.) unchanged at the bottom
+
+6. **Update XLS export** to include group headers and subtotals in the exported data
+
+### Visual result
+```text
+┌──────────────────────────────────────────────────┐
+│ ▼ Western Europe (3 projects)                    │  ← collapsible header
+│   #13536  Project A   100  200  ...  1,200.00    │
+│   #13537  Project B   ...                        │
+│   #13538  Project C   ...                        │
+│   Subtotal — Western Europe    ...  3,600.00     │  ← orange bg
+│ ▼ Poland (2 projects)                            │
+│   #13539  Project D   ...                        │
+│   #13540  Project E   ...                        │
+│   Subtotal — Poland            ...  2,400.00     │
+│ Grand Total (EUR)              ...  6,000.00     │
+│ Budget (EUR)                       10,000.00     │
+│ ...                                              │
+└──────────────────────────────────────────────────┘
+```
 
