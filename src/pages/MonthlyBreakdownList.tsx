@@ -597,7 +597,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                       <>
                         {groupedProjects.map(group => {
                           const isCollapsed = collapsedGroups.has(group.group);
-                          const colCount = 2 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0) + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0);
+                          const colCount = 4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0) + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0);
                           const colsBeforeTotal = colCount - (visibleMonths.total ? 1 : 0);
                           return (
                             <React.Fragment key={`group-${group.group}`}>
