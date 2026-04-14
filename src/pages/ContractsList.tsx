@@ -187,7 +187,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [pendingSite, setPendingSite] = useState("");
    const [pendingBudgetLine, setPendingBudgetLine] = useState("");
   const [pendingStatus, setPendingStatus] = useState("");
-  const [pendingFiscalYear, setPendingFiscalYear] = useState("");
+  const [pendingFiscalYear, setPendingFiscalYear] = useState("2026");
   const [pendingBudgetType, setPendingBudgetType] = useState("");
   const [pendingBudgetClassification, setPendingBudgetClassification] = useState("");
 
@@ -196,7 +196,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [filterSite, setFilterSite] = useState("");
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [filterFiscalYear, setFilterFiscalYear] = useState("");
+  const [filterFiscalYear, setFilterFiscalYear] = useState("2026");
   const [filterBudgetType, setFilterBudgetType] = useState("");
   const [filterBudgetClassification, setFilterBudgetClassification] = useState("");
 
@@ -550,7 +550,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   return (
     <div className={embedded ? "" : "bg-background"}>
       <div className={embedded ? "flex overflow-hidden" : "flex h-[calc(100vh-64px)] overflow-hidden"}>
-        <div className={cn("flex-1 min-w-0 overflow-y-auto", embedded ? "p-0" : "p-6")}>
+        <div className={cn("flex-1 min-w-0 overflow-y-auto", embedded ? "p-4" : "p-6")}>
           {!embedded && (
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold">Contracts</h1>
@@ -570,13 +570,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
           </div>
 
           <div className="mb-4">
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="mb-2">
-              Filters
-              <ChevronLeft className={cn("h-4 w-4 ml-2 transition-transform", !showFilters && "-rotate-90")} />
-            </Button>
-
-            {showFilters && (
-              <div className="p-4 border border-border rounded-lg bg-card space-y-4">
+              <div className="space-y-4">
                 <div className="flex items-end gap-4 flex-wrap">
                   <div className="flex-1 min-w-[150px]">
                     <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
@@ -606,16 +600,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                       <SelectContent>
                         <SelectItem value="all">All countries</SelectItem>
                         {filterOptions.countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex-1">
-                    <Label className="text-xs text-muted-foreground mb-2 block">Site</Label>
-                    <Select value={pendingSite || "all"} onValueChange={v => setPendingSite(v === "all" ? "" : v)}>
-                      <SelectTrigger><SelectValue placeholder="All sites" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All sites</SelectItem>
-                        {filterOptions.sites.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
