@@ -327,7 +327,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                   {totalBudget != null && totalBudget > 0 && (
                     <tr className="border-t border-border">
                       <td className="sticky left-0 z-10 bg-background px-3 py-3 text-sm text-muted-foreground border-r border-border">
-                        Project Budget
+                        Budget
                       </td>
                       <td
                         colSpan={headers.length}
