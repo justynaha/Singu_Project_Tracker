@@ -41,11 +41,19 @@ const navigationItems: NavItem[] = [{
     title: "Dashboard",
     icon: PieChart,
     path: "/dashboard"
-  }, {
+}, {
     title: "Projects",
     icon: List,
     path: "/projects"
-}]
+  }, {
+    title: "Reports",
+    icon: FileText,
+    path: "/reports",
+    children: [
+      { title: "Contract Tracker", path: "/reports?tab=contracts" },
+      { title: "Monthly Breakdown", path: "/reports?tab=monthly-breakdown" },
+    ]
+  }]
 }, {
   title: "Buildings",
   icon: Building2,
@@ -114,19 +122,6 @@ const navigationItems: NavItem[] = [{
   icon: CreditCard,
   path: "/settlements",
   hasSubmenu: true
-}, {
-  title: "Reports",
-  icon: FileText,
-  path: "/reports",
-  submenu: [{
-    title: "Contract Tracker",
-    icon: FileSignature,
-    path: "/reports?tab=contracts"
-  }, {
-    title: "Monthly Breakdown",
-    icon: CalendarRange,
-    path: "/reports?tab=monthly-breakdown"
-  }]
 }, {
   title: "ESG",
   icon: Leaf,
