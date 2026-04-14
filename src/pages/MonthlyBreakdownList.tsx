@@ -350,7 +350,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                       <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
                       <TableHead className="h-10 py-0 px-3 sticky left-[60px] bg-background z-10 min-w-[200px]">Project Name</TableHead>
                       {MONTH_HEADERS.map(h => <TableHead key={h} className="h-10 py-0 px-3 text-right min-w-[100px]">{h}</TableHead>)}
-                      <TableHead className="h-10 py-0 px-3 text-right min-w-[110px] font-bold">Total</TableHead>
+                      <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-muted/30">Total</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -374,7 +374,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             {MONTH_KEYS.map(k => (
                               <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
                             ))}
-                            <TableCell className="py-0 px-3 text-right font-bold tabular-nums">{formatAmount(rowTotal || null)}</TableCell>
+                            <TableCell className="py-0 px-3 text-right font-bold tabular-nums bg-muted/30">{formatAmount(rowTotal || null)}</TableCell>
                           </TableRow>
                         );
                       })
@@ -390,7 +390,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           {MONTH_KEYS.map(k => (
                             <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                           ))}
-                          <TableCell className="py-0 px-3 text-right tabular-nums">
+                          <TableCell className="py-0 px-3 text-right tabular-nums bg-muted/30">
                             {summaryTotals.grandBudget > 0 && (
                               <span className={cn("mr-2 text-xs font-normal", grandTotals.total > summaryTotals.grandBudget ? "text-destructive" : "text-muted-foreground")}>
                                 ({Math.round((grandTotals.total / summaryTotals.grandBudget) * 100)}% of budget)
@@ -406,7 +406,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           {MONTH_KEYS.map(k => (
                             <TableCell key={k} className="py-0 px-3" />
                           ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>
                         </TableRow>
                         {/* Planned 3M */}
                         <TableRow className="h-10">
@@ -415,7 +415,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           {MONTH_KEYS.map(k => (
                             <TableCell key={k} className="py-0 px-3" />
                           ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
                             <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.planned3M / grandTotals.total) * 100) : 0}% total)</span>
                             {formatAmount(summaryTotals.planned3M || null)}
                           </TableCell>
@@ -427,7 +427,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           {MONTH_KEYS.map(k => (
                             <TableCell key={k} className="py-0 px-3" />
                           ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
                             <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandContracted / grandTotals.total) * 100) : 0}% total)</span>
                             {formatAmount(summaryTotals.grandContracted || null)}
                           </TableCell>
@@ -439,7 +439,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           {MONTH_KEYS.map(k => (
                             <TableCell key={k} className="py-0 px-3" />
                           ))}
-                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums">
+                          <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
                             <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandInvoiced / grandTotals.total) * 100) : 0}% total)</span>
                             {formatAmount(summaryTotals.grandInvoiced || null)}
                           </TableCell>
