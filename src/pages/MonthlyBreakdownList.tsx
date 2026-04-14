@@ -380,7 +380,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     <SelectTrigger><SelectValue placeholder="All statuses" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All statuses</SelectItem>
-                      {filterOptions.statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
