@@ -45,6 +45,7 @@ interface Props {
   projectCurrency?: string;
   totalContracted?: number;
   totalInvoiced?: number;
+  totalBudget?: number;
 }
 
 // Hardcoded FX rate for demo — in production, fetch from fx_rates table
@@ -312,9 +313,29 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                       colSpan={headers.length}
                       className="px-3 py-3 text-right font-bold text-foreground text-lg"
                     >
+                      {totalBudget && totalBudget > 0 && (
+                        <span className="text-sm font-normal text-muted-foreground mr-2">
+                          ({Math.round((convertValue(total, currency) / convertValue(totalBudget, currency)) * 100)}% of budget)
+                        </span>
+                      )}
                       {fmt(convertValue(total, currency))} {currencyLabel}
                     </td>
                   </tr>
+
+                  {/* Project Budget row */}
+                  {totalBudget != null && totalBudget > 0 && (
+                    <tr className="border-t border-border">
+                      <td className="sticky left-0 z-10 bg-background px-3 py-3 text-sm text-muted-foreground border-r border-border">
+                        Project Budget
+                      </td>
+                      <td
+                        colSpan={headers.length}
+                        className="px-3 py-3 text-right text-sm text-muted-foreground"
+                      >
+                        {fmt(convertValue(totalBudget, currency))} {currencyLabel}
+                      </td>
+                    </tr>
+                  )}
 
                   {/* Summary rows */}
                   <SummaryRow
