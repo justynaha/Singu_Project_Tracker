@@ -656,10 +656,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                   })}
                                   {/* Subsection subtotal */}
                                   <TableRow className={cn("h-10", sub.subtotalBg)}>
-                                    <TableCell className={cn("py-0 px-3 sticky left-0 z-10", sub.subtotalBg)} />
-                                    <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
-                                    <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
-                                    <TableCell className={cn("py-0 px-3 sticky left-[60px] z-10 font-semibold text-sm text-left italic", sub.subtotalBg)} colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                    <TableCell className={cn("py-0 px-3 sticky left-0 z-10 font-semibold text-sm text-left italic", sub.subtotalBg)} colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                       Subtotal {sub.label} — {group.label}
                                     </TableCell>
                                     {MONTH_KEYS.map(k => visibleMonths[k] && (
@@ -675,10 +672,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               ))}
                               {/* Group total row */}
                               <TableRow className="h-10 bg-orange-100">
-                                <TableCell className="py-0 px-3 sticky left-0 bg-orange-100 z-10" />
-                                <TableCell className="py-0 px-3 bg-orange-100" />
-                                <TableCell className="py-0 px-3 bg-orange-100" />
-                                <TableCell className="py-0 px-3 sticky left-[60px] bg-orange-100 z-10 font-semibold text-sm text-left italic" colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                <TableCell className="py-0 px-3 sticky left-0 bg-orange-100 z-10 font-semibold text-sm text-left italic" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                   Total — {group.label}
                                 </TableCell>
                                 {MONTH_KEYS.map(k => visibleMonths[k] && (
@@ -703,14 +697,9 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                       <>
                         {/* Grand Total */}
                         <TableRow className="h-10 bg-muted/50 font-bold">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-muted/50 z-10" />
-                          <TableCell className="py-0 px-3 bg-muted/50" />
-                          <TableCell className="py-0 px-3 bg-muted/50" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-muted/50 z-10 text-left" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                             Grand Total (EUR)
                           </TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 bg-muted/50" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 bg-muted/50" />}
                           {MONTH_KEYS.map(k => visibleMonths[k] && (
                             <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                           ))}
@@ -727,23 +716,13 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         </TableRow>
                         {/* Budget */}
                         <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Budget (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>Budget (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>}
                         </TableRow>
                         {/* Contracted */}
                         <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Contracted (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>Contracted (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
@@ -754,12 +733,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         </TableRow>
                         {/* Invoiced */}
                         <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Invoiced (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>Invoiced (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
@@ -770,12 +744,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         </TableRow>
                         {/* Ongoing */}
                         <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Ongoing (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>Ongoing (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
@@ -786,12 +755,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         </TableRow>
                         {/* Planned 3M */}
                         <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Planned 3M (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>Planned 3M (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
@@ -802,12 +766,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         </TableRow>
                         {/* Savings */}
                         <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Savings (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>Savings (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
@@ -818,12 +777,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         </TableRow>
                         {/* Postponed */}
                         <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Postponed (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>Postponed (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
