@@ -17,8 +17,8 @@ export default function Reports() {
   };
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="p-6">
+    <div className="bg-background flex flex-col h-full overflow-hidden">
+      <div className="p-6 pb-0 flex-shrink-0">
         <h1 className="text-3xl font-bold mb-6">Reports</h1>
         <div className="bg-card border border-border rounded-lg">
           <div className="border-b border-border flex gap-1 px-2">
