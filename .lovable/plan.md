@@ -1,30 +1,35 @@
 
 
-## Plan: Style subtotals, add collapse, project count, remove 3-dots icon
+## Plan: Fix Page Responsiveness and Scroll Behavior
 
-### Changes to `src/pages/ContractsList.tsx`
+### Problem
+Currently the sidebar scrolls with page content, the top bar and filters scroll horizontally with the table, and side panels may not stay anchored to the viewport right edge.
 
-**1. Subtotal row — orange background**
-- Change class from `bg-muted/20` to `bg-orange-100` (line 853)
+### Changes
 
-**2. Grand Total row — brown background**
-- Change footer row class to `bg-amber-900 text-white` (line 867)
+**1. Sidebar — always fixed (`src/components/AppSidebar.tsx`)**
+- Already has `sticky top-0 h-screen` — change to `fixed top-0 left-0 h-screen z-30`
+- In `src/App.tsx`, add a matching left margin/padding on the main content wrapper so it doesn't sit under the sidebar (`ml-64` / `ml-16` depending on collapse state). Since collapse state lives in AppSidebar, we'll need to either lift that state to App or use CSS approach with a spacer div.
+- Simplest: keep sidebar `sticky top-0` (which already works as fixed within flex) but ensure `flex-shrink-0` is set (it is). Actually `sticky top-0` within a flex row already behaves as fixed — the real issue may be the outer container. Let me re-check.
 
-**3. Collapse toggle on group header rows**
-- Add `collapsedGroups` state: `useState<Set<string>>(new Set())`
-- Add `ChevronDown`/`ChevronRight` icon before group label in the group header row (line 789-793)
-- Clicking toggles the group key in `collapsedGroups`
-- When collapsed, skip rendering `group.contracts.map(...)` data rows but still render the subtotal row
+Actually, `sticky top-0 h-screen` in a flex parent with `min-h-screen` already pins the sidebar. The sidebar should not scroll. If it does, the fix is to ensure the parent `div.flex` doesn't have overflow set and the right-side content column handles its own scrolling.
 
-**4. Project count in group label**
-- Count unique `project_id` values per group and display as e.g. `Western Europe (13 projects)` in the group header row
+**2. App layout (`src/App.tsx`)**
+- Root flex container: `flex w-full h-screen overflow-hidden` (change from `min-h-screen`)
+- Right column: `flex-1 flex flex-col min-w-0 h-screen overflow-hidden`
+- `<main>`: `flex-1 overflow-y-auto overflow-x-hidden` — vertical scrolling for page content
 
-**5. Remove 3-dots (MoreVertical) action column**
-- Remove the `<TableHead className="w-10 ...">` actions column header (line 765)
-- Remove the `<TableCell>` with `DropdownMenu`/`MoreVertical` from each data row (lines 810-826)
-- Remove the leading empty cell from subtotal and group header rows
-- Adjust `visibleBeforeFinancial` calculation (subtract 1 for the removed actions column)
+**3. Reports page header/tabs/filters should NOT scroll horizontally (`src/pages/Reports.tsx` + `src/pages/ContractsList.tsx`)**
+- In `ContractsList.tsx`: restructure so that search bar, filters, column toggles, and active filter badges are outside the horizontally scrollable container
+- Only the `<Table>` wrapper div gets `overflow-x-auto`
+- Filters row: change from `flex items-end gap-4` to `flex items-end gap-4 flex-wrap` so filters wrap on smaller screens
+
+**4. Side panels anchored to viewport right edge**
+- Side panels (CopilotPanel, contract detail, etc.) already use `fixed right-0` positioning — verify and keep as-is. The `fixed` positioning ensures they stay on viewport right edge regardless of scroll.
 
 ### Files to edit
-- `src/pages/ContractsList.tsx` (~30 lines changed)
+- `src/App.tsx` — root layout overflow control
+- `src/pages/ContractsList.tsx` — isolate horizontal scroll to table only, wrap filters
+- `src/pages/Reports.tsx` — ensure page header doesn't scroll horizontally
+- `src/pages/MonthlyBreakdownList.tsx` — same table scroll isolation treatment
 
