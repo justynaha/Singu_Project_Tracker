@@ -365,16 +365,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                   </Select>
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-2 block">Site</Label>
-                  <Select value={pendingSite || "all"} onValueChange={v => setPendingSite(v === "all" ? "" : v)}>
-                    <SelectTrigger><SelectValue placeholder="All sites" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All sites</SelectItem>
-                      {filterOptions.sites.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex-1">
                   <Label className="text-xs text-muted-foreground mb-2 block">Work category</Label>
                   <Select value={pendingBudgetLine || "all"} onValueChange={v => setPendingBudgetLine(v === "all" ? "" : v)}>
                     <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
