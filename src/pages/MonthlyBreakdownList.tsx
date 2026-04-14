@@ -704,7 +704,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                           ))}
                           {visibleMonths.total && (
-                            <TableCell className="py-0 px-3 text-right tabular-nums bg-background sticky right-0 z-10">
+                            <TableCell className="py-0 px-3 text-right tabular-nums bg-gray-100 sticky right-0 z-10">
                               {summaryTotals.grandBudget > 0 && (
                                 <span className={cn("mr-2 text-xs font-normal", grandTotals.total > summaryTotals.grandBudget ? "text-destructive" : "text-muted-foreground")}>
                                   ({Math.round((grandTotals.total / summaryTotals.grandBudget) * 100)}% of budget)
