@@ -656,10 +656,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                   })}
                                   {/* Subsection subtotal */}
                                   <TableRow className={cn("h-10", sub.subtotalBg)}>
-                                    <TableCell className={cn("py-0 px-3 sticky left-0 z-10", sub.subtotalBg)} />
-                                    <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
-                                    <TableCell className={cn("py-0 px-3", sub.subtotalBg)} />
-                                    <TableCell className={cn("py-0 px-3 sticky left-[60px] z-10 font-semibold text-sm text-left italic", sub.subtotalBg)} colSpan={1 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
+                                    <TableCell className={cn("py-0 px-3 sticky left-0 z-10 font-semibold text-sm text-left italic", sub.subtotalBg)} colSpan={4 + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0)}>
                                       Subtotal {sub.label} — {group.label}
                                     </TableCell>
                                     {MONTH_KEYS.map(k => visibleMonths[k] && (
