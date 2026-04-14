@@ -1077,7 +1077,7 @@ export default function Projects() {
             </div>
 
             <div>
-              <Label>Budget type</Label>
+              <Label>Budget type <span className="text-destructive">*</span></Label>
               <RadioGroup
                 value={formData.budgetType}
                 onValueChange={(val) => setFormData({ ...formData, budgetType: val })}
@@ -1095,7 +1095,7 @@ export default function Projects() {
             </div>
 
             <div>
-              <Label>Budget classification</Label>
+              <Label>Budget classification <span className="text-destructive">*</span></Label>
               <RadioGroup
                 value={formData.budgetClassification}
                 onValueChange={(val) => setFormData({ ...formData, budgetClassification: val })}
@@ -1116,7 +1116,7 @@ export default function Projects() {
             <Button variant="ghost" onClick={() => setShowNewProject(false)}>
               Cancel
             </Button>
-            <Button onClick={handleFormSubmit} disabled={!formData.name || !formData.site}>
+            <Button onClick={handleFormSubmit} disabled={!formData.name || !formData.site || !formData.budgetType || !formData.budgetClassification}>
               Add project
             </Button>
           </DialogFooter>
