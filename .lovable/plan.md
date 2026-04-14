@@ -1,34 +1,40 @@
 
 
-## Plan: Seed Logistics Projects with Plans, Contracts, and Invoices
+## Plan: Subtotal Rows, Missing Countries, New Filters, Budget Type/Classification Columns
 
-### Overview
-Insert ~20 logistics-specific projects (3-6 per country: Poland, Hungary, Spain, Italy) with project plans (milestones + tasks), contracts, and invoices using a seed script executed via `code--exec`.
+### 1. Add subtotal rows per group in Contract Tracker (`src/pages/ContractsList.tsx`)
+- After each group's contract rows, render a subtotal `TableRow` with summed Contracted/Invoiced/Balance EUR values
+- Style: `bg-muted/20`, bold text, label like "Subtotal — Western Europe"
+- Update XLS export to include subtotal rows per group
 
-### Data Structure
+### 2. Add missing countries to `siteToCountry` mappings
+- In both `ContractsList.tsx` and `MonthlyBreakdownList.tsx`, add entries for short site names used by newer projects:
+  - `"Bedzin"` → Poland, `"Blonie 2"` → Poland, `"Gdańsk-Airport"` → Poland, `"Nadarzyn"` → Poland, `"Piotrków 1"` → Poland, `"Szczecin"` → Poland
+  - `"Bologna Castel San Pietro"` → Italy, `"Fogars"` → Spain, `"Les Franqueses"` → Spain, `"Sallent"` → Spain, `"Valls"` → Spain
+  - `"Százhalombatta"` → Hungary, `"Üllő"` → Hungary (already present in ContractsList but missing in MonthlyBreakdownList)
 
-**Projects** (~20 total, distributed across sites):
-- Poland (6): Bedzin, Blonie 2, Gdańsk-Airport, Nadarzyn, Piotrków 1, Szczecin
-- Hungary (4): Százhalombatta, Üllő, Fogars
-- Spain (4): Les Franqueses, Sallent, Valls
-- Italy (3): Bologna Castel San Pietro
+### 3. Add "Netherlands" and "France" countries
+- Update `COUNTRY_TO_SITE_GROUP` in `src/hooks/useDashboardData.ts` to include `"Netherlands": "WE"`, `"France": "WE"`
+- Update `siteToCountry` in both report files (no actual sites yet, but mapping ready)
+- Insert 3-4 new projects via database with sites in Netherlands/France (e.g. "Tilburg", "Schiphol", "Lyon", "Marseille") with budget_type and budget_classification values set
 
-Logistics-specific project names like: "Dock Leveler Replacement", "Automated Sorting Line Installation", "Loading Bay LED Upgrade", "Forklift Charging Station Expansion", "Warehouse Fire Suppression System", "Cold Storage Unit Retrofit", "Conveyor Belt Modernization", "Truck Parking Area Resurfacing", etc.
+### 4. Add filters for Budget Type and Budget Classification in Contract Tracker
+- Fetch `budget_type` and `budget_classification` from projects query
+- Add `ProjectInfo` fields: `budget_type`, `budget_classification`
+- Add filter dropdowns: **Budget type** (IC / Ad Hoc / CAPEX / All), **Budget classification** (Mandatory / Speculative / All)
+- Add pending/applied filter state and badge display
 
-**Per project:**
-- 5-6 milestones (e.g. Design, Procurement, Installation, Testing, Handover) with `include_in_cashflow=true`
-- 0-4 tasks under each milestone
-- `milestone_cashflow` records for each milestone
-- 1-3 contracts with contractor names, amounts
-- 0-3 invoices per contract
+### 5. Add Budget Type and Budget Classification columns to Monthly Breakdown (capex tracker) (`src/pages/MonthlyBreakdownList.tsx`)
+- Add two new columns after Project Name: "Budget Type" and "Budget Classification"
+- Update column visibility controls and XLS export
+- Also add the same two filter dropdowns to Monthly Breakdown's filter panel
 
-### Technical Details
-- Script will use `psql` to insert data via SQL
-- Projects will have `budget_line`, `fiscal_year`, `currency` (PLN for Poland, HUF for Hungary, EUR for Spain/Italy), `status` varied across Open/In Progress/Completed
-- Timeline items: milestones with start/end dates spread across 2025-2026
-- Contracts: realistic contractor names, amounts in local currency
-- All IDs generated via `gen_random_uuid()`
+### 6. Seed data: new projects for Netherlands and France
+- Insert ~5 projects (2-3 per country) with sites, budget_type (IC/Ad Hoc/CAPEX), budget_classification (Mandatory/Speculative), contracts, milestones, monthly breakdowns
 
-### Files
-- No codebase changes — data insertion only via SQL script
+### Files to edit
+- `src/hooks/useDashboardData.ts` — add Netherlands, France to COUNTRY_TO_SITE_GROUP
+- `src/pages/ContractsList.tsx` — subtotal rows, missing countries, new filters, budget type/classification
+- `src/pages/MonthlyBreakdownList.tsx` — missing countries, new columns, new filters
+- Database — insert new projects for NL/FR with related data
 
