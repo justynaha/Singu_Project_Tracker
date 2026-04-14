@@ -733,6 +733,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         {/* Contracted */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3" />
+                          <TableCell className="py-0 px-3" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Contracted (EUR)</TableCell>
                           {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
                           {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
@@ -747,6 +749,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         {/* Invoiced */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3" />
+                          <TableCell className="py-0 px-3" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Invoiced (EUR)</TableCell>
                           {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
                           {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
@@ -761,6 +765,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         {/* Ongoing */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3" />
+                          <TableCell className="py-0 px-3" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Ongoing (EUR)</TableCell>
                           {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
                           {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
@@ -775,6 +781,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         {/* Planned 3M */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3" />
+                          <TableCell className="py-0 px-3" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Planned 3M (EUR)</TableCell>
                           {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
                           {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
@@ -789,6 +797,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         {/* Savings */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3" />
+                          <TableCell className="py-0 px-3" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Savings (EUR)</TableCell>
                           {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
                           {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
@@ -803,6 +813,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                         {/* Postponed */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3" />
+                          <TableCell className="py-0 px-3" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Postponed (EUR)</TableCell>
                           {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
                           {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
