@@ -460,7 +460,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
         </div>
 
         {/* Toolbar: Columns + Export */}
-        <div className="flex items-center justify-end gap-2 mb-3">
+        <div className="flex items-center justify-end gap-2 mb-3 pr-4">
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm">
