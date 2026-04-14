@@ -272,6 +272,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
         "#": projectNumberMap.get(p.id) ?? "",
         "Project Name": p.name,
       };
+      if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
+      if (visibleExtraColumns.budgetClassification) row["Budget Classification"] = p.budget_classification || "";
       MONTH_KEYS.forEach((k, i) => {
         if (visibleMonths[k]) {
           const v = bd ? (bd as any)[k] || 0 : 0;
