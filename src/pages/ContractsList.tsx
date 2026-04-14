@@ -180,10 +180,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     projectNumber: true,
     projectTitle: true,
     site: true,
+    country: true,
     date: true,
     contractor: true,
     status: true,
     agreementSigned: true,
+    description: true,
     contracted: true,
     invoiced: true,
     balance: true,
@@ -194,14 +196,35 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     { key: "projectNumber", label: "Project Number" },
     { key: "projectTitle", label: "Project Title" },
     { key: "site", label: "Site" },
+    { key: "country", label: "Country" },
     { key: "date", label: "Date" },
     { key: "contractor", label: "Contractor" },
     { key: "status", label: "Status" },
     { key: "agreementSigned", label: "Agreement Signed" },
+    { key: "description", label: "Description" },
     { key: "contracted", label: "Contracted (EUR)" },
     { key: "invoiced", label: "Invoiced (EUR)" },
     { key: "balance", label: "Balance (EUR)" },
   ];
+
+  const SITE_GROUP_DISPLAY: Record<string, string> = {
+    WE: "Western Europe",
+    PL: "Poland",
+    HU: "Hungary",
+  };
+
+  const groupedFiltered = useMemo(() => {
+    const groups: Record<string, ContractRow[]> = {};
+    filtered.forEach(c => {
+      const proj = projectMap.get(c.project_id);
+      const country = proj?.site ? siteToCountry[proj.site] : null;
+      const sg = country ? (COUNTRY_TO_SITE_GROUP[country] || "Other") : "Other";
+      if (!groups[sg]) groups[sg] = [];
+      groups[sg].push(c);
+    });
+    const order = ["WE", "PL", "HU", "Other"];
+    return order.filter(k => groups[k]?.length).map(k => ({ group: k, label: SITE_GROUP_DISPLAY[k] || k, contracts: groups[k] }));
+  }, [filtered, projectMap]);
 
   const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0;
 
