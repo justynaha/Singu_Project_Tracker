@@ -1,52 +1,38 @@
 
 
-## Plan: Fixed full-height side panels for Comments and Files
+## Plan: Rebuild `/contracts` page with full ContractsTab features
 
-### Problem
-Side panels (Comments, Files) currently render inline within the page content area. They should instead span the full viewport height (below the top app bar), be fixed-width, pinned to the right edge, and responsively compress the main content area. The sidebar menu should remain untouched.
+### Overview
+Replace the current simple `ContractsList` page with a full-featured version that mirrors the project-level `ContractsTab`, including: table with action menus, side panel with tabs (Contract Details / Invoices), edit/delete modals, invoice management, and filters matching the Projects page (minus "Tracking"). Each row adds Project Number, Project Title, and Site columns.
 
-### Approach
-Move the side panels out of the inner `flex` container and make them fixed-position overlays that shrink the main content area.
+### Key design decisions
+- Fetch all contracts + all projects + all invoices + FX rates upfront
+- Each contract's currency comes from its parent project's `currency` field
+- Since contracts span multiple currencies, always show EUR amounts (convert per-project FX rate)
+- Side panel is the same fixed-position panel as in ContractsTab
+- Filters: Site group, Country, Site, Budget line, Status (contract status: Ongoing/Completed), Fiscal year
+- Project Number uses the same `13536 + index` scheme
+- Clicking Project Number navigates to `/project/:id`
 
-### Changes to `src/pages/ProjectDetail.tsx`
+### Changes
 
-1. **Move panels outside the tab flex container** — Currently panels sit inside `<div className="flex">` alongside tab content. Move them to a higher level in the component tree.
+**`src/pages/ContractsList.tsx`** — Full rewrite (~800 lines)
 
-2. **Use a layout wrapper**: Wrap the entire page content in a flex row. The main content area gets `flex-1 min-w-0` and the side panel gets a fixed width (e.g. `w-[400px] flex-shrink-0`).
+1. **Data fetching**: Fetch `projects` (all fields needed for filters), `contracts`, `invoices`, `fx_rates` from Supabase
+2. **Filter UI**: Copy the filter bar pattern from `Projects.tsx` — Site group (multi-select), Country, Site, Budget line, Status (Ongoing/Completed instead of project statuses), Fiscal year. Remove "Tracking". Use pending/applied filter pattern with chips.
+3. **Table columns**: Action menu (3-dot) | Contract ID | Project Number (clickable link) | Project Title | Site | Date | Contractor | Contracted (EUR) | Invoiced (EUR) | Balance (EUR) | Status | Agreement Signed
+4. **Row click** opens side panel (same as ContractsTab): fixed right panel with Contract Details tab and Invoices tab
+5. **Action menu**: Edit, Add Invoice (same modals as ContractsTab)
+6. **Edit modal** with delete functionality (same as ContractsTab)
+7. **Invoice modal** with file upload (same as ContractsTab)
+8. **Footer totals** for Contracted, Invoiced, Balance
+9. **Pagination** (10 per page)
+10. **FX conversion**: For each contract, look up its project's currency, fetch matching FX rate, convert to EUR
 
-3. **Full viewport height**: The outer wrapper uses `h-[calc(100vh-64px)]` (64px = header height) so both the main content and side panel fill the available viewport below the app bar.
-
-4. **Structure**:
-```text
-<div className="flex h-[calc(100vh-64px)]">
-  <!-- Main scrollable content -->
-  <div className="flex-1 min-w-0 overflow-y-auto">
-    <div className="p-6">
-      <ProjectHeader ... />
-      <div className="bg-card border ...">
-        <!-- tabs + tab content -->
-      </div>
-    </div>
-    <!-- modals -->
-  </div>
-
-  <!-- Side panel (fixed width, full height, pinned right) -->
-  {commentsPanelItem && <CommentsPanel ... />}
-  {filesPanelItem && <FilesPanelComponent ... />}
-</div>
-```
-
-5. **Remove old `hasSidePanel` border adjustments** — no longer needed since panels are separate from the tab card.
-
-### Changes to `src/components/project-detail/CommentsPanel.tsx` and `FilesPanel.tsx`
-
-- Ensure root element uses `h-full` (not a fixed `h-full` from parent) and `w-[400px] flex-shrink-0 border-l border-border bg-card`.
-- Both panels already have similar structure; just ensure consistent sizing and `overflow-y-auto` on the scroll area.
-
-### No database changes needed
+### No other files need changes
+- Routing already exists in `App.tsx` (`/contracts` -> `ContractsList`)
+- No database changes needed
 
 ### Files to edit
-- `src/pages/ProjectDetail.tsx`
-- `src/components/project-detail/CommentsPanel.tsx`
-- `src/components/project-detail/FilesPanel.tsx`
+- `src/pages/ContractsList.tsx`
 
