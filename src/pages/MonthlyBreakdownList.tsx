@@ -331,12 +331,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
 
         {/* Filters */}
         <div className="mb-4">
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="mb-2">
-            Filters
-            <ChevronLeft className={cn("h-4 w-4 ml-2 transition-transform", !showFilters && "-rotate-90")} />
-          </Button>
-
-          {showFilters && (
             <div className="p-4 border border-border rounded-lg bg-card space-y-4">
               <div className="flex items-end gap-4 flex-wrap">
                 <div className="flex-1 min-w-[150px]">
@@ -456,7 +450,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                 </div>
               )}
             </div>
-          )}
         </div>
 
         {/* Toolbar: Columns + Export */}
