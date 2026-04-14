@@ -852,9 +852,9 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                             <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic">
                               Subtotal — {group.label}
                             </TableCell>
-                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right font-semibold">EUR {formatAmount(group.subtotals.contracted)}</TableCell>}
-                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right font-semibold">EUR {formatAmount(group.subtotals.invoiced)}</TableCell>}
-                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-semibold">EUR {formatAmount(group.subtotals.balance)}</TableCell>}
+                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right"><span className="font-normal">EUR </span><span className="font-semibold">{formatAmount(group.subtotals.contracted)}</span></TableCell>}
+                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right"><span className="font-normal">EUR </span><span className="font-semibold">{formatAmount(group.subtotals.invoiced)}</span></TableCell>}
+                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right"><span className="font-normal">EUR </span><span className="font-semibold">{formatAmount(group.subtotals.balance)}</span></TableCell>}
                           </TableRow>
                         </>
                         );
@@ -865,9 +865,9 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     <TableFooter>
                       <TableRow className="h-10 bg-amber-900 text-white">
                         <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold text-white">Grand Total</TableCell>
-                        {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right font-bold text-white">EUR {formatAmount(totals.contracted)}</TableCell>}
-                        {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right font-bold text-white">EUR {formatAmount(totals.invoiced)}</TableCell>}
-                        {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-bold text-white">EUR {formatAmount(totals.balance)}</TableCell>}
+                        {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right text-white"><span className="font-normal">EUR </span><span className="font-bold">{formatAmount(totals.contracted)}</span></TableCell>}
+                        {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right text-white"><span className="font-normal">EUR </span><span className="font-bold">{formatAmount(totals.invoiced)}</span></TableCell>}
+                        {visibleColumns.balance && <TableCell className="py-0 px-3 text-right text-white"><span className="font-normal">EUR </span><span className="font-bold">{formatAmount(totals.balance)}</span></TableCell>}
                       </TableRow>
                     </TableFooter>
                   )}
