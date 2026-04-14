@@ -312,6 +312,19 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
     });
   }, [contracts, projectMap, searchQuery, filterSiteGroups, filterCountry, filterSite, filterBudgetLine, filterFiscalYear, filterStatus]);
 
+  const groupedFiltered = useMemo(() => {
+    const groups: Record<string, ContractRow[]> = {};
+    filtered.forEach(c => {
+      const proj = projectMap.get(c.project_id);
+      const country = proj?.site ? siteToCountry[proj.site] : null;
+      const sg = country ? (COUNTRY_TO_SITE_GROUP[country] || "Other") : "Other";
+      if (!groups[sg]) groups[sg] = [];
+      groups[sg].push(c);
+    });
+    const order = ["WE", "PL", "HU", "Other"];
+    return order.filter(k => groups[k]?.length).map(k => ({ group: k, label: SITE_GROUP_DISPLAY[k] || k, contracts: groups[k] }));
+  }, [filtered, projectMap]);
+
   const totals = useMemo(() => {
     let contracted = 0, invoiced = 0;
     filtered.forEach(c => {
