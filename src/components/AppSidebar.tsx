@@ -153,9 +153,6 @@ export const AppSidebar = () => {
     if (item.title === "Buildings") {
       return location.pathname.startsWith("/buildings");
     }
-    if (item.title === "Reports") {
-      return location.pathname === "/reports";
-    }
     if (item.title === "Master data") {
       return location.pathname.startsWith("/master-data") || location.pathname.startsWith("/templates");
     }
