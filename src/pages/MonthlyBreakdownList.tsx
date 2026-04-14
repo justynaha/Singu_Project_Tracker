@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, ChevronLeft, ChevronRight, Check, ChevronsUpDown, X, Download, Columns3 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ChevronDown, Check, ChevronsUpDown, X, Download, Columns3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
