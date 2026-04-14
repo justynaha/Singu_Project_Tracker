@@ -47,6 +47,9 @@ interface Props {
   totalContracted?: number;
   totalInvoiced?: number;
   totalBudget?: number;
+  totalOngoing?: number;
+  totalSavings?: number;
+  totalPostponed?: number;
 }
 
 // Hardcoded FX rate for demo — in production, fetch from fx_rates table
@@ -89,7 +92,7 @@ function SummaryRow({
   );
 }
 
-export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurrency, totalContracted, totalInvoiced, totalBudget }: Props) {
+export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurrency, totalContracted, totalInvoiced, totalBudget, totalOngoing, totalSavings, totalPostponed }: Props) {
   const [row, setRow] = useState<BreakdownRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState<Currency>("local");
@@ -167,6 +170,9 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
   );
   const contracted = totalContracted ?? Math.round(total * 0.75);
   const invoiced = totalInvoiced ?? Math.round(total * 0.5);
+  const ongoing = totalOngoing ?? 0;
+  const savings = totalSavings ?? 0;
+  const postponed = totalPostponed ?? 0;
 
   const handleExport = () => {
     if (!row) return;
@@ -340,14 +346,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
 
                   {/* Summary rows */}
                   <SummaryRow
-                    label="Planned 3M"
-                    value={planned3M}
-                    total={total}
-                    currency={currency}
-                    currencyLabel={currencyLabel}
-                    colCount={headers.length}
-                  />
-                  <SummaryRow
                     label="Contracted"
                     value={contracted}
                     total={total}
@@ -358,6 +356,38 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                   <SummaryRow
                     label="Invoiced"
                     value={invoiced}
+                    total={total}
+                    currency={currency}
+                    currencyLabel={currencyLabel}
+                    colCount={headers.length}
+                  />
+                  <SummaryRow
+                    label="Ongoing"
+                    value={ongoing}
+                    total={total}
+                    currency={currency}
+                    currencyLabel={currencyLabel}
+                    colCount={headers.length}
+                  />
+                  <SummaryRow
+                    label="Planned 3M"
+                    value={planned3M}
+                    total={total}
+                    currency={currency}
+                    currencyLabel={currencyLabel}
+                    colCount={headers.length}
+                  />
+                  <SummaryRow
+                    label="Savings"
+                    value={savings}
+                    total={total}
+                    currency={currency}
+                    currencyLabel={currencyLabel}
+                    colCount={headers.length}
+                  />
+                  <SummaryRow
+                    label="Postponed"
+                    value={postponed}
                     total={total}
                     currency={currency}
                     currencyLabel={currencyLabel}
