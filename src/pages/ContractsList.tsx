@@ -119,7 +119,7 @@ const formatAmount = (amount: number | null) => {
   return amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-export default function ContractsList() {
+export default function ContractsList({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<ProjectInfo[]>([]);
@@ -413,13 +413,15 @@ export default function ContractsList() {
   const selectedTotalInvoicedLc = selectedInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
 
   return (
-    <div className="bg-background">
-      <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+    <div className={embedded ? "" : "bg-background"}>
+      <div className={embedded ? "flex overflow-hidden" : "flex h-[calc(100vh-64px)] overflow-hidden"}>
         {/* Main content */}
-        <div className="flex-1 min-w-0 overflow-y-auto p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">Contracts</h1>
-          </div>
+        <div className={cn("flex-1 min-w-0 overflow-y-auto", embedded ? "p-0" : "p-6")}>
+          {!embedded && (
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-bold">Contracts</h1>
+            </div>
+          )}
 
           {/* Search */}
           <div className="flex items-center gap-4 mb-4">

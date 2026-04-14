@@ -45,15 +45,7 @@ const navigationItems: NavItem[] = [{
     title: "Projects",
     icon: List,
     path: "/projects"
-  }, {
-    title: "Contracts",
-    icon: FileSignature,
-    path: "/contracts"
-  }, {
-    title: "Monthly Breakdown",
-    icon: CalendarRange,
-    path: "/monthly-breakdown"
-  }]
+}]
 }, {
   title: "Buildings",
   icon: Building2,
@@ -126,7 +118,15 @@ const navigationItems: NavItem[] = [{
   title: "Reports",
   icon: FileText,
   path: "/reports",
-  hasSubmenu: true
+  submenu: [{
+    title: "Contract Tracker",
+    icon: FileSignature,
+    path: "/reports?tab=contracts"
+  }, {
+    title: "Monthly Breakdown",
+    icon: CalendarRange,
+    path: "/reports?tab=monthly-breakdown"
+  }]
 }, {
   title: "ESG",
   icon: Leaf,
@@ -153,12 +153,14 @@ export const AppSidebar = () => {
 
   const isGroupActive = (item: NavItem) => {
     if (item.title === "Project Tracker") {
-      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/") || location.pathname === "/contracts" || location.pathname === "/monthly-breakdown";
+      return location.pathname === "/dashboard" || location.pathname === "/projects" || location.pathname === "/" || location.pathname.startsWith("/project/");
     }
     if (item.title === "Buildings") {
       return location.pathname.startsWith("/buildings");
     }
-    if (item.title === "Master data") {
+    if (item.title === "Reports") {
+      return location.pathname === "/reports";
+    }
       return location.pathname.startsWith("/master-data") || location.pathname.startsWith("/templates");
     }
     if (item.submenu) {
@@ -201,7 +203,11 @@ export const AppSidebar = () => {
                         {item.submenu.map(subItem => {
                           const hasChildren = subItem.children && subItem.children.length > 0;
                           const childActive = hasChildren && subItem.children!.some(c => location.pathname === c.path);
-                          const subActive = !hasChildren && location.pathname === subItem.path;
+                          const subActive = !hasChildren && (
+                            subItem.path.includes("?")
+                              ? location.pathname + location.search === subItem.path
+                              : location.pathname === subItem.path
+                          );
 
                           if (subItem.disabled) {
                             return (
@@ -254,8 +260,12 @@ export const AppSidebar = () => {
                             <li key={subItem.path}>
                               <NavLink
                                 to={subItem.path}
-                                className={cn("flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors", "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
-                                activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                end
+                                className={cn(
+                                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                  subActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                )}
                               >
                                 <subItem.icon className="h-4 w-4 flex-shrink-0" />
                                 <span>{subItem.title}</span>
