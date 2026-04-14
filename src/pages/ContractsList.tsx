@@ -260,7 +260,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const fetchData = async () => {
     setLoading(true);
     const [projectsRes, contractsRes, invoicesRes, fxRes] = await Promise.all([
-      supabase.from("projects").select("id, name, site, currency, budget_line, fiscal_year, created_at").order("created_at", { ascending: true }),
+      supabase.from("projects").select("id, name, site, currency, budget_line, fiscal_year, budget_type, budget_classification, created_at").order("created_at", { ascending: true }),
       supabase.from("contracts").select("*").order("contract_date", { ascending: false }),
       supabase.from("invoices").select("*").order("created_at", { ascending: true }),
       supabase.from("fx_rates").select("currency, rate, valid_from").order("valid_from", { ascending: false }),
