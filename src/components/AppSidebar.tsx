@@ -203,7 +203,11 @@ export const AppSidebar = () => {
                         {item.submenu.map(subItem => {
                           const hasChildren = subItem.children && subItem.children.length > 0;
                           const childActive = hasChildren && subItem.children!.some(c => location.pathname === c.path);
-                          const subActive = !hasChildren && location.pathname === subItem.path;
+                          const subActive = !hasChildren && (
+                            subItem.path.includes("?")
+                              ? location.pathname + location.search === subItem.path
+                              : location.pathname === subItem.path
+                          );
 
                           if (subItem.disabled) {
                             return (
@@ -256,8 +260,12 @@ export const AppSidebar = () => {
                             <li key={subItem.path}>
                               <NavLink
                                 to={subItem.path}
-                                className={cn("flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors", "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
-                                activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                end
+                                className={cn(
+                                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                  subActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                )}
                               >
                                 <subItem.icon className="h-4 w-4 flex-shrink-0" />
                                 <span>{subItem.title}</span>
