@@ -1,40 +1,30 @@
 
 
-## Plan: Subtotal Rows, Missing Countries, New Filters, Budget Type/Classification Columns
+## Plan: Style subtotals, add collapse, project count, remove 3-dots icon
 
-### 1. Add subtotal rows per group in Contract Tracker (`src/pages/ContractsList.tsx`)
-- After each group's contract rows, render a subtotal `TableRow` with summed Contracted/Invoiced/Balance EUR values
-- Style: `bg-muted/20`, bold text, label like "Subtotal — Western Europe"
-- Update XLS export to include subtotal rows per group
+### Changes to `src/pages/ContractsList.tsx`
 
-### 2. Add missing countries to `siteToCountry` mappings
-- In both `ContractsList.tsx` and `MonthlyBreakdownList.tsx`, add entries for short site names used by newer projects:
-  - `"Bedzin"` → Poland, `"Blonie 2"` → Poland, `"Gdańsk-Airport"` → Poland, `"Nadarzyn"` → Poland, `"Piotrków 1"` → Poland, `"Szczecin"` → Poland
-  - `"Bologna Castel San Pietro"` → Italy, `"Fogars"` → Spain, `"Les Franqueses"` → Spain, `"Sallent"` → Spain, `"Valls"` → Spain
-  - `"Százhalombatta"` → Hungary, `"Üllő"` → Hungary (already present in ContractsList but missing in MonthlyBreakdownList)
+**1. Subtotal row — orange background**
+- Change class from `bg-muted/20` to `bg-orange-100` (line 853)
 
-### 3. Add "Netherlands" and "France" countries
-- Update `COUNTRY_TO_SITE_GROUP` in `src/hooks/useDashboardData.ts` to include `"Netherlands": "WE"`, `"France": "WE"`
-- Update `siteToCountry` in both report files (no actual sites yet, but mapping ready)
-- Insert 3-4 new projects via database with sites in Netherlands/France (e.g. "Tilburg", "Schiphol", "Lyon", "Marseille") with budget_type and budget_classification values set
+**2. Grand Total row — brown background**
+- Change footer row class to `bg-amber-900 text-white` (line 867)
 
-### 4. Add filters for Budget Type and Budget Classification in Contract Tracker
-- Fetch `budget_type` and `budget_classification` from projects query
-- Add `ProjectInfo` fields: `budget_type`, `budget_classification`
-- Add filter dropdowns: **Budget type** (IC / Ad Hoc / CAPEX / All), **Budget classification** (Mandatory / Speculative / All)
-- Add pending/applied filter state and badge display
+**3. Collapse toggle on group header rows**
+- Add `collapsedGroups` state: `useState<Set<string>>(new Set())`
+- Add `ChevronDown`/`ChevronRight` icon before group label in the group header row (line 789-793)
+- Clicking toggles the group key in `collapsedGroups`
+- When collapsed, skip rendering `group.contracts.map(...)` data rows but still render the subtotal row
 
-### 5. Add Budget Type and Budget Classification columns to Monthly Breakdown (capex tracker) (`src/pages/MonthlyBreakdownList.tsx`)
-- Add two new columns after Project Name: "Budget Type" and "Budget Classification"
-- Update column visibility controls and XLS export
-- Also add the same two filter dropdowns to Monthly Breakdown's filter panel
+**4. Project count in group label**
+- Count unique `project_id` values per group and display as e.g. `Western Europe (13 projects)` in the group header row
 
-### 6. Seed data: new projects for Netherlands and France
-- Insert ~5 projects (2-3 per country) with sites, budget_type (IC/Ad Hoc/CAPEX), budget_classification (Mandatory/Speculative), contracts, milestones, monthly breakdowns
+**5. Remove 3-dots (MoreVertical) action column**
+- Remove the `<TableHead className="w-10 ...">` actions column header (line 765)
+- Remove the `<TableCell>` with `DropdownMenu`/`MoreVertical` from each data row (lines 810-826)
+- Remove the leading empty cell from subtotal and group header rows
+- Adjust `visibleBeforeFinancial` calculation (subtract 1 for the removed actions column)
 
 ### Files to edit
-- `src/hooks/useDashboardData.ts` — add Netherlands, France to COUNTRY_TO_SITE_GROUP
-- `src/pages/ContractsList.tsx` — subtotal rows, missing countries, new filters, budget type/classification
-- `src/pages/MonthlyBreakdownList.tsx` — missing countries, new columns, new filters
-- Database — insert new projects for NL/FR with related data
+- `src/pages/ContractsList.tsx` (~30 lines changed)
 
