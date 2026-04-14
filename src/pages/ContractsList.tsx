@@ -48,6 +48,8 @@ interface ProjectInfo {
   currency: string | null;
   budget_line: string | null;
   fiscal_year: string | null;
+  budget_type: string | null;
+  budget_classification: string | null;
   created_at: string;
 }
 
