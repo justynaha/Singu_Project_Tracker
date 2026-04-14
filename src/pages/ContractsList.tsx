@@ -779,7 +779,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   {filtered.length > 0 && (
                     <TableFooter>
                       <TableRow className="h-10">
-                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold">Total</TableCell>
+                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold">Grand Total</TableCell>
                         {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.contracted)}</TableCell>}
                         {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.invoiced)}</TableCell>}
                         {visibleColumns.balance && <TableCell className="py-0 px-3 text-right font-bold">{formatAmount(totals.balance)}</TableCell>}
