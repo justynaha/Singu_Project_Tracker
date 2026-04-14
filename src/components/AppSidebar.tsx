@@ -161,6 +161,7 @@ export const AppSidebar = () => {
     if (item.title === "Reports") {
       return location.pathname === "/reports";
     }
+    if (item.title === "Master data") {
       return location.pathname.startsWith("/master-data") || location.pathname.startsWith("/templates");
     }
     if (item.submenu) {
@@ -260,7 +261,6 @@ export const AppSidebar = () => {
                             <li key={subItem.path}>
                               <NavLink
                                 to={subItem.path}
-                                end
                                 className={cn(
                                   "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
                                   "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -298,3 +298,4 @@ export const AppSidebar = () => {
     </aside>
   );
 };
+
