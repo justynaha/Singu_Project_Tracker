@@ -476,18 +476,163 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
     <div className="flex h-full">
       {/* Main table area */}
       <div className="flex-1 min-w-0 p-4">
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex items-center justify-between">
           <Button size="sm" onClick={() => setShowModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add contract
           </Button>
           <Popover>
             <PopoverTrigger asChild>
-              <Button size="sm" variant="outline" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <LayoutGrid className="h-4 w-4 mr-2" />
+              <Button size="sm" variant="outline">
+                <Columns3 className="h-4 w-4 mr-2" />
                 Columns
               </Button>
             </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 p-3">
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Toggle columns</p>
+              <div className="space-y-2">
+                {([
+                  { key: "contractId" as const, label: "Contract ID" },
+                  { key: "date" as const, label: "Date" },
+                  { key: "status" as const, label: "Status" },
+                  { key: "contractor" as const, label: "Contractor" },
+                  { key: "description" as const, label: "Description" },
+                  { key: "agreementSigned" as const, label: "Agreement Signed" },
+                  ...(showLcColumn ? [
+                    { key: "contractedLc" as const, label: `Contracted (${currency})` },
+                    { key: "invoicedLc" as const, label: `Invoiced (${currency})` },
+                    { key: "balanceLc" as const, label: `Balance (${currency})` },
+                  ] : []),
+                  { key: "contractedEur" as const, label: showLcColumn ? "Contracted (EUR)" : "Contracted" },
+                  { key: "invoicedEur" as const, label: showLcColumn ? "Invoiced (EUR)" : "Invoiced" },
+                  { key: "balanceEur" as const, label: showLcColumn ? "Balance (EUR)" : "Balance" },
+                ]).map((col) => (
+                  <div key={col.key} className="flex items-center justify-between">
+                    <span className="text-sm">{col.label}</span>
+                    <Switch
+                      checked={visibleColumns[col.key]}
+                      onCheckedChange={(checked) =>
+                        setVisibleColumns((prev) => ({ ...prev, [col.key]: checked }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {contracts.length === 0 ? (
+          <div className="text-center text-muted-foreground py-12">No contracts yet</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10" />
+                {visibleColumns.contractId && <TableHead>Contract ID</TableHead>}
+                {visibleColumns.date && <TableHead>Date</TableHead>}
+                {visibleColumns.status && <TableHead>Status</TableHead>}
+                {visibleColumns.contractor && <TableHead>Contractor</TableHead>}
+                {visibleColumns.description && <TableHead>Description</TableHead>}
+                {visibleColumns.agreementSigned && <TableHead>Signed</TableHead>}
+                {showLcColumn && visibleColumns.contractedLc && <TableHead className="text-right">Contracted ({currency})</TableHead>}
+                {showLcColumn && visibleColumns.invoicedLc && <TableHead className="text-right">Invoiced ({currency})</TableHead>}
+                {showLcColumn && visibleColumns.balanceLc && <TableHead className="text-right">Balance ({currency})</TableHead>}
+                {visibleColumns.contractedEur && <TableHead className="text-right">{showLcColumn ? "Contracted (EUR)" : "Contracted"}</TableHead>}
+                {visibleColumns.invoicedEur && <TableHead className="text-right">{showLcColumn ? "Invoiced (EUR)" : "Invoiced"}</TableHead>}
+                {visibleColumns.balanceEur && <TableHead className="text-right">{showLcColumn ? "Balance (EUR)" : "Balance"}</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {contracts.map((c) => {
+                const contractInvoices = invoicesByContract[c.id] || [];
+                const totalInvoicedLc = contractInvoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
+                const totalInvoicedEur = showLcColumn ? convertToEur(totalInvoicedLc) : totalInvoicedLc;
+                const balanceLc = (c.amount_lc || 0) - totalInvoicedLc;
+                const contractedEur = showLcColumn ? convertToEur(c.amount_lc || 0) : (c.amount_lc || 0);
+                const balanceEur = contractedEur - totalInvoicedEur;
+                const isSelected = selectedContract?.id === c.id;
+
+                return (
+                  <TableRow
+                    key={c.id}
+                    className={cn("cursor-pointer", isSelected && "bg-muted/50")}
+                    onClick={() => setSelectedContract(isSelected ? null : c)}
+                  >
+                    <TableCell className="w-10 p-1" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem onClick={() => openEditModal(c)}>
+                            <Pencil className="h-3.5 w-3.5 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openInvoiceModal(c.id)}>
+                            <Plus className="h-3.5 w-3.5 mr-2" />
+                            Add Invoice
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                    
+                    {visibleColumns.contractId && <TableCell>{c.contract_number}</TableCell>}
+                    {visibleColumns.date && <TableCell>{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>}
+                    {visibleColumns.status && <TableCell><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>}
+                    {visibleColumns.contractor && <TableCell>{c.contractor || "—"}</TableCell>}
+                    {visibleColumns.description && <TableCell>{c.description || "—"}</TableCell>}
+                    {visibleColumns.agreementSigned && <TableCell>{c.agreement_signed ? "Yes" : "No"}</TableCell>}
+                    {showLcColumn && visibleColumns.contractedLc && <TableCell className="text-right">{formatAmount(c.amount_lc)}</TableCell>}
+                    {showLcColumn && visibleColumns.invoicedLc && (
+                      <TableCell className="text-right">{contractInvoices.length > 0 ? formatAmount(totalInvoicedLc) : "—"}</TableCell>
+                    )}
+                    {showLcColumn && visibleColumns.balanceLc && (
+                      <TableCell className="text-right">{contractInvoices.length > 0 ? formatAmount(balanceLc) : "—"}</TableCell>
+                    )}
+                    {visibleColumns.contractedEur && <TableCell className="text-right">{formatAmount(contractedEur)}</TableCell>}
+                    {visibleColumns.invoicedEur && (
+                      <TableCell className="text-right">{contractInvoices.length > 0 ? formatAmount(totalInvoicedEur) : "—"}</TableCell>
+                    )}
+                    {visibleColumns.balanceEur && (
+                      <TableCell className="text-right">{contractInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>
+                    )}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+            {contracts.length > 0 && (() => {
+              const totalContractedLc = contracts.reduce((s, c) => s + (c.amount_lc || 0), 0);
+              const totalContractedEur = showLcColumn ? convertToEur(totalContractedLc) : totalContractedLc;
+              const totalInvLc = invoices.reduce((s, inv) => s + Number(inv.amount_lc || 0), 0);
+              const totalInvEur = showLcColumn ? convertToEur(totalInvLc) : totalInvLc;
+              const totalBalLc = totalContractedLc - totalInvLc;
+              const totalBalEur = totalContractedEur - totalInvEur;
+              return (
+                <TableFooter>
+                  <TableRow>
+                    <TableCell className="font-bold">Total</TableCell>
+                    {visibleColumns.contractId && <TableCell />}
+                    {visibleColumns.date && <TableCell />}
+                    {visibleColumns.status && <TableCell />}
+                    {visibleColumns.contractor && <TableCell />}
+                    {visibleColumns.description && <TableCell />}
+                    {visibleColumns.agreementSigned && <TableCell />}
+                    {showLcColumn && visibleColumns.contractedLc && <TableCell className="text-right font-bold">{formatAmount(totalContractedLc)}</TableCell>}
+                    {showLcColumn && visibleColumns.invoicedLc && <TableCell className="text-right font-bold">{formatAmount(totalInvLc)}</TableCell>}
+                    {showLcColumn && visibleColumns.balanceLc && <TableCell className="text-right font-bold">{formatAmount(totalBalLc)}</TableCell>}
+                    {visibleColumns.contractedEur && <TableCell className="text-right font-bold">{formatAmount(totalContractedEur)}</TableCell>}
+                    {visibleColumns.invoicedEur && <TableCell className="text-right font-bold">{formatAmount(totalInvEur)}</TableCell>}
+                    {visibleColumns.balanceEur && <TableCell className="text-right font-bold">{formatAmount(totalBalEur)}</TableCell>}
+                  </TableRow>
+                </TableFooter>
+              );
+            })()}
+          </Table>
+        )}
+      </div>
             <PopoverContent align="start" className="w-56 p-3">
               <p className="text-xs font-semibold text-muted-foreground mb-2">Toggle columns</p>
               <div className="space-y-2">
