@@ -783,7 +783,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                             <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm">
                               <span className="inline-flex items-center gap-1.5">
                                 <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "-rotate-90")} />
-                                {group.label} ({projectCount} project{projectCount !== 1 ? "s" : ""})
+                                {group.label} ({group.contracts.length} contract{group.contracts.length !== 1 ? "s" : ""})
                               </span>
                             </TableCell>
                           </TableRow>
