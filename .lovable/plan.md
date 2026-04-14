@@ -1,41 +1,29 @@
 
 
-## Plan: Create Reports page with Contract Tracker and Monthly Breakdown tabs
-
-### Overview
-Create a new `Reports` page that wraps `ContractsList` and `MonthlyBreakdownList` as tab content. Update routing and sidebar accordingly.
+## Plan: Fix header width, unify row height, and prevent text wrapping in tables
 
 ### Changes
 
-**1. `src/pages/Reports.tsx`** — New file
-- Simple page with two tabs using the existing `Tabs` component
-- Tab 1: "Contract Tracker" — renders `ContractsList` (adapted as embedded component)
-- Tab 2: "Monthly Breakdown" — renders `MonthlyBreakdownList` (adapted as embedded component)
+**1. `src/components/AppHeader.tsx`** — Prevent horizontal scroll on header
+- Add `overflow-hidden` and `min-w-0` to the header element so it never exceeds the available width and stays pinned regardless of content below.
 
-**2. `src/pages/ContractsList.tsx`** — Minor change
-- Accept an optional `embedded` prop (boolean). When true, skip any outer page wrapper/padding so it fits inside the Reports tab seamlessly.
+**2. `src/components/ui/table.tsx`** — Global table cell styling
+- Add `whitespace-nowrap` to `TableCell` and `TableHead` defaults so text never wraps.
+- Add `truncate` (which includes `overflow-hidden text-ellipsis`) to `TableCell` so long text gets trimmed with "...".
+- Set `max-w-[200px]` on `TableCell` as a default constraint for truncation to kick in.
 
-**3. `src/pages/MonthlyBreakdownList.tsx`** — Minor change
-- Same `embedded` prop pattern as ContractsList.
+**3. `src/pages/ContractsList.tsx`** — Unified 40px row height
+- Add `h-10` (40px) to each `TableRow` in both `TableHeader` and `TableBody`.
+- Reduce cell padding: override `TableCell` with `py-0 px-3` to fit within 40px.
+- Same for `TableHead`: `h-10 py-0 px-3`.
+- On the `TableFooter` row, apply same height.
 
-**4. `src/App.tsx`** — Update routes
-- Add `import Reports from "./pages/Reports"`
-- Change `/reports` route to render `<Reports />`
-- Keep `/contracts` and `/monthly-breakdown` routes as redirects to `/reports` (or remove them if not needed elsewhere)
-
-**5. `src/components/AppSidebar.tsx`** — Update sidebar
-- Remove "Contracts" and "Monthly Breakdown" from Project Tracker submenu
-- Update "Reports" menu item to have submenu with:
-  - "Contract Tracker" → `/reports` (or `/reports?tab=contracts`)
-  - "Monthly Breakdown" → `/reports?tab=monthly-breakdown`
-- Or simpler: just make "Reports" a single link to `/reports` with no submenu, and the tabs handle navigation within the page
-
-### No database changes needed
+**4. `src/pages/MonthlyBreakdownList.tsx`** — Unified 40px row height
+- Same `h-10` and compact padding treatment on all table rows, headers, and cells.
 
 ### Files to edit
-- `src/pages/Reports.tsx` (new)
-- `src/pages/ContractsList.tsx` (minor)
-- `src/pages/MonthlyBreakdownList.tsx` (minor)
-- `src/App.tsx`
-- `src/components/AppSidebar.tsx`
+- `src/components/AppHeader.tsx` (1 line)
+- `src/components/ui/table.tsx` (2 lines)
+- `src/pages/ContractsList.tsx` (~15 lines)
+- `src/pages/MonthlyBreakdownList.tsx` (~8 lines)
 
