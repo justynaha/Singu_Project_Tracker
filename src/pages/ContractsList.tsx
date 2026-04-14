@@ -577,8 +577,8 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
 
             {showFilters && (
               <div className="p-4 border border-border rounded-lg bg-card space-y-4">
-                <div className="flex items-end gap-4">
-                  <div className="flex-1">
+                <div className="flex items-end gap-4 flex-wrap">
+                  <div className="flex-1 min-w-[150px]">
                     <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -651,8 +651,8 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     </Select>
                   </div>
                 </div>
-                <div className="flex items-end gap-4">
-                  <div className="flex-1">
+                <div className="flex items-end gap-4 flex-wrap">
+                  <div className="flex-1 min-w-[150px]">
                     <Label className="text-xs text-muted-foreground mb-2 block">Budget type</Label>
                     <Select value={pendingBudgetType || "all"} onValueChange={v => setPendingBudgetType(v === "all" ? "" : v)}>
                       <SelectTrigger><SelectValue placeholder="All types" /></SelectTrigger>

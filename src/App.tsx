@@ -25,11 +25,11 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="flex w-full min-h-screen">
+        <div className="flex w-full h-screen overflow-hidden">
           <AppSidebar />
-          <div className="flex-1 flex flex-col w-full">
+          <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
             <AppHeader />
-            <main className="flex-1">
+            <main className="flex-1 overflow-y-auto overflow-x-hidden">
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
