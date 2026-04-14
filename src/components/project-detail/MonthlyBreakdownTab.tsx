@@ -88,7 +88,7 @@ function SummaryRow({
   );
 }
 
-export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurrency, totalContracted, totalInvoiced }: Props) {
+export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurrency, totalContracted, totalInvoiced, totalBudget }: Props) {
   const [row, setRow] = useState<BreakdownRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState<Currency>("local");
