@@ -634,10 +634,6 @@ export default function ContractsTab({ contracts, currency = "EUR", onCreateCont
         )}
       </div>
 
-
-              <div className="space-y-2">
-                {([
-                  { key: "date" as const, label: "Date" },
                   { key: "status" as const, label: "Status" },
                   { key: "contractor" as const, label: "Contractor" },
                   ...(showLcColumn ? [
