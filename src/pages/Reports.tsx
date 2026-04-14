@@ -4,13 +4,13 @@ import ContractsList from "./ContractsList";
 import MonthlyBreakdownList from "./MonthlyBreakdownList";
 
 const tabs = [
-  { id: "contracts", label: "Contract Tracker" },
   { id: "monthly-breakdown", label: "CAPEX Tracker" },
+  { id: "contracts", label: "Contract Tracker" },
 ];
 
 export default function Reports() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "contracts";
+  const activeTab = searchParams.get("tab") || "monthly-breakdown";
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
