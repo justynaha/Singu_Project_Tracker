@@ -705,6 +705,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                         <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFiscalYear(""); setPendingFiscalYear(""); }} />
                       </Badge>
                     )}
+                    {filterBudgetType && (
+                      <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                        Type: {filterBudgetType}
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetType(""); setPendingBudgetType(""); }} />
+                      </Badge>
+                    )}
+                    {filterBudgetClassification && (
+                      <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                        {filterBudgetClassification}
+                        <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetClassification(""); setPendingBudgetClassification(""); }} />
+                      </Badge>
+                    )}
                     <button className="text-sm text-primary hover:underline font-medium" onClick={clearFilters}>Clear</button>
                   </div>
                 )}
