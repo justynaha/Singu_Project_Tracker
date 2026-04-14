@@ -5,7 +5,7 @@ import MonthlyBreakdownList from "./MonthlyBreakdownList";
 
 const tabs = [
   { id: "contracts", label: "Contract Tracker" },
-  { id: "monthly-breakdown", label: "Monthly Breakdown" },
+  { id: "monthly-breakdown", label: "CAPEX Tracker" },
 ];
 
 export default function Reports() {
