@@ -386,16 +386,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           <TableCell className="py-0 px-3 sticky left-0 bg-muted/50 z-10" />
                           <TableCell className="py-0 px-3 sticky left-[60px] bg-muted/50 z-10">
                             Grand Total
-                            {summaryTotals.grandBudget > 0 && (
-                              <span className={cn("ml-2 text-xs font-normal", grandTotals.total > summaryTotals.grandBudget ? "text-destructive" : "text-muted-foreground")}>
-                                ({Math.round((grandTotals.total / summaryTotals.grandBudget) * 100)}% of budget)
-                              </span>
-                            )}
                           </TableCell>
                           {MONTH_KEYS.map(k => (
                             <TableCell key={k} className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals[k] || null)}</TableCell>
                           ))}
-                          <TableCell className="py-0 px-3 text-right tabular-nums">{formatAmount(grandTotals.total || null)}</TableCell>
+                          <TableCell className="py-0 px-3 text-right tabular-nums">
+                            {summaryTotals.grandBudget > 0 && (
+                              <span className={cn("mr-2 text-xs font-normal", grandTotals.total > summaryTotals.grandBudget ? "text-destructive" : "text-muted-foreground")}>
+                                ({Math.round((grandTotals.total / summaryTotals.grandBudget) * 100)}% of budget)
+                              </span>
+                            )}
+                            {formatAmount(grandTotals.total || null)}
+                          </TableCell>
                         </TableRow>
                         {/* Project Budget */}
                         <TableRow className="h-10">
