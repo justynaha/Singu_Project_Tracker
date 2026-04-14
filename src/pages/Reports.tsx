@@ -10,7 +10,7 @@ const tabs = [
 
 export default function Reports() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "contracts";
+  const activeTab = searchParams.get("tab") || "monthly-breakdown";
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
