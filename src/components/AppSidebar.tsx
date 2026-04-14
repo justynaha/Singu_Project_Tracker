@@ -45,15 +45,7 @@ const navigationItems: NavItem[] = [{
     title: "Projects",
     icon: List,
     path: "/projects"
-  }, {
-    title: "Contracts",
-    icon: FileSignature,
-    path: "/contracts"
-  }, {
-    title: "Monthly Breakdown",
-    icon: CalendarRange,
-    path: "/monthly-breakdown"
-  }]
+}]
 }, {
   title: "Buildings",
   icon: Building2,
@@ -126,7 +118,15 @@ const navigationItems: NavItem[] = [{
   title: "Reports",
   icon: FileText,
   path: "/reports",
-  hasSubmenu: true
+  submenu: [{
+    title: "Contract Tracker",
+    icon: FileSignature,
+    path: "/reports?tab=contracts"
+  }, {
+    title: "Monthly Breakdown",
+    icon: CalendarRange,
+    path: "/reports?tab=monthly-breakdown"
+  }]
 }, {
   title: "ESG",
   icon: Leaf,

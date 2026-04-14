@@ -9,8 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ProjectTypes from "./pages/ProjectTypes";
 import ForeignExchange from "./pages/ForeignExchange";
-import ContractsList from "./pages/ContractsList";
-import MonthlyBreakdownList from "./pages/MonthlyBreakdownList";
+import Reports from "./pages/Reports";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import SitesList from "./pages/buildings/SitesList";
@@ -38,8 +37,8 @@ const App = () => (
                 <Route path="/project/:id" element={<ProjectDetail />} />
                 <Route path="/start" element={<div className="p-6">Start page coming soon</div>} />
                 <Route path="/tickets" element={<div className="p-6">Tickets page coming soon</div>} />
-                <Route path="/contracts" element={<ContractsList />} />
-                <Route path="/monthly-breakdown" element={<MonthlyBreakdownList />} />
+                <Route path="/contracts" element={<Navigate to="/reports?tab=contracts" replace />} />
+                <Route path="/monthly-breakdown" element={<Navigate to="/reports?tab=monthly-breakdown" replace />} />
                 <Route path="/buildings" element={<BuildingsList />} />
                 <Route path="/buildings/sites" element={<SitesList />} />
                 <Route path="/buildings/sites/:siteId" element={<SiteDetail />} />
@@ -51,7 +50,7 @@ const App = () => (
                 <Route path="/warehouse" element={<div className="p-6">Warehouse page coming soon</div>} />
                 <Route path="/marketing" element={<div className="p-6">Marketing page coming soon</div>} />
                 <Route path="/settlements" element={<div className="p-6">Settlements page coming soon</div>} />
-                <Route path="/reports" element={<div className="p-6">Reports page coming soon</div>} />
+                <Route path="/reports" element={<Reports />} />
                 <Route path="/esg" element={<div className="p-6">ESG page coming soon</div>} />
                 <Route path="/master-data" element={<div className="p-6">Master data coming soon</div>} />
                 <Route path="/master-data/project-types" element={<ProjectTypes />} />

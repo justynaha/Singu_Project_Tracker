@@ -60,7 +60,7 @@ interface BreakdownRow {
   jan: number | null; feb: number | null; mar: number | null;
 }
 
-export default function MonthlyBreakdownList() {
+export default function MonthlyBreakdownList({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const { projects, loading: projectsLoading } = useProjects();
   const [breakdowns, setBreakdowns] = useState<BreakdownRow[]>([]);
@@ -178,9 +178,9 @@ export default function MonthlyBreakdownList() {
   const loading = projectsLoading || bdLoading;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">Monthly Breakdown</h1>
+    <div className={embedded ? "" : "min-h-screen bg-background"}>
+      <div className={embedded ? "" : "p-6"}>
+        {!embedded && <h1 className="text-3xl font-bold mb-6">Monthly Breakdown</h1>}
 
         {/* Search */}
         <div className="flex items-center gap-4 mb-4">
