@@ -663,7 +663,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                       <TableCell key={k} className={cn("py-0 px-3 text-right tabular-nums font-semibold", sub.subtotalBg)}>{formatAmount(sub.subtotals[k] || null)}</TableCell>
                                     ))}
                                     {visibleMonths.total && (
-                                      <TableCell className={cn("py-0 px-3 text-right tabular-nums font-semibold", sub.subtotalBg)}>
+                                      <TableCell className={cn("py-0 px-3 text-right tabular-nums font-semibold sticky right-0 z-10", sub.subtotalBg)}>
                                         {formatAmount(sub.subtotals.total || null)}
                                       </TableCell>
                                     )}
@@ -679,7 +679,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                   <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-100">{formatAmount(group.subtotals[k] || null)}</TableCell>
                                 ))}
                                 {visibleMonths.total && (
-                                  <TableCell className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-100">
+                                  <TableCell className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-100 sticky right-0 z-10">
                                     {formatAmount(group.subtotals.total || null)}
                                   </TableCell>
                                 )}
