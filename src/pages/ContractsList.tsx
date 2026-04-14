@@ -185,9 +185,11 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
   const [pendingCountry, setPendingCountry] = useState("");
   const [pendingSite, setPendingSite] = useState("");
-  const [pendingBudgetLine, setPendingBudgetLine] = useState("");
+   const [pendingBudgetLine, setPendingBudgetLine] = useState("");
   const [pendingStatus, setPendingStatus] = useState("");
   const [pendingFiscalYear, setPendingFiscalYear] = useState("");
+  const [pendingBudgetType, setPendingBudgetType] = useState("");
+  const [pendingBudgetClassification, setPendingBudgetClassification] = useState("");
 
   const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
   const [filterCountry, setFilterCountry] = useState("");
@@ -195,6 +197,8 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFiscalYear, setFilterFiscalYear] = useState("");
+  const [filterBudgetType, setFilterBudgetType] = useState("");
+  const [filterBudgetClassification, setFilterBudgetClassification] = useState("");
 
   const [visibleColumns, setVisibleColumns] = useState({
     contractId: true,
