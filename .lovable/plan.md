@@ -1,25 +1,21 @@
 
 
-## Plan: Fix CAPEX Tracker alignment and sticky first column
+## Plan: Fix transparent backgrounds on sticky columns
 
-### Issues identified
+### Problem
+Sticky columns (#, Project Name, Total) use semi-transparent or inherited backgrounds (`bg-muted/30`), so when scrolling horizontally, non-sticky cell content shows through behind them.
 
-1. **Text alignment**: `TableCell` in `table.tsx` uses `align-middle` but no explicit `text-left`. Some cells (especially those with `colSpan`) may not be left-aligned consistently. Subsection headers ("IC", "Ad Hoc"), subtotal labels, and group headers all use `colSpan` which can cause centering.
+### Fix
+Replace all semi-transparent backgrounds on sticky cells with opaque equivalents:
 
-2. **First column not fixed**: The `#` column is sticky at `left-0` with `z-10`, but Country and Site columns are not sticky, so they scroll. The user wants the `#` column to remain fixed (it already is sticky, but may need verification that it works properly with correct width).
+**In `src/pages/MonthlyBreakdownList.tsx`:**
 
-### Changes — single file: `src/pages/MonthlyBreakdownList.tsx`
+1. **Total column in project rows** (line 653): `bg-muted/30` → `bg-gray-100` (opaque equivalent)
+2. **Total column header** (line 594): `bg-muted/30` → `bg-gray-100`
+3. **Total column in subtotal rows** (lines ~666, 682): already have colored bg from subsection — verify they're opaque (bg-blue-50, bg-orange-50, bg-orange-100 are all opaque ✓)
+4. **Total column in Grand Total row** (~line 707): verify opaque bg
+5. **Total column in summary rows** (Budget, Contracted, etc. ~lines 721, 727, 738, 749, 760, 771, 781): `bg-muted/30` → `bg-gray-100`
+6. **Country & Site columns in project rows** (lines 645-646): not sticky, so no issue — but if they should also be sticky, they'd need `bg-background`
 
-**1. Ensure all text cells are left-aligned**
-- Add `text-left` to all `TableCell` elements that contain text labels (subsection headers, subtotal labels, group headers, summary rows)
-- Specifically target: group header row (line 612), subsection header (line 627), subtotal label (line 662), group total label (line 681), grand total (line 709), budget/contracted/invoiced labels
-
-**2. Verify first column stickiness**
-- The `#` column already has `sticky left-0 bg-background z-10` — confirm this is applied consistently across ALL row types (project rows, subtotal rows, group headers, separator rows)
-- For group header rows and subsection headers that use `colSpan={colCount}`, the sticky behavior applies to the whole merged cell — add `sticky left-0 z-10` to these as well if missing
-
-### Also in `src/components/ui/table.tsx`
-
-**3. Add `text-left` to TableCell default class**
-- Change `TableCell` className to include `text-left` so all cells default to left alignment unless overridden (e.g. `text-right` for numeric columns)
+All sticky cells will get fully opaque backgrounds so content underneath doesn't bleed through.
 
