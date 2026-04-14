@@ -1,37 +1,26 @@
 
 
-## Plan: Reorder columns by currency group + add Columns visibility button
+## Plan: Add project budget info to Monthly Breakdown
 
 ### Overview
-Reorder the contract table columns so financial values are grouped by currency (all LC columns first, then all EUR columns), and add a "Columns" popover button above the table letting users toggle column visibility.
+Add a "Project Budget" row below the "Total" row (before summary rows), and show the budget % next to the total amount. Also pass `totalBudget` as a new prop and fix the existing ContractsTab build errors.
 
 ### Changes
 
-**1. `src/components/project-detail/ContractsTab.tsx`**
+**1. Fix `src/components/project-detail/ContractsTab.tsx` build errors**
+- Lines ~637-638 have syntax errors from the previous edit. Review and fix the malformed JSX in that region.
 
-**Column reordering** — Change header and body column order from the current interleaved pattern to:
-- `Date | Status | Contractor | Contracted (PLN) | Invoiced (PLN) | Balance (PLN) | Contracted (EUR) | Invoiced (EUR) | Balance (EUR)`
-- When currency is EUR, only show one set: `Contracted | Invoiced | Balance`
+**2. `src/components/project-detail/MonthlyBreakdownTab.tsx`**
 
-**Column visibility state** — Add state:
-```tsx
-const [visibleColumns, setVisibleColumns] = useState({
-  date: true,
-  status: true,
-  contractor: true,
-  contractedLc: true,
-  invoicedLc: true,
-  balanceLc: true,
-  contractedEur: true,
-  invoicedEur: true,
-  balanceEur: true,
-});
-```
+- Add `totalBudget?: number` to `Props` interface.
+- Modify the **Total row**: to the left of the total value, show `(X% of budget)` — calculated as `total / totalBudget * 100`.
+- Add a **"Project Budget" row** right after Total, before Planned 3M. Same height as Total (`py-3`), but same font style as summary rows below (regular weight, `text-sm`, `text-muted-foreground`). It displays the budget value right-aligned with the currency label.
 
-**Columns button** — Add a `Popover` with a "Columns" button (styled like the screenshot — blue with a grid icon) next to the "Add contract" button. The popover lists each column with a `Switch` toggle. Column labels are context-appropriate: "Date", "Status", "Contractor", "Contracted (PLN)", "Invoiced (PLN)", "Balance (PLN)", "Contracted (EUR)", "Invoiced (EUR)", "Balance (EUR)". When currency is EUR, LC columns are hidden from the popover.
-
-**Conditional rendering** — Wrap each `<TableHead>` and corresponding `<TableCell>` / footer cell with `{visibleColumns.xxx && (...)}`.
+**3. `src/pages/ProjectDetail.tsx`**
+- Pass `totalBudget={project?.total_budget || 0}` to `MonthlyBreakdownTab`.
 
 ### Files to edit
-- `src/components/project-detail/ContractsTab.tsx`
+- `src/components/project-detail/ContractsTab.tsx` (fix build errors)
+- `src/components/project-detail/MonthlyBreakdownTab.tsx` (~15 lines)
+- `src/pages/ProjectDetail.tsx` (1 line)
 
