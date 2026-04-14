@@ -84,6 +84,7 @@ interface BreakdownRow {
 interface ContractRow {
   project_id: string;
   amount_lc: number | null;
+  status: string;
 }
 
 interface InvoiceWithProject {
@@ -170,7 +171,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       setBdLoading(true);
       const [bdRes, cRes, iRes] = await Promise.all([
         supabase.from("monthly_breakdown").select("project_id, apr, may, jun, jul, aug, sep, oct, nov, dec, jan, feb, mar"),
-        supabase.from("contracts").select("project_id, amount_lc"),
+        supabase.from("contracts").select("project_id, amount_lc, status"),
         supabase.from("invoices").select("amount_lc, contract_id"),
       ]);
       if (!bdRes.error) setBreakdowns((bdRes.data || []) as BreakdownRow[]);
@@ -258,7 +259,10 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     const planned3M = MONTH_KEYS.slice(0, 3).reduce((s, k) => s + (grandTotals[k] || 0), 0);
     const grandContracted = contracts.filter(c => filteredIds.has(c.project_id)).reduce((s, c) => s + (c.amount_lc || 0), 0);
     const grandInvoiced = invoicesWithProject.filter(i => filteredIds.has(i.project_id)).reduce((s, i) => s + (i.amount_lc || 0), 0);
-    return { grandBudget, planned3M, grandContracted, grandInvoiced };
+    const grandOngoing = contracts.filter(c => filteredIds.has(c.project_id) && c.status === 'Ongoing').reduce((s, c) => s + (c.amount_lc || 0), 0);
+    const grandSavings = filteredProjects.reduce((s, p) => s + ((p as any).savings || 0), 0);
+    const grandPostponed = filteredProjects.reduce((s, p) => s + ((p as any).postponed || 0), 0);
+    return { grandBudget, planned3M, grandContracted, grandInvoiced, grandOngoing, grandSavings, grandPostponed };
   }, [filteredProjects, grandTotals, contracts, invoicesWithProject]);
 
   const loading = projectsLoading || bdLoading;
@@ -293,22 +297,21 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     if (visibleMonths.total) gtRow["Total"] = grandTotals.total || 0;
     rows.push(gtRow);
 
-    // Summary rows
-    const budgetRow: Record<string, any> = { "#": "", "Project Name": "Budget" };
-    if (visibleMonths.total) budgetRow["Total"] = summaryTotals.grandBudget || 0;
-    rows.push(budgetRow);
-
-    const planned3MRow: Record<string, any> = { "#": "", "Project Name": "Planned 3M" };
-    if (visibleMonths.total) planned3MRow["Total"] = summaryTotals.planned3M || 0;
-    rows.push(planned3MRow);
-
-    const contractedRow: Record<string, any> = { "#": "", "Project Name": "Contracted" };
-    if (visibleMonths.total) contractedRow["Total"] = summaryTotals.grandContracted || 0;
-    rows.push(contractedRow);
-
-    const invoicedRow: Record<string, any> = { "#": "", "Project Name": "Invoiced" };
-    if (visibleMonths.total) invoicedRow["Total"] = summaryTotals.grandInvoiced || 0;
-    rows.push(invoicedRow);
+    // Summary rows (order: Budget, Contracted, Invoiced, Ongoing, Planned 3M, Savings, Postponed)
+    const summaryRows: [string, number][] = [
+      ["Budget", summaryTotals.grandBudget],
+      ["Contracted", summaryTotals.grandContracted],
+      ["Invoiced", summaryTotals.grandInvoiced],
+      ["Ongoing", summaryTotals.grandOngoing],
+      ["Planned 3M", summaryTotals.planned3M],
+      ["Savings", summaryTotals.grandSavings],
+      ["Postponed", summaryTotals.grandPostponed],
+    ];
+    summaryRows.forEach(([label, value]) => {
+      const r: Record<string, any> = { "#": "", "Project Name": label };
+      if (visibleMonths.total) r["Total"] = value || 0;
+      rows.push(r);
+    });
 
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
@@ -561,20 +564,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>}
                         </TableRow>
-                        {/* Planned 3M */}
-                        <TableRow className="h-10">
-                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
-                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Planned 3M (EUR)</TableCell>
-                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
-                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
-                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
-                          {visibleMonths.total && (
-                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
-                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.planned3M / grandTotals.total) * 100) : 0}% total)</span>
-                              {formatAmount(summaryTotals.planned3M || null)}
-                            </TableCell>
-                          )}
-                        </TableRow>
                         {/* Contracted */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
@@ -600,6 +589,62 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
                               <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandInvoiced / grandTotals.total) * 100) : 0}% total)</span>
                               {formatAmount(summaryTotals.grandInvoiced || null)}
+                            </TableCell>
+                          )}
+                        </TableRow>
+                        {/* Ongoing */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Ongoing (EUR)</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
+                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandOngoing / grandTotals.total) * 100) : 0}% total)</span>
+                              {formatAmount(summaryTotals.grandOngoing || null)}
+                            </TableCell>
+                          )}
+                        </TableRow>
+                        {/* Planned 3M */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Planned 3M (EUR)</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
+                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.planned3M / grandTotals.total) * 100) : 0}% total)</span>
+                              {formatAmount(summaryTotals.planned3M || null)}
+                            </TableCell>
+                          )}
+                        </TableRow>
+                        {/* Savings */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Savings (EUR)</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
+                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandSavings / grandTotals.total) * 100) : 0}% total)</span>
+                              {formatAmount(summaryTotals.grandSavings || null)}
+                            </TableCell>
+                          )}
+                        </TableRow>
+                        {/* Postponed */}
+                        <TableRow className="h-10">
+                          <TableCell className="py-0 px-3 sticky left-0 bg-background z-10" />
+                          <TableCell className="py-0 px-3 sticky left-[60px] bg-background z-10 text-sm text-muted-foreground">Postponed (EUR)</TableCell>
+                          {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3" />}
+                          {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3" />}
+                          {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
+                          {visibleMonths.total && (
+                            <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-muted/30">
+                              <span className="text-muted-foreground/60 mr-1">({grandTotals.total > 0 ? Math.round((summaryTotals.grandPostponed / grandTotals.total) * 100) : 0}% total)</span>
+                              {formatAmount(summaryTotals.grandPostponed || null)}
                             </TableCell>
                           )}
                         </TableRow>
