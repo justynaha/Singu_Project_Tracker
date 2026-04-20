@@ -11,14 +11,14 @@ const SiteDetail = () => {
   const site = sites.find((s) => s.id === siteId);
 
   if (!site) {
-    return <div className="p-6">Site not found</div>;
+    return <div className="p-6">Property not found</div>;
   }
 
   if (isEditing) {
     return (
       <div className="p-6">
         <div className="text-sm mb-1">
-          <Link to="/buildings/sites" className="text-primary hover:underline">Sites</Link>
+          <Link to="/buildings/sites" className="text-primary hover:underline">Properties</Link>
           <span className="text-muted-foreground"> / </span>
           <button onClick={() => setIsEditing(false)} className="text-primary hover:underline">{site.name}</button>
           <span className="text-muted-foreground"> / Edit</span>
@@ -58,7 +58,7 @@ const SiteDetail = () => {
   return (
     <div className="p-6">
       <div className="text-sm mb-1">
-        <Link to="/buildings/sites" className="text-primary hover:underline">Sites</Link>
+        <Link to="/buildings/sites" className="text-primary hover:underline">Properties</Link>
         <span className="text-muted-foreground"> / {site.name}</span>
       </div>
 

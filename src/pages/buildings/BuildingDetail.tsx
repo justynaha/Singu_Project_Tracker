@@ -71,7 +71,7 @@ const BuildingDetail = () => {
             {/* Property data */}
             <SectionHeader title="Property data" />
             <InfoRow label="Name:">{building.name}</InfoRow>
-            <InfoRow label="Site:">
+            <InfoRow label="Property:">
               {parentSite ? (
                 <div>
                   <Link to={`/buildings/sites/${parentSite.id}`} className="text-primary hover:underline">

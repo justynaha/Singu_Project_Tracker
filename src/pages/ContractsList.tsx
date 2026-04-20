@@ -263,7 +263,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
     { key: "contractId", label: "Contract ID" },
     { key: "country", label: "Country" },
-    { key: "site", label: "Site" },
+    { key: "site", label: "Property" },
     { key: "legalEntity", label: "Legal entity" },
     { key: "budgetType", label: "Budget type" },
     { key: "contractor", label: "Contractor" },
@@ -537,7 +537,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
       if (visibleColumns.contractId) row["Contract ID"] = c.contract_number;
       if (visibleColumns.projectNumber) row["Project Number"] = projectNumberMap.get(c.project_id) ?? "";
       if (visibleColumns.projectTitle) row["Project Title"] = proj?.name || "";
-      if (visibleColumns.site) row["Site"] = proj?.site || "";
+      if (visibleColumns.site) row["Property"] = proj?.site || "";
       if (visibleColumns.country) row["Country"] = proj?.site ? siteToCountry[proj.site] || "" : "";
       if (visibleColumns.date) row["Date"] = c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "";
       if (visibleColumns.contractor) row["Contractor"] = c.contractor || "";
@@ -621,7 +621,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
               <div className="space-y-4">
               <div className="flex items-end gap-3 flex-wrap">
                   <div className="min-w-[120px]">
-                    <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
+                    <Label className="text-xs text-muted-foreground mb-2 block">Property group</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button variant="outline" className="w-full justify-between text-sm font-normal">
@@ -803,7 +803,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     <TableRow className="h-10">
                       {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3 sticky left-0 bg-card z-20 min-w-[140px]">Contract ID</TableHead>}
                       {visibleColumns.country && <TableHead className="h-10 py-0 px-3 sticky left-[140px] bg-card z-20 min-w-[120px]">Country</TableHead>}
-                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3 sticky left-[260px] bg-card z-20 min-w-[160px]">Site</TableHead>}
+                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3 sticky left-[260px] bg-card z-20 min-w-[160px]">Property</TableHead>}
                       {visibleColumns.legalEntity && <TableHead className="h-10 py-0 px-3 sticky left-[420px] bg-card z-20 min-w-[140px]">Legal entity</TableHead>}
                       {visibleColumns.budgetType && <TableHead className="h-10 py-0 px-3 sticky left-[560px] bg-card z-20 min-w-[120px]">Budget type</TableHead>}
                       {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}

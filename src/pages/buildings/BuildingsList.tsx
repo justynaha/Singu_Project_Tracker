@@ -80,7 +80,7 @@ const BuildingsList = () => {
             <TableHead>Name</TableHead>
             <TableHead>Address</TableHead>
             <TableHead>Property Manager</TableHead>
-            <TableHead>Site</TableHead>
+            <TableHead>Property</TableHead>
             <TableHead>Customer</TableHead>
           </TableRow>
         </TableHeader>

@@ -143,7 +143,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
 
   const extraColumnDefs = [
     { key: "country", label: "Country" },
-    { key: "site", label: "Site" },
+    { key: "site", label: "Property" },
     { key: "projectName", label: "Project Name" },
     { key: "budgetType", label: "Budget Type" },
     { key: "budgetClassification", label: "Budget Classification" },
@@ -353,7 +353,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
             "#": projectNumberMap.get(p.id) ?? "",
           };
           if (visibleExtraColumns.country) row["Country"] = country;
-          if (visibleExtraColumns.site) row["Site"] = site;
+          if (visibleExtraColumns.site) row["Property"] = site;
           if (visibleExtraColumns.projectName) row["Project Name"] = p.name;
           if (visibleExtraColumns.budgetType) row["Budget Type"] = p.budget_type || "";
           if (visibleExtraColumns.budgetClassification) row["Budget Classification"] = p.budget_classification || "";
@@ -432,7 +432,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
             <div className="space-y-4">
               <div className="flex items-end gap-3 flex-wrap">
                 <div className="min-w-[120px]">
-                  <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Property group</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-between text-sm font-normal">
@@ -592,7 +592,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     <TableRow className="h-10 sticky top-0 z-20 bg-background">
                       <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
                       {visibleExtraColumns.country && <TableHead className="h-10 py-0 px-3">Country</TableHead>}
-                      {visibleExtraColumns.site && <TableHead className="h-10 py-0 px-3">Site</TableHead>}
+                      {visibleExtraColumns.site && <TableHead className="h-10 py-0 px-3">Property</TableHead>}
                       {visibleExtraColumns.projectName && <TableHead className="h-10 py-0 px-3 min-w-[200px]">Project Name</TableHead>}
                       {visibleExtraColumns.budgetType && <TableHead className="h-10 py-0 px-3">Budget Type</TableHead>}
                       {visibleExtraColumns.budgetClassification && <TableHead className="h-10 py-0 px-3">Budget Classification</TableHead>}
