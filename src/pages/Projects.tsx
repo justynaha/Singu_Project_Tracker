@@ -872,9 +872,13 @@ export default function Projects() {
                           </TooltipProvider>
                         </div>
                       </td>
+                      )}
+                      {visibleColumns.fiscalYear && (
                       <td className="py-2 px-4 text-sm text-muted-foreground">
                         {project.fiscal_year || "2025"}
                       </td>
+                      )}
+                      {visibleColumns.budget && (
                       <td className="py-2 px-4 text-right">
                         {project.total_budget && project.total_budget > 0 ? (
                           <div className="space-y-0.5">
@@ -898,6 +902,7 @@ export default function Projects() {
                           <span className="text-sm text-muted-foreground italic">No budget</span>
                         )}
                       </td>
+                      )}
                     </tr>
                   );
                 })
