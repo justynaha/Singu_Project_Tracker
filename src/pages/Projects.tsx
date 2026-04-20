@@ -63,25 +63,7 @@ const MOCK_IMPORTED_PROJECTS = [
   { name: "Automated Gate Access System", site: "Lyon", budget_line: "Building upgrading works", total_budget: 350000, owner: "Marc Lefevre", budget_type: "Ad Hoc", budget_classification: "Speculative" },
   { name: "Cross-Dock Area Expansion", site: "Tilburg", budget_line: "Asset Enhancement Initiatives", total_budget: 1250000, owner: "Jeroen van Dijk", budget_type: "IC", budget_classification: "Mandatory" },
   { name: "EV Charging Station Network", site: "Schiphol", budget_line: "Sustainability", total_budget: 680000, owner: "Sophie de Vries", budget_type: "IC", budget_classification: "Mandatory" },
-].map((p, i) => ({
-  id: `mock-${i + 1}`,
-  name: p.name,
-  description: `Owner: ${p.owner}`,
-  status: "Open",
-  start_date: null as string | null,
-  end_date: null as string | null,
-  total_budget: p.total_budget,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  site: p.site,
-  building: null as string | null,
-  tenant: null as string | null,
-  budget_line: p.budget_line,
-  fiscal_year: "2025/2026",
-  currency: "EUR",
-  budget_type: p.budget_type,
-  budget_classification: p.budget_classification,
-}));
+];
 
 export default function Projects() {
   const navigate = useNavigate();
