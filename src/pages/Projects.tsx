@@ -61,6 +61,7 @@ export default function Projects() {
   const [showFilters, setShowFilters] = useState(false);
   const [showNewProject, setShowNewProject] = useState(false);
   const [showImportXLS, setShowImportXLS] = useState(false);
+  const [showExcelPreview, setShowExcelPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
