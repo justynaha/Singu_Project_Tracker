@@ -64,7 +64,7 @@ export default function MandatoryVsSpeculativeByCountryReport() {
           <table className="w-full text-sm border-collapse min-w-[900px]">
             <thead className="sticky top-0 z-10 bg-muted">
               <tr className="border-b border-border">
-                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border min-w-[200px]">Country</th>
+                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r-2 border-border min-w-[200px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">Country</th>
                 <th colSpan={3} className={`text-center font-semibold px-4 h-10 border-r border-border ${orangeHead}`}>FY25/26 Budget (EUR)</th>
                 <th colSpan={3} className={`text-center font-semibold px-4 h-10 ${slateHead}`}>Contracted (EUR)</th>
               </tr>
@@ -83,7 +83,7 @@ export default function MandatoryVsSpeculativeByCountryReport() {
                 const contracted = r.mandContracted + r.specContracted;
                 return (
                   <tr key={r.country} className="border-b border-border bg-background hover:bg-muted/50 [&>td]:bg-inherit">
-                    <td className="px-4 h-10 sticky left-0 z-10 border-r border-border whitespace-nowrap min-w-[200px] font-medium">{r.country}</td>
+                    <td className="px-4 h-10 sticky left-0 z-10 border-r-2 border-border whitespace-nowrap min-w-[200px] font-medium shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">{r.country}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.mandBudget)}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.specBudget)}</td>
                     <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{fmt(budget)}</td>
@@ -94,7 +94,7 @@ export default function MandatoryVsSpeculativeByCountryReport() {
                 );
               })}
               <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-10 z-20 [&>td]:bg-inherit">
-                <td className="px-4 h-10 sticky left-0 z-30 border-r border-border whitespace-nowrap min-w-[200px]">Total</td>
+                <td className="px-4 h-10 sticky left-0 z-30 border-r-2 border-border whitespace-nowrap min-w-[200px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">Total</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.mandBudget)}</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.specBudget)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalColStrong}`}>{fmt(totalBudget)}</td>
@@ -103,7 +103,7 @@ export default function MandatoryVsSpeculativeByCountryReport() {
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap ${totalColStrong}`}>{fmt(totalContracted)}</td>
               </tr>
               <tr className="bg-muted italic border-t border-border sticky bottom-0 z-20 [&>td]:bg-inherit">
-                <td className="px-4 h-10 sticky left-0 z-30 border-r border-border whitespace-nowrap min-w-[200px]">% Contracted</td>
+                <td className="px-4 h-10 sticky left-0 z-30 border-r-2 border-border whitespace-nowrap min-w-[200px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">% Contracted</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.mandContracted, totals.mandBudget)}</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.specContracted, totals.specBudget)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{pct(totalContracted, totalBudget)}</td>

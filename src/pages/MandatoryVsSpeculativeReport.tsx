@@ -58,7 +58,7 @@ export default function MandatoryVsSpeculativeReport() {
             <thead className="sticky top-0 z-10 bg-muted">
               <tr className="border-b border-border">
                 <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border min-w-[220px]">Property</th>
-                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]">Country</th>
+                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[220px] bg-muted z-20 border-r-2 border-border min-w-[120px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">Country</th>
                 <th colSpan={3} className={`text-center font-semibold px-4 h-10 border-r border-border ${orangeHead}`}>FY25/26 Budget (EUR)</th>
                 <th colSpan={3} className={`text-center font-semibold px-4 h-10 ${slateHead}`}>Contracted (EUR)</th>
               </tr>
@@ -78,7 +78,7 @@ export default function MandatoryVsSpeculativeReport() {
                 return (
                   <tr key={r.property} className="border-b border-border bg-background hover:bg-muted/50 [&>td]:bg-inherit">
                     <td className="px-4 h-10 sticky left-0 z-10 border-r border-border whitespace-nowrap min-w-[220px]">{r.property}</td>
-                    <td className="px-4 h-10 sticky left-[220px] z-10 border-r border-border whitespace-nowrap min-w-[120px]">{r.country}</td>
+                    <td className="px-4 h-10 sticky left-[220px] z-10 border-r-2 border-border whitespace-nowrap min-w-[120px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">{r.country}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.mandBudget)}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.specBudget)}</td>
                     <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{fmt(budget)}</td>
@@ -90,7 +90,7 @@ export default function MandatoryVsSpeculativeReport() {
               })}
               <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-10 z-20 [&>td]:bg-inherit">
                 <td className="px-4 h-10 sticky left-0 z-30 border-r border-border whitespace-nowrap min-w-[220px]">Total</td>
-                <td className="px-4 h-10 sticky left-[220px] z-30 border-r border-border min-w-[120px]"></td>
+                <td className="px-4 h-10 sticky left-[220px] z-30 border-r-2 border-border min-w-[120px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]"></td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.mandBudget)}</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.specBudget)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalColStrong}`}>{fmt(totalBudget)}</td>
@@ -100,7 +100,7 @@ export default function MandatoryVsSpeculativeReport() {
               </tr>
               <tr className="bg-muted italic border-t border-border sticky bottom-0 z-20 [&>td]:bg-inherit">
                 <td className="px-4 h-10 sticky left-0 z-30 border-r border-border whitespace-nowrap min-w-[220px]">% Breakdown</td>
-                <td className="px-4 h-10 sticky left-[220px] z-30 border-r border-border min-w-[120px]"></td>
+                <td className="px-4 h-10 sticky left-[220px] z-30 border-r-2 border-border min-w-[120px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]"></td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.mandBudget, totalBudget)}</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.specBudget, totalBudget)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{totalBudget ? "100.0%" : "—"}</td>

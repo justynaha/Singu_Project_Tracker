@@ -101,7 +101,7 @@ export default function SummaryReport() {
             <thead className="sticky top-0 z-10 bg-muted">
               <tr className="border-b border-border">
                 <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border min-w-[220px]">Property</th>
-                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]">Country</th>
+                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[220px] bg-muted z-20 border-r-2 border-border min-w-[120px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">Country</th>
                 <th colSpan={2} className="text-center font-semibold px-4 h-10 border-r border-border">Budget</th>
                 <th colSpan={3} className={`text-center font-semibold px-4 h-10 border-r border-border ${curHeadCls}`}>Current</th>
                 <th colSpan={3} className="text-center font-semibold px-4 h-10 border-r border-border">Previous Month</th>
@@ -129,7 +129,7 @@ export default function SummaryReport() {
                 return (
                   <tr key={r.site} className="border-b border-border bg-background hover:bg-muted/50 [&>td]:bg-inherit">
                     <td className="px-4 h-10 sticky left-0 z-10 border-r border-border whitespace-nowrap min-w-[220px]">{r.site}</td>
-                    <td className="px-4 h-10 sticky left-[220px] z-10 border-r border-border whitespace-nowrap min-w-[120px]">{r.country}</td>
+                    <td className="px-4 h-10 sticky left-[220px] z-10 border-r-2 border-border whitespace-nowrap min-w-[120px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">{r.country}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">
                       {r.budgetLC === 0 ? "—" : `${fmt(r.budgetLC)} ${r.budgetCurrency}`}
                     </td>
@@ -148,7 +148,7 @@ export default function SummaryReport() {
               })}
               <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-0 z-20 [&>td]:bg-inherit">
                 <td className="px-4 h-10 sticky left-0 z-30 border-r border-border whitespace-nowrap min-w-[220px]">Total</td>
-                <td className="px-4 h-10 sticky left-[220px] z-30 border-r border-border min-w-[120px]"></td>
+                <td className="px-4 h-10 sticky left-[220px] z-30 border-r-2 border-border min-w-[120px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]"></td>
                 <td className="px-4 h-10 text-right tabular-nums text-muted-foreground whitespace-nowrap">—</td>
                 <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(grandTotal.budgetEUR)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curCompleted)}</td>
