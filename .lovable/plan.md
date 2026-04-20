@@ -1,21 +1,37 @@
 
-## Plan: Przenieś toggle V1/V2 z Reports do zakładki projektu
 
-### Krok 1: Wycofaj zmianę w Reports
-W `src/pages/MonthlyBreakdownList.tsx`:
-- Usuń stan `viewVersion` oraz dropdown "View" w toolbarze.
-- Usuń warunkowe renderowanie wierszy summary (przywróć wszystkie: Contracted, Invoiced, Ongoing, Savings, Postponed jako zawsze widoczne).
-- Usuń wiersz "Remaining to allocate".
+## Plan: Mock Excel preview after clicking Download
 
-### Krok 2: Dodaj toggle V1/V2 w zakładce Monthly Breakdown projektu
-W `src/components/project-detail/MonthlyBreakdownTab.tsx`:
+When the user clicks **Download** in the "Import from XLS" modal, instead of downloading a file, replace the modal contents with a full-screen mock Excel preview showing the template with 6 sample rows pulled from real project data.
 
-1. Dodaj stan: `const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V2")`.
-2. Dodaj `Select` (V1 / V2) w prawym górnym rogu nagłówka — obok przełącznika walut "Local currency / EUR".
-3. **V2 (domyślny)** = bieżący widok bez zmian: pokazuje Budget, Contracted, Invoiced, Ongoing, Planned 3M, Savings, Postponed.
-4. **V1 (uproszczony)** ukrywa: Contracted, Invoiced, Ongoing, Savings, Postponed. Zostają: Budget, Planned 3M.
-5. W V1 dodaj nowy wiersz **"Remaining to allocate"** bezpośrednio pod Grand Total (nad Budget). Wartość = `totalBudget - total` (w aktualnej walucie). Czerwony jeśli ujemny.
+### Implementation
 
-### Pliki do edycji
-- `src/pages/MonthlyBreakdownList.tsx` — wycofanie
-- `src/components/project-detail/MonthlyBreakdownTab.tsx` — dodanie toggle + logika V1/V2
+**File to edit:** `src/pages/Projects.tsx`
+
+1. Add state `const [showExcelPreview, setShowExcelPreview] = useState(false)` and update the Download button to set it true (also close the import modal, or render the preview as a separate large Dialog).
+
+2. Add a new `<Dialog>` with `DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 overflow-hidden"` rendering an Excel-like grid.
+
+3. **Excel mock structure** (mimic screenshot styling):
+   - Dark gray (`bg-zinc-800 text-white`) top column-letter row: A, B, C, … J
+   - Light gray (`bg-zinc-100`) left row-number column: 1–34
+   - Row 1 = header row, bold, centered. Color rules per column:
+     - Red (`text-red-600`): **Name**, **Site**, **Currency**, **Owner**
+     - Black: **Description**, **Work category**, **Fiscal year**, **Budget**, **Budget type**, **Budget classification**
+   - Rows 2–7 prefilled with 6 projects from the database:
+
+| Name | Site | Work category | FY | Budget | Currency | Budget type | Classification |
+|---|---|---|---|---|---|---|---|
+| Test 1 | Bedzin | ESG | 2026 | 100000 | EUR | IC | Mandatory |
+| Test 1 | Bedzin | ELECTRICAL SYSTEMS | 2026 | 100000 | EUR | IC | Mandatory |
+| Roof Solar Panel Installation | Marseille | Sustainability | 2025/2026 | 890000 | EUR | IC | Mandatory |
+| Automated Gate Access System | Lyon | Building upgrading works | 2025/2026 | 350000 | EUR | Ad Hoc | Speculative |
+| Cross-Dock Area Expansion | Tilburg | Asset Enhancement Initiatives | 2025/2026 | 1250000 | EUR | IC | Mandatory |
+| EV Charging Station Network | Schiphol | Sustainability | 2025/2026 | 680000 | EUR | IC | Mandatory |
+
+   - Description and Owner left empty for sample rows (template fields).
+   - Rows 8–34 empty.
+   - Use `border border-zinc-300`, `text-xs`, monospace-ish look (`font-sans`), cell height ~24px, white bg.
+
+4. Keep it purely visual (no real .xlsx download). Add a small "Close" button in the top-right corner of the preview.
+
