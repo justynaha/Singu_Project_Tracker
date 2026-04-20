@@ -71,7 +71,7 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { 
     id: "cashflow", 
     label: "Finance", 
-    visible: true,
+    visible: false,
     children: [
       { id: "forecasted", label: "Forecasted", visible: true },
       { id: "contracted", label: "Contracted", visible: true },
