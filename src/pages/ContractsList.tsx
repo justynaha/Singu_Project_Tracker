@@ -540,15 +540,17 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
 
   const visibleBeforeFinancial = [
     visibleColumns.contractId,
+    visibleColumns.country,
+    visibleColumns.site,
+    visibleColumns.legalEntity,
+    visibleColumns.budgetType,
+    visibleColumns.contractor,
+    visibleColumns.description,
     visibleColumns.projectNumber,
     visibleColumns.projectTitle,
-    visibleColumns.site,
-    visibleColumns.country,
     visibleColumns.date,
-    visibleColumns.contractor,
     visibleColumns.status,
     visibleColumns.agreementSigned,
-    visibleColumns.description,
   ].filter(Boolean).length;
 
   return (
