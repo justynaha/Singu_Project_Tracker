@@ -1140,7 +1140,7 @@ export default function Projects() {
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs text-muted-foreground shrink-0">1</div>
               <div className="flex-1 space-y-2">
                 <p className="text-sm font-medium">Download Excel template</p>
-                <Button size="sm">Download</Button>
+                <Button size="sm" onClick={() => { setShowImportXLS(false); setShowExcelPreview(true); }}>Download</Button>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -1158,6 +1158,82 @@ export default function Projects() {
                 </label>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showExcelPreview} onOpenChange={setShowExcelPreview}>
+        <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col gap-0">
+          <div className="flex items-center justify-between px-4 py-2 bg-zinc-100 border-b border-zinc-300">
+            <span className="text-sm font-medium text-zinc-800">projects_import_template.xlsx</span>
+            <Button variant="ghost" size="sm" onClick={() => setShowExcelPreview(false)}>
+              <X className="h-4 w-4 mr-1" /> Close
+            </Button>
+          </div>
+          <div className="flex-1 overflow-auto bg-white">
+            {(() => {
+              const headers = [
+                { label: "Name", red: true },
+                { label: "Description", red: false },
+                { label: "Site", red: true },
+                { label: "Work category", red: false },
+                { label: "Fiscal year", red: false },
+                { label: "Budget", red: false },
+                { label: "Currency", red: true },
+                { label: "Owner", red: true },
+                { label: "Budget type", red: false },
+                { label: "Budget classification", red: false },
+              ];
+              const sampleRows = [
+                ["Test 1", "", "Bedzin", "ESG", "2026", "100000", "EUR", "", "IC", "Mandatory"],
+                ["Test 1", "", "Bedzin", "ELECTRICAL SYSTEMS", "2026", "100000", "EUR", "", "IC", "Mandatory"],
+                ["Roof Solar Panel Installation", "", "Marseille", "Sustainability", "2025/2026", "890000", "EUR", "", "IC", "Mandatory"],
+                ["Automated Gate Access System", "", "Lyon", "Building upgrading works", "2025/2026", "350000", "EUR", "", "Ad Hoc", "Speculative"],
+                ["Cross-Dock Area Expansion", "", "Tilburg", "Asset Enhancement Initiatives", "2025/2026", "1250000", "EUR", "", "IC", "Mandatory"],
+                ["EV Charging Station Network", "", "Schiphol", "Sustainability", "2025/2026", "680000", "EUR", "", "IC", "Mandatory"],
+              ];
+              const colLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+              const totalRows = 34;
+              return (
+                <table className="border-collapse text-xs font-sans" style={{ tableLayout: "fixed" }}>
+                  <thead>
+                    <tr>
+                      <th className="bg-zinc-800 text-white border border-zinc-600 text-center font-normal" style={{ width: 40, height: 22 }}></th>
+                      {colLetters.map((l) => (
+                        <th key={l} className="bg-zinc-800 text-white border border-zinc-600 text-center font-normal" style={{ width: 160, height: 22 }}>{l}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: totalRows }).map((_, rIdx) => {
+                      const rowNum = rIdx + 1;
+                      const isHeader = rowNum === 1;
+                      const dataRow = rowNum >= 2 && rowNum <= 7 ? sampleRows[rowNum - 2] : null;
+                      return (
+                        <tr key={rowNum}>
+                          <td className="bg-zinc-100 border border-zinc-300 text-center text-zinc-600" style={{ width: 40, height: 24 }}>{rowNum}</td>
+                          {colLetters.map((_, cIdx) => {
+                            if (isHeader) {
+                              const h = headers[cIdx];
+                              return (
+                                <td key={cIdx} className={cn(
+                                  "border border-zinc-300 text-center font-bold px-2 truncate",
+                                  h.red ? "text-red-600" : "text-black"
+                                )} style={{ height: 24 }}>{h.label}</td>
+                              );
+                            }
+                            const value = dataRow ? dataRow[cIdx] : "";
+                            return (
+                              <td key={cIdx} className="border border-zinc-300 px-2 text-black truncate" style={{ height: 24 }}>{value}</td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              );
+            })()}
           </div>
         </DialogContent>
       </Dialog>
