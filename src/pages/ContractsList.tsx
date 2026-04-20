@@ -797,15 +797,15 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
             </div>
           ) : (
             <>
-              <div className="border border-border rounded-lg overflow-hidden">
+              <div className="border border-border rounded-lg flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="sticky top-0 z-30 bg-card [&_th]:bg-card">
                     <TableRow className="h-10">
-                      {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3 sticky left-0 bg-card z-20 min-w-[140px]">Contract ID</TableHead>}
-                      {visibleColumns.country && <TableHead className="h-10 py-0 px-3 sticky left-[140px] bg-card z-20 min-w-[120px]">Country</TableHead>}
-                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3 sticky left-[260px] bg-card z-20 min-w-[160px]">Property</TableHead>}
-                      {visibleColumns.legalEntity && <TableHead className="h-10 py-0 px-3 sticky left-[420px] bg-card z-20 min-w-[140px]">Legal entity</TableHead>}
-                      {visibleColumns.budgetType && <TableHead className="h-10 py-0 px-3 sticky left-[560px] bg-card z-20 min-w-[120px]">Budget type</TableHead>}
+                      {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3 sticky left-0 bg-card z-40 min-w-[140px]">Contract ID</TableHead>}
+                      {visibleColumns.country && <TableHead className="h-10 py-0 px-3 sticky left-[140px] bg-card z-40 min-w-[120px]">Country</TableHead>}
+                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3 sticky left-[260px] bg-card z-40 min-w-[160px]">Property</TableHead>}
+                      {visibleColumns.legalEntity && <TableHead className="h-10 py-0 px-3 sticky left-[420px] bg-card z-40 min-w-[140px]">Legal entity</TableHead>}
+                      {visibleColumns.budgetType && <TableHead className="h-10 py-0 px-3 sticky left-[560px] bg-card z-40 min-w-[120px]">Budget type</TableHead>}
                       {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
                       {visibleColumns.description && <TableHead className="h-10 py-0 px-3">Contract description</TableHead>}
                       {visibleColumns.projectNumber && <TableHead className="h-10 py-0 px-3">Project Number</TableHead>}
