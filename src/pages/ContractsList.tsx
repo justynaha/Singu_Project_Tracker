@@ -826,7 +826,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                       {visibleColumns.country && <TableHead className="h-10 py-0 px-3 sticky left-[140px] bg-card z-40 min-w-[120px]">Country</TableHead>}
                       {visibleColumns.site && <TableHead className="h-10 py-0 px-3 sticky left-[260px] bg-card z-40 min-w-[160px]">Property</TableHead>}
                       {visibleColumns.legalEntity && <TableHead className="h-10 py-0 px-3 sticky left-[420px] bg-card z-40 min-w-[140px]">Legal entity</TableHead>}
-                      {visibleColumns.budgetType && <TableHead className="h-10 py-0 px-3 sticky left-[560px] bg-card z-40 min-w-[120px]">Budget type</TableHead>}
+                     {visibleColumns.budgetType && <TableHead className="h-10 py-0 px-3 sticky left-[560px] bg-card z-40 min-w-[120px] border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">Budget type</TableHead>}
                       {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
                       {visibleColumns.description && <TableHead className="h-10 py-0 px-3">Contract description</TableHead>}
                       {visibleColumns.projectNumber && <TableHead className="h-10 py-0 px-3">Project Number</TableHead>}
@@ -851,7 +851,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                         return (
                         <>
                           <TableRow key={`group-${group.group}`} className="h-10 cursor-pointer" onClick={() => toggleGroup(group.group)}>
-                            <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm sticky left-0 z-10 bg-muted">
+                            <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm sticky left-0 z-10 bg-muted border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">
                               <span className="inline-flex items-center gap-1.5">
                                 <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "-rotate-90")} />
                                 {group.label} ({group.contracts.length} contract{group.contracts.length !== 1 ? "s" : ""})
@@ -878,7 +878,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                 {visibleColumns.country && <TableCell className={cn("py-0 px-3 sticky left-[140px] z-10 min-w-[120px]", isSelected ? "bg-muted" : "bg-card")}>{country}</TableCell>}
                                 {visibleColumns.site && <TableCell className={cn("py-0 px-3 sticky left-[260px] z-10 min-w-[160px]", isSelected ? "bg-muted" : "bg-card")}>{proj?.site || "—"}</TableCell>}
                                 {visibleColumns.legalEntity && <TableCell className={cn("py-0 px-3 sticky left-[420px] z-10 min-w-[140px]", isSelected ? "bg-muted" : "bg-card")}>{(proj?.site && siteToLegalEntity[proj.site]) || "—"}</TableCell>}
-                                {visibleColumns.budgetType && <TableCell className={cn("py-0 px-3 sticky left-[560px] z-10 min-w-[120px]", isSelected ? "bg-muted" : "bg-card")}>{proj?.budget_type || "—"}</TableCell>}
+                                {visibleColumns.budgetType && <TableCell className={cn("py-0 px-3 sticky left-[560px] z-10 min-w-[120px] border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]", isSelected ? "bg-muted" : "bg-card")}>{proj?.budget_type || "—"}</TableCell>}
                                 {visibleColumns.contractor && <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>}
                                 {visibleColumns.description && <TableCell className="py-0 px-3 max-w-[200px] truncate">{c.description || "—"}</TableCell>}
                                 {visibleColumns.projectNumber && (
@@ -903,7 +903,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                           })}
                           {/* Subtotal row for group */}
                           <TableRow key={`subtotal-${group.group}`} className="h-10">
-                            <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic sticky left-0 z-10 bg-orange-100">
+                            <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic sticky left-0 z-10 bg-orange-100 border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">
                               Subtotal — {group.label}
                             </TableCell>
                             {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right sticky right-[280px] z-10 bg-orange-100 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.contracted)}</span></TableCell>}
@@ -918,7 +918,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   {filtered.length > 0 && (
                     <TableFooter>
                       <TableRow className="h-10 text-white">
-                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold text-white sticky left-0 z-10 bg-amber-900">Grand Total</TableCell>
+                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold text-white sticky left-0 z-10 bg-amber-900 border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">Grand Total</TableCell>
                         {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right text-white sticky right-[280px] z-10 bg-amber-900 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.contracted)}</span></TableCell>}
                         {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right text-white sticky right-[140px] z-10 bg-amber-900 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.invoiced)}</span></TableCell>}
                         {visibleColumns.balance && <TableCell className="py-0 px-3 text-right text-white sticky right-0 z-10 bg-amber-900 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.balance)}</span></TableCell>}
