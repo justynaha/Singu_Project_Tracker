@@ -38,10 +38,6 @@ const navigationItems: NavItem[] = [{
   path: "/projects",
   badge: "NEW",
   submenu: [{
-    title: "Dashboard",
-    icon: PieChart,
-    path: "/dashboard"
-}, {
     title: "Projects",
     icon: List,
     path: "/projects"
