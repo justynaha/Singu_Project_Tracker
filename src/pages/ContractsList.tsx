@@ -797,7 +797,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
             </div>
           ) : (
             <>
-              <div className="border border-border rounded-lg overflow-auto">
+              <div className="border border-border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow className="h-10">
