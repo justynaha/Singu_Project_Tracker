@@ -415,8 +415,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   };
 
   return (
-    <div className={embedded ? "" : "min-h-screen bg-background"}>
-      <div className={embedded ? "p-4" : "p-6"}>
+    <div className={embedded ? "h-full flex flex-col min-h-0" : "min-h-screen bg-background"}>
+      <div className={embedded ? "p-4 flex-1 min-h-0 flex flex-col" : "p-6"}>
         {!embedded && <h1 className="text-3xl font-bold mb-6">Monthly Breakdown</h1>}
 
         {/* Search */}
@@ -585,19 +585,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
           <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
         ) : (
           <>
-            <div className="border border-border rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
+            <div className="border border-border rounded-lg flex-1 min-h-0 overflow-hidden flex flex-col">
                 <Table>
-                  <TableHeader>
-                    <TableRow className="h-10 sticky top-0 z-20 bg-background">
-                      <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-10">#</TableHead>
+                  <TableHeader className="sticky top-0 z-30 bg-background [&_th]:bg-background">
+                    <TableRow className="h-10">
+                      <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-40">#</TableHead>
                       {visibleExtraColumns.country && <TableHead className="h-10 py-0 px-3">Country</TableHead>}
                       {visibleExtraColumns.site && <TableHead className="h-10 py-0 px-3">Property</TableHead>}
                       {visibleExtraColumns.projectName && <TableHead className="h-10 py-0 px-3 min-w-[200px]">Project Name</TableHead>}
                       {visibleExtraColumns.budgetType && <TableHead className="h-10 py-0 px-3">Budget Type</TableHead>}
                       {visibleExtraColumns.budgetClassification && <TableHead className="h-10 py-0 px-3">Budget Classification</TableHead>}
                       {MONTH_KEYS.map((k, i) => visibleMonths[k] && <TableHead key={k} className="h-10 py-0 px-3 text-right min-w-[100px] bg-green-100 dark:bg-green-900/30">{MONTH_HEADERS[i]}</TableHead>)}
-                      {visibleMonths.total && <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-background sticky right-0 z-10">Total (EUR)</TableHead>}
+                      {visibleMonths.total && <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-background sticky right-0 z-40">Total (EUR)</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -796,7 +795,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     )}
                   </TableBody>
                 </Table>
-              </div>
             </div>
 
           </>

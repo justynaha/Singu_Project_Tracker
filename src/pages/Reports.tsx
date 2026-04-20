@@ -47,7 +47,7 @@ export default function Reports() {
               </button>
             ))}
           </div>
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             {activeTab === "summary" && <SummaryReport />}
             {activeTab === "mandatory-speculative" && <MandatoryVsSpeculativeReport />}
             {activeTab === "mandatory-speculative-country" && <MandatoryVsSpeculativeByCountryReport />}
