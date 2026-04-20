@@ -82,8 +82,8 @@ export default function MandatoryVsSpeculativeByCountryReport() {
                 const budget = r.mandBudget + r.specBudget;
                 const contracted = r.mandContracted + r.specContracted;
                 return (
-                  <tr key={r.country} className="border-b border-border hover:bg-muted/30 group">
-                    <td className="px-4 h-10 sticky left-0 bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[200px] font-medium">{r.country}</td>
+                  <tr key={r.country} className="border-b border-border bg-background hover:bg-muted/50 [&>td]:bg-inherit">
+                    <td className="px-4 h-10 sticky left-0 border-r border-border whitespace-nowrap min-w-[200px] font-medium">{r.country}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.mandBudget)}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.specBudget)}</td>
                     <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{fmt(budget)}</td>
@@ -93,8 +93,8 @@ export default function MandatoryVsSpeculativeByCountryReport() {
                   </tr>
                 );
               })}
-              <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-10 z-10">
-                <td className="px-4 h-10 sticky left-0 bg-muted z-20 border-r border-border whitespace-nowrap min-w-[200px]">Total</td>
+              <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-10 z-10 [&>td]:bg-inherit">
+                <td className="px-4 h-10 sticky left-0 z-20 border-r border-border whitespace-nowrap min-w-[200px]">Total</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.mandBudget)}</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.specBudget)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalColStrong}`}>{fmt(totalBudget)}</td>
@@ -102,8 +102,8 @@ export default function MandatoryVsSpeculativeByCountryReport() {
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.specContracted)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap ${totalColStrong}`}>{fmt(totalContracted)}</td>
               </tr>
-              <tr className="bg-muted/70 italic border-t border-border sticky bottom-0 z-10">
-                <td className="px-4 h-10 sticky left-0 bg-muted/70 z-20 border-r border-border whitespace-nowrap min-w-[200px]">% Contracted</td>
+              <tr className="bg-muted italic border-t border-border sticky bottom-0 z-10 [&>td]:bg-inherit">
+                <td className="px-4 h-10 sticky left-0 z-20 border-r border-border whitespace-nowrap min-w-[200px]">% Contracted</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.mandContracted, totals.mandBudget)}</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.specContracted, totals.specBudget)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{pct(totalContracted, totalBudget)}</td>
