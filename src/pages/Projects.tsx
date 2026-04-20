@@ -710,7 +710,8 @@ export default function Projects() {
                 {visibleColumns.milestones && <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>}
                 {visibleColumns.progress && <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>}
                 {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
-                {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Work category</th>}
+                {visibleColumns.workCategory && <th className="text-left py-2 px-4 text-sm font-medium w-44">Work category</th>}
+                {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget</th>}
               </tr>
             </thead>
             <tbody>
@@ -724,6 +725,7 @@ export default function Projects() {
                     {visibleColumns.milestones && <td className="py-2 px-4"><Skeleton className="h-6 w-40" /></td>}
                     {visibleColumns.progress && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
                     {visibleColumns.fiscalYear && <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>}
+                    {visibleColumns.workCategory && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
                     {visibleColumns.budget && <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>}
                   </tr>
                 ))
