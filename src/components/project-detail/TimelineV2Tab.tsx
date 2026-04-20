@@ -631,7 +631,9 @@ function MilestoneStatusWidget({
                   "w-8 h-8 flex items-center justify-center mb-2 transition-colors rotate-45",
                   isDone
                     ? "bg-success text-success-foreground"
-                    : "bg-muted text-muted-foreground"
+                    : isInProgress
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
                 )}
               >
                 {isDone ? (
