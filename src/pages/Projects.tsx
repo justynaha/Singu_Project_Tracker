@@ -56,15 +56,43 @@ interface CashflowData {
   contracted: number;
 }
 
+const MOCK_IMPORTED_PROJECTS = [
+  { name: "LED Lighting Retrofit", site: "Bedzin", budget_line: "ESG", total_budget: 100000, owner: "Anna Kowalska", budget_type: "IC", budget_classification: "Mandatory" },
+  { name: "Main Switchgear Replacement", site: "Bedzin", budget_line: "ELECTRICAL SYSTEMS", total_budget: 100000, owner: "Piotr Nowak", budget_type: "IC", budget_classification: "Mandatory" },
+  { name: "Roof Solar Panel Installation", site: "Marseille", budget_line: "Sustainability", total_budget: 890000, owner: "Claire Dubois", budget_type: "IC", budget_classification: "Mandatory" },
+  { name: "Automated Gate Access System", site: "Lyon", budget_line: "Building upgrading works", total_budget: 350000, owner: "Marc Lefevre", budget_type: "Ad Hoc", budget_classification: "Speculative" },
+  { name: "Cross-Dock Area Expansion", site: "Tilburg", budget_line: "Asset Enhancement Initiatives", total_budget: 1250000, owner: "Jeroen van Dijk", budget_type: "IC", budget_classification: "Mandatory" },
+  { name: "EV Charging Station Network", site: "Schiphol", budget_line: "Sustainability", total_budget: 680000, owner: "Sophie de Vries", budget_type: "IC", budget_classification: "Mandatory" },
+].map((p, i) => ({
+  id: `mock-${i + 1}`,
+  name: p.name,
+  description: `Owner: ${p.owner}`,
+  status: "Open",
+  start_date: null as string | null,
+  end_date: null as string | null,
+  total_budget: p.total_budget,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  site: p.site,
+  building: null as string | null,
+  tenant: null as string | null,
+  budget_line: p.budget_line,
+  fiscal_year: "2025/2026",
+  currency: "EUR",
+  budget_type: p.budget_type,
+  budget_classification: p.budget_classification,
+}));
+
 export default function Projects() {
   const navigate = useNavigate();
-  const { projects, loading, createProject } = useProjects();
+  const { projects: dbProjects, loading, createProject } = useProjects();
+  const [hasImported, setHasImported] = useState(false);
+  const projects = hasImported ? MOCK_IMPORTED_PROJECTS : dbProjects;
   const [showFilters, setShowFilters] = useState(false);
   const [showNewProject, setShowNewProject] = useState(false);
   const [showImportXLS, setShowImportXLS] = useState(false);
   const [showExcelPreview, setShowExcelPreview] = useState(false);
   const [importFileAttached, setImportFileAttached] = useState(false);
-  const [hasImported, setHasImported] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
