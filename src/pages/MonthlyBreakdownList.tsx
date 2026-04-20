@@ -542,6 +542,16 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
 
         {/* Toolbar: Columns + Export */}
         <div className="flex items-center justify-end gap-2 mb-3 pr-4">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-muted-foreground">View</Label>
+            <Select value={viewVersion} onValueChange={(v) => setViewVersion(v as "V1" | "V2")}>
+              <SelectTrigger className="h-9 w-[80px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="V1">V1</SelectItem>
+                <SelectItem value="V2">V2</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm">
