@@ -427,8 +427,8 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                           <div className="flex items-center justify-end gap-2">
                             {remaining !== 0 && (
                               <>
-                                <Button variant="outline" size="sm" className="h-7 px-2 text-xs">Savings</Button>
-                                <Button variant="outline" size="sm" className="h-7 px-2 text-xs">Postponed</Button>
+                                <Button variant="outline" size="sm" className="h-7 px-2 text-xs">+ Savings</Button>
+                                <Button variant="outline" size="sm" className="h-7 px-2 text-xs">+ Postponed</Button>
                               </>
                             )}
                             <span>{fmt(remaining)} {currencyLabel}</span>
