@@ -344,20 +344,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                     </td>
                   </tr>
 
-                  {/* Project Budget row */}
-                  {viewVersion === "V1" && totalBudget != null && totalBudget > 0 && (() => {
-                    const remaining = convertValue(totalBudget, currency) - convertValue(total, currency);
-                    return (
-                      <tr className="border-t border-border bg-muted/30">
-                        <td className="sticky left-0 z-10 bg-muted/30 px-3 py-1.5 text-sm font-medium text-muted-foreground border-r border-border">
-                          Remaining to allocate
-                        </td>
-                        <td colSpan={headers.length} className={cn("px-3 py-1.5 text-right text-sm font-medium", remaining < 0 ? "text-destructive" : "text-muted-foreground")}>
-                          {fmt(remaining)} {currencyLabel}
-                        </td>
-                      </tr>
-                    );
-                  })()}
                   {totalBudget != null && totalBudget > 0 && (
                     <tr className="border-t border-border">
                       <td className="sticky left-0 z-10 bg-background px-3 py-3 text-sm text-muted-foreground border-r border-border">
@@ -429,6 +415,28 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                       />
                     </>
                   )}
+                  {/* Remaining to allocate (V1 only, last row) */}
+                  {viewVersion === "V1" && totalBudget != null && totalBudget > 0 && (() => {
+                    const remaining = convertValue(totalBudget, currency) - convertValue(total, currency);
+                    return (
+                      <tr className="border-t border-border bg-muted/30">
+                        <td className="sticky left-0 z-10 bg-muted/30 px-3 py-1.5 text-sm font-medium text-muted-foreground border-r border-border">
+                          Remaining to allocate
+                        </td>
+                        <td colSpan={headers.length} className={cn("px-3 py-1.5 text-right text-sm font-medium", remaining < 0 ? "text-destructive" : "text-muted-foreground")}>
+                          <div className="flex items-center justify-end gap-2">
+                            {remaining !== 0 && (
+                              <>
+                                <Button variant="outline" size="sm" className="h-7 px-2 text-xs">Savings</Button>
+                                <Button variant="outline" size="sm" className="h-7 px-2 text-xs">Postponed</Button>
+                              </>
+                            )}
+                            <span>{fmt(remaining)} {currencyLabel}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })()}
                 </>
               )}
             </tbody>
