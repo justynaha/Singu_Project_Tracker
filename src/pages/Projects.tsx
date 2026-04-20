@@ -79,6 +79,26 @@ export default function Projects() {
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
   const { projectTypes } = useProjectTypes();
+  const [visibleColumns, setVisibleColumns] = useState({
+    no: true,
+    title: true,
+    property: true,
+    owner: true,
+    milestones: true,
+    progress: true,
+    fiscalYear: true,
+    budget: true,
+  });
+  const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
+    { key: "no", label: "No." },
+    { key: "title", label: "Title" },
+    { key: "property", label: "Property" },
+    { key: "owner", label: "Owner" },
+    { key: "milestones", label: "Milestones" },
+    { key: "progress", label: "Progress" },
+    { key: "fiscalYear", label: "Fiscal year" },
+    { key: "budget", label: "Budget/Work category" },
+  ];
   const activeProjectTypes = useMemo(() => projectTypes.filter(pt => pt.status === "active"), [projectTypes]);
   const [formData, setFormData] = useState({
     name: "",
