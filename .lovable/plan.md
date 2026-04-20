@@ -1,84 +1,48 @@
 
 
-## Plan: Add "Monthly CAPEX Update — Mandatory v Speculative" tab
+## Plan: Ujednolicenie listy Property we wszystkich tabach Reports
 
-### Files
-- `src/pages/Reports.tsx` — insert new tab after Summary
-- `src/pages/MandatoryVsSpeculativeReport.tsx` — new component
+### Cel
+Lista 10 properties z tabu **Mandatory v Speculative** staje się jedynym źródłem prawdy dla sample data we wszystkich tabach Reports. Te same nazwy + te same kraje wszędzie.
 
-### Tab order
-1. Summary
-2. **Monthly CAPEX Update — Mandatory v Speculative** (new)
-3. ACG
-4. CAPEX Tracker
-5. Contract Tracker
+### Kanoniczna lista (ze `MandatoryVsSpeculativeReport.tsx`)
 
-Tab label shortened in nav: **"Mandatory v Speculative"** (full title used as `<h2>` heading inside the tab to avoid breaking the tab bar layout).
+| Property | Country |
+|---|---|
+| Mapletree Park Lyon | France |
+| Mapletree Park Schiphol | Netherlands |
+| Mapletree Park Marseille | France |
+| Mapletree Park Piotrków 1 | Poland |
+| Mapletree Park Piotrków 2 | Poland |
+| Mapletree Park Tilburg | Netherlands |
+| Mapletree Park Szczecin | Poland |
+| Mapletree Park Fogars | Spain |
+| Mapletree Park Sallent | Spain |
+| Mapletree Park Valls | Spain |
 
-### Table structure
+### Krok 1 — Wyciągnięcie do współdzielonego modułu
 
-Columns (8 total):
+Nowy plik: `src/data/sampleProperties.ts`
+- Eksportuje `SAMPLE_PROPERTIES: { property: string; country: string; currency: string }[]` (waluty: France/Netherlands/Spain → EUR, Poland → PLN)
+- Eksportuje też helpery: `getPropertyCountry(name)`, `getPropertyCurrency(name)`
 
-| Group | Column | Notes |
-|---|---|---|
-| — | Property | sticky left, `min-w-[220px]` |
-| — | Country | sticky left-[220px], `min-w-[120px]` |
-| **FY25/26 Budget (EUR)** — orange header band | Mandatory | right-aligned, tabular-nums |
-| | Speculative | |
-| | Budget | = Mandatory + Speculative (subtle blue tint cell, matches screenshot) |
-| **Contracted (EUR)** — dark slate header band | Mandatory | |
-| | Speculative | |
-| | Contracted | = Mandatory + Speculative (subtle blue tint cell) |
+### Krok 2 — Zaktualizowane pliki
 
-Footer rows (sticky bottom, opaque):
-- **Total** row — sums all numeric columns, bold, `bg-muted`
-- **% Breakdown** row — italic, computed:
-  - Budget Mandatory % = Mandatory / Budget
-  - Budget Speculative % = Speculative / Budget
-  - Budget = 100%
-  - Contracted Mandatory % = Mandatory / Contracted (guard div/0 → "—")
-  - Contracted Speculative % = Speculative / Contracted (guard div/0 → "—")
-  - Contracted = 100% if Contracted>0 else "—"
+**`src/pages/MandatoryVsSpeculativeReport.tsx`** — importuje z `sampleProperties.ts` zamiast lokalnej listy; kwoty zostają jak są (mapowane po nazwie).
 
-### Header styling
+**`src/pages/SummaryReport.tsx`** — zastępuje obecną listę properties (pochodzącą z `useProjects` / `siteToCountry`) statycznym sample setem z `sampleProperties.ts`. Kwoty Budget LC / Budget EUR / Current / Previous Month generowane deterministycznie per property (zachowane proporcje obecnych wartości — żeby tabela nadal wyglądała wiarygodnie).
 
-Two-row header:
-- Row 1: Property (rowSpan=2, sticky), Country (rowSpan=2, sticky), "FY25/26 Budget (EUR)" (colSpan=3, orange bg `bg-orange-200 dark:bg-orange-900/40`, white-ish text), "Contracted (EUR)" (colSpan=3, slate bg `bg-slate-700 text-white dark:bg-slate-800`)
-- Row 2: Mandatory / Speculative / Budget / Mandatory / Speculative / Contracted
+**`src/pages/AcgReport.tsx`** — placeholder, brak zmian (nie ma jeszcze tabeli).
 
-Subtle blue tint on the "Budget" and "Contracted" total columns: `bg-blue-50 dark:bg-blue-900/15` on data cells, slightly darker on subtotal/total.
+**CAPEX Tracker / Contract Tracker** — sprawdzę, czy używają własnych sample list. Jeżeli tak, podmieniam na `SAMPLE_PROPERTIES`. Jeżeli ciągną realne projekty z `useProjects`, dodaję komentarz, ale **nie** zmieniam (bo to nie jest sample data).
 
-### Sample data (10 properties, EUR)
+### Krok 3 — Zachowanie spójności
 
-Reuse property names already in the prototype (from `siteToCountry` map) — no fabricated names. Values mirror the proportions in the screenshot:
+- Kolejność wierszy = kolejność w `SAMPLE_PROPERTIES` (żeby ten sam property był w tym samym miejscu w każdej tabeli).
+- Country zawsze pobierane z helpera, nie hardkodowane per-tab.
+- Waluta lokalna pobierana z helpera (rozwiązuje problem PLN vs EUR w Summary).
 
-| Property | Country | Mand. Budget | Spec. Budget | Mand. Contracted | Spec. Contracted |
-|---|---|---:|---:|---:|---:|
-| Mapletree Park Lyon | France | 725 000 | 0 | 0 | 0 |
-| Mapletree Park Schiphol | Netherlands | 105 839 | 0 | 105 839 | 0 |
-| Mapletree Park Marseille | France | 650 000 | 0 | 0 | 0 |
-| Mapletree Park Piotrków 1 | Poland | 2 326 | 0 | 2 326 | 0 |
-| Mapletree Park Piotrków 2 | Poland | 1 163 | 0 | 6 395 | 0 |
-| Mapletree Park Tilburg | Netherlands | 42 399 | 0 | 42 399 | 0 |
-| Mapletree Park Szczecin | Poland | 465 | 0 | 465 | 0 |
-| Mapletree Park Fogars | Spain | 2 332 908 | 0 | 130 710 | 0 |
-| Mapletree Park Sallent | Spain | 3 220 614 | 0 | 73 144 | 0 |
-| Mapletree Park Valls | Spain | 0 | 0 | 0 | 0 |
-
-Total Budget Mandatory ≈ 7 080 714, Contracted Mandatory ≈ 361 278 (matching screenshot proportions). Speculative column intentionally all zeros to mirror screenshot; "—" rendered for zeros via existing `fmt()` helper.
-
-Data is hardcoded inside the component (`const SAMPLE_DATA = [...]`) — no DB wiring. Easy to swap to real source later.
-
-### Layout & behavior
-
-- Outer container: same as Summary (`p-4 md:p-6 flex flex-col h-full`)
-- Heading: `<h2>Monthly CAPEX Update — Mandatory v Speculative</h2>` + Export button (visual only)
-- Table wrapper: `min-w-[1100px]`, sticky header (top-0), sticky Total + % Breakdown rows (bottom-0/-1), sticky Property + Country columns
-- No grouping/subtotals (per recent Summary direction)
-- Word "MUSEL" replaced with **"Total"** (and removed from `% Breakdown` row leading cell — leading cell shows just "% Breakdown" with empty Country cell)
-
-### Out of scope
-- Real backend wiring (sample data only)
-- Functional Excel export (placeholder button)
-- Filters / column show-hide
+### Poza zakresem
+- Zmiana danych w realnych modułach (Projects, Buildings) — tam właściciel danych to baza, nie sample set.
+- Przepisywanie liczb na nowe (zachowuję bieżące proporcje, tylko mapuję po nowej liście properties).
 
