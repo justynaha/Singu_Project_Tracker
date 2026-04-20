@@ -672,10 +672,29 @@ export default function Projects() {
                   <DropdownMenuItem>XLS</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="ghost" size="sm">
-                <Settings2 className="h-4 w-4 mr-2" />
-                Columns
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Columns3 className="h-4 w-4 mr-2" />
+                    Columns
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-3" align="end">
+                  <div className="space-y-2">
+                    {columnDefs.map(col => (
+                      <div key={col.key} className="flex items-center justify-between">
+                        <span className="text-sm">{col.label}</span>
+                        <Switch
+                          checked={visibleColumns[col.key]}
+                          onCheckedChange={(checked) =>
+                            setVisibleColumns(prev => ({ ...prev, [col.key]: checked }))
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
