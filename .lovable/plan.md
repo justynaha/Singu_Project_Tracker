@@ -1,52 +1,60 @@
 
 
-## Plan: Zafiksuj górny wiersz nagłówka w CAPEX Tracker i Contract Tracker
+## Plan: Zwijane filtry pod przyciskiem "Filters" w CapEx Tracker i Contract Tracker
 
 ### Problem
-W `MonthlyBreakdownList.tsx` i `ContractsList.tsx` (osadzone w `Reports.tsx`) nagłówek tabeli nie przykleja się przy pionowym scrollu, ponieważ:
-1. Pionowy scroll dzieje się w `overflow-y-auto` w `Reports.tsx` (linia 50).
-2. Pomiędzy nim a `<thead>` jest `<div className="overflow-hidden">` / `overflow-x-auto` — każdy `overflow` przerywa kontekst `position: sticky`, więc sticky nie ma do czego się przykleić.
-3. W CAPEX Trackerze `sticky top-0` jest na `<tr>`, a nie na `<th>` — w wielu przeglądarkach to nie działa.
+W `MonthlyBreakdownList.tsx` i `ContractsList.tsx` (osadzonych w Reports):
+- Pomiędzy zakładkami a polem Search jest spory padding (`mt-4` + `mb-4` = ~32px luki).
+- Wszystkie filtry (Property group, Country, Work category, Status, Fiscal year, Budget type, Budget classification) są stale widoczne — zajmują dużo miejsca.
 
 ### Pliki
 - `src/pages/MonthlyBreakdownList.tsx`
 - `src/pages/ContractsList.tsx`
-- `src/pages/Reports.tsx` (drobna zmiana kontenera scrolla)
 
 ### Zmiany
 
-**1. `Reports.tsx`**
-- Linia 50: kontener z `overflow-y-auto` → `overflow-hidden flex flex-col`. Pionowy scroll przeniesiemy do wnętrza raportów, żeby tabela sama była ancestorem sticky.
+**1. Zmniejszyć padding nad searchem**
+- Wiersz searcha (linie 423 / 608): `flex items-center gap-4 mb-4 mt-4` → `flex items-center gap-3 mb-3`. Usunąć `mt-4`, zmniejszyć `mb-4`→`mb-3`, `gap-4`→`gap-3`.
 
-**2. `MonthlyBreakdownList.tsx` (linie ~588–602)**
-- Zewnętrzny wrapper toolbarów zostawić; wrapper tabeli zmienić tak, żeby był jednocześnie scrollerem pionowym i poziomym:
+**2. Dodać przycisk "Filters" po prawej stronie searcha**
+W tym samym wierszu co Search Input dołożyć przycisk:
+```tsx
+<Button variant="outline" size="sm" onClick={() => setShowFilters(v => !v)} className="gap-2">
+  <Filter className="h-4 w-4" />
+  Filters
+  {hasAppliedFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">{appliedCount}</Badge>}
+  <ChevronDown className={cn("h-4 w-4 transition-transform", showFilters && "rotate-180")} />
+</Button>
+```
+- Import `Filter` z `lucide-react`.
+- `appliedCount` = liczba aktywnych filtrów (suma niepustych `filter*` + `filterSiteGroups.length > 0 ? 1 : 0`) — daje użytkownikowi wskazówkę, że filtry są aktywne mimo zwiniętej sekcji.
+
+**3. Zwijać sekcję filtrów**
+- Stan `showFilters` już istnieje w obu plikach (linia 109 w MonthlyBreakdownList, 226 w ContractsList) i jest domyślnie `false` — dokładnie tak jak user prosi.
+- Owinąć cały blok `<div className="mb-4">…</div>` (linie 430-… / 620-…) warunkiem:
   ```tsx
-  <div className="border border-border rounded-lg flex-1 min-h-0 overflow-auto">
-    <Table>
-      <TableHeader className="sticky top-0 z-30 bg-background">
-        <TableRow className="h-10 [&>th]:bg-background">
-          <TableHead className="... sticky left-0 z-40 bg-background">#</TableHead>
-          ...
-          <TableHead className="... bg-green-100 dark:bg-green-900/30">Apr 2026</TableHead>
-          ...
-        </TableRow>
-      </TableHeader>
+  {showFilters && (
+    <div className="mb-3">
+      {/* istniejący content filtrów bez zmian */}
+    </div>
+  )}
   ```
-- Usunąć wewnętrzny `<div className="overflow-x-auto">`.
-- `sticky top-0` przenieść z `<tr>` na `<TableHeader>` (lub na każde `<th>`); zwiększyć `z-index` (`z-30`); zachować `bg-background` na każdym `<th>` (zielone kolumny już mają własne tło).
-- Strona musi mieć `flex flex-col` żeby wrapper tabeli wypełnił przestrzeń (główny `<div>` strony — sprawdzić, czy ma `h-full flex flex-col`; jeśli nie, dodać).
+- Zmienić `mb-4` → `mb-3`, żeby też pomiędzy filtrami a tabelą było ciaśniej.
 
-**3. `ContractsList.tsx` (linie ~800–820)**
-- Analogicznie: `<div className="border ... overflow-hidden">` → `overflow-auto flex-1 min-h-0`.
-- `<TableHeader className="sticky top-0 z-30 bg-card">`, na sticky-left `<th>` podnieść `z-index` do `z-40`, żeby przy scrollu w obu osiach narożnik był nad innymi sticky komórkami.
-- Strona / wrapper tabu też musi pozwolić tabeli wypełnić przestrzeń (`flex-1 min-h-0`).
+**4. Aktywne badge'e filtrów (chips) — zostają widoczne nawet gdy sekcja zwinięta**
+Gdy `hasAppliedFilters && !showFilters`, chcemy jednak pokazać użytkownikowi co jest aktywne. Wyciągnąć blok chipów (`{hasAppliedFilters && (<div…>…</div>)}`, linie 521+/710+) **poza** `{showFilters && …}` — tak by chipy były zawsze widoczne pod paskiem search/Filters, niezależnie od stanu rozwinięcia. Chipy `× Clear` nadal działają i czyszczą filtr od razu.
+
+### Wynik
+- Domyślnie: tabs → mniejszy odstęp → wiersz [Search …………… Filters ▾] → (opcjonalnie chipy aktywnych filtrów) → tabela.
+- Klik Filters → rozwija pełny panel filtrów; ponowny klik → zwija. Stan zachowany per komponent (oba raporty mają niezależny stan, ale identyczne zachowanie).
+- Reszta UI bez zmian (Columns popover, Export, paginacja, sticky header z poprzedniej iteracji).
 
 ### Sprawdzenie
-- Otworzyć Reports → CAPEX Tracker, scroll w dół: nagłówek miesięcy + sticky lewa kolumna `#` muszą być widoczne cały czas.
-- Otworzyć Reports → Contract Tracker, scroll w dół i w bok: górny wiersz oraz sticky lewe kolumny (Contract ID / Country / Property / Legal entity / Budget type) trzymają się na miejscu.
-- Footery/sticky-bottom (Total / Grand Total) muszą działać dalej — nie ruszamy ich.
+- Reports → CapEx Tracker: domyślnie zwinięte; klik Filters rozwija; po wyborze filtra i klik Search panel można zwinąć, chipy zostają widoczne.
+- Reports → Contract Tracker: identycznie.
+- Inne raporty (Summary, ACG, Mandatory v Speculative) — bez filtrów, więc bez zmian.
 
 ### Poza zakresem
-- Zmiany w innych raportach (Summary, ACG, Mandatory v Speculative) — tam sticky header już działa lub jest tematem osobnym.
-- Refaktor wspólnego komponentu tabeli.
+- Refaktor wspólnego komponentu filtrów (na przyszłość).
+- Zmiany w innych zakładkach.
 
