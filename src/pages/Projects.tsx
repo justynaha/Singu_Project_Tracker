@@ -573,6 +573,17 @@ export default function Projects() {
         </div>
 
         {/* Table */}
+        {!hasImported ? (
+          <div className="border border-border rounded-lg bg-card flex flex-col items-center justify-center py-24 px-6 text-center">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <FolderOpen className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Import projects from XLS or add your first project to get started.
+            </p>
+          </div>
+        ) : (
         <div className="border border-border rounded-lg overflow-hidden bg-card">
           {/* Pagination and actions */}
           <div className="flex items-center justify-between p-4 border-b border-border">
