@@ -19,11 +19,11 @@ const EditSiteForm = ({ site, onCancel }: EditSiteFormProps) => {
       <div className="flex border border-border rounded-t-md overflow-hidden mb-6">
         <div className="flex-1 px-6 py-3 text-sm font-medium flex items-center gap-2 bg-primary text-primary-foreground">
           <span className="w-6 h-6 rounded-full bg-background/20 flex items-center justify-center text-xs font-bold">1</span>
-          Site — Basic information
+          Property — Basic information
         </div>
         <div className="flex-1 px-6 py-3 text-sm font-medium flex items-center gap-2 bg-muted text-muted-foreground">
           <span className="w-6 h-6 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold">2</span>
-          Site — Application settings
+          Property — Application settings
         </div>
       </div>
 
@@ -220,7 +220,7 @@ const EditSiteForm = ({ site, onCancel }: EditSiteFormProps) => {
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
-        <button className="text-sm text-destructive hover:underline">Remove site</button>
+        <button className="text-sm text-destructive hover:underline">Remove property</button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onCancel}>Cancel</Button>
           <Button onClick={onCancel}>Save</Button>
