@@ -715,19 +715,19 @@ export default function Projects() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx} className="border-t border-border">
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-32" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-24" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-24" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-40" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>
+                    {visibleColumns.no && <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>}
+                    {visibleColumns.title && <td className="py-2 px-4"><Skeleton className="h-4 w-32" /></td>}
+                    {visibleColumns.property && <td className="py-2 px-4"><Skeleton className="h-4 w-24" /></td>}
+                    {visibleColumns.owner && <td className="py-2 px-4"><Skeleton className="h-6 w-24" /></td>}
+                    {visibleColumns.milestones && <td className="py-2 px-4"><Skeleton className="h-6 w-40" /></td>}
+                    {visibleColumns.progress && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
+                    {visibleColumns.fiscalYear && <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>}
+                    {visibleColumns.budget && <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>}
                   </tr>
                 ))
               ) : filteredProjects.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={Object.values(visibleColumns).filter(Boolean).length} className="p-8 text-center text-muted-foreground">
                     No projects found. Click "Add project" to create one.
                   </td>
                 </tr>
