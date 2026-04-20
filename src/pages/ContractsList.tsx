@@ -202,15 +202,17 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
 
   const [visibleColumns, setVisibleColumns] = useState({
     contractId: true,
-    projectNumber: true,
-    projectTitle: true,
-    site: true,
     country: true,
-    date: true,
+    site: true,
+    legalEntity: true,
+    budgetType: true,
     contractor: true,
-    status: true,
-    agreementSigned: true,
-    description: true,
+    description: false,
+    projectNumber: false,
+    projectTitle: false,
+    date: false,
+    status: false,
+    agreementSigned: false,
     contracted: true,
     invoiced: true,
     balance: true,
@@ -218,15 +220,17 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
 
   const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
     { key: "contractId", label: "Contract ID" },
+    { key: "country", label: "Country" },
+    { key: "site", label: "Site" },
+    { key: "legalEntity", label: "Legal entity" },
+    { key: "budgetType", label: "Budget type" },
+    { key: "contractor", label: "Contractor" },
+    { key: "description", label: "Contract description" },
     { key: "projectNumber", label: "Project Number" },
     { key: "projectTitle", label: "Project Title" },
-    { key: "site", label: "Site" },
-    { key: "country", label: "Country" },
     { key: "date", label: "Date" },
-    { key: "contractor", label: "Contractor" },
     { key: "status", label: "Status" },
     { key: "agreementSigned", label: "Agreement Signed" },
-    { key: "description", label: "Description" },
     { key: "contracted", label: "Contracted (EUR)" },
     { key: "invoiced", label: "Invoiced (EUR)" },
     { key: "balance", label: "Balance (EUR)" },
@@ -536,15 +540,17 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
 
   const visibleBeforeFinancial = [
     visibleColumns.contractId,
+    visibleColumns.country,
+    visibleColumns.site,
+    visibleColumns.legalEntity,
+    visibleColumns.budgetType,
+    visibleColumns.contractor,
+    visibleColumns.description,
     visibleColumns.projectNumber,
     visibleColumns.projectTitle,
-    visibleColumns.site,
-    visibleColumns.country,
     visibleColumns.date,
-    visibleColumns.contractor,
     visibleColumns.status,
     visibleColumns.agreementSigned,
-    visibleColumns.description,
   ].filter(Boolean).length;
 
   return (
@@ -753,16 +759,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                 <Table>
                   <TableHeader>
                     <TableRow className="h-10">
-                      {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3">Contract ID</TableHead>}
+                      {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3 sticky left-0 bg-card z-20 min-w-[140px]">Contract ID</TableHead>}
+                      {visibleColumns.country && <TableHead className="h-10 py-0 px-3 sticky left-[140px] bg-card z-20 min-w-[120px]">Country</TableHead>}
+                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3 sticky left-[260px] bg-card z-20 min-w-[160px]">Site</TableHead>}
+                      {visibleColumns.legalEntity && <TableHead className="h-10 py-0 px-3 sticky left-[420px] bg-card z-20 min-w-[140px]">Legal entity</TableHead>}
+                      {visibleColumns.budgetType && <TableHead className="h-10 py-0 px-3 sticky left-[560px] bg-card z-20 min-w-[120px]">Budget type</TableHead>}
+                      {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
+                      {visibleColumns.description && <TableHead className="h-10 py-0 px-3">Contract description</TableHead>}
                       {visibleColumns.projectNumber && <TableHead className="h-10 py-0 px-3">Project Number</TableHead>}
                       {visibleColumns.projectTitle && <TableHead className="h-10 py-0 px-3">Project Title</TableHead>}
-                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3">Site</TableHead>}
-                      {visibleColumns.country && <TableHead className="h-10 py-0 px-3">Country</TableHead>}
                       {visibleColumns.date && <TableHead className="h-10 py-0 px-3">Date</TableHead>}
-                      {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
                       {visibleColumns.status && <TableHead className="h-10 py-0 px-3">Status</TableHead>}
                       {visibleColumns.agreementSigned && <TableHead className="h-10 py-0 px-3">Agreement Signed</TableHead>}
-                      {visibleColumns.description && <TableHead className="h-10 py-0 px-3">Description</TableHead>}
                       {visibleColumns.contracted && <TableHead className="h-10 py-0 px-3 text-right">Contracted (EUR)</TableHead>}
                       {visibleColumns.invoiced && <TableHead className="h-10 py-0 px-3 text-right">Invoiced (EUR)</TableHead>}
                       {visibleColumns.balance && <TableHead className="h-10 py-0 px-3 text-right">Balance (EUR)</TableHead>}
@@ -803,7 +811,13 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                 className={cn("h-10 cursor-pointer", isSelected && "bg-muted/50")}
                                 onClick={() => setSelectedContract(isSelected ? null : c)}
                               >
-                                {visibleColumns.contractId && <TableCell className="py-0 px-3 font-medium">{c.contract_number}</TableCell>}
+                                {visibleColumns.contractId && <TableCell className={cn("py-0 px-3 font-medium sticky left-0 z-10 min-w-[140px]", isSelected ? "bg-muted" : "bg-card")}>{c.contract_number}</TableCell>}
+                                {visibleColumns.country && <TableCell className={cn("py-0 px-3 sticky left-[140px] z-10 min-w-[120px]", isSelected ? "bg-muted" : "bg-card")}>{country}</TableCell>}
+                                {visibleColumns.site && <TableCell className={cn("py-0 px-3 sticky left-[260px] z-10 min-w-[160px]", isSelected ? "bg-muted" : "bg-card")}>{proj?.site || "—"}</TableCell>}
+                                {visibleColumns.legalEntity && <TableCell className={cn("py-0 px-3 sticky left-[420px] z-10 min-w-[140px]", isSelected ? "bg-muted" : "bg-card")}>—</TableCell>}
+                                {visibleColumns.budgetType && <TableCell className={cn("py-0 px-3 sticky left-[560px] z-10 min-w-[120px]", isSelected ? "bg-muted" : "bg-card")}>{proj?.budget_type || "—"}</TableCell>}
+                                {visibleColumns.contractor && <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>}
+                                {visibleColumns.description && <TableCell className="py-0 px-3 max-w-[200px] truncate">{c.description || "—"}</TableCell>}
                                 {visibleColumns.projectNumber && (
                                   <TableCell className="py-0 px-3">
                                     <span
@@ -815,13 +829,9 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                   </TableCell>
                                 )}
                                 {visibleColumns.projectTitle && <TableCell className="py-0 px-3">{proj?.name || "Unknown"}</TableCell>}
-                                {visibleColumns.site && <TableCell className="py-0 px-3">{proj?.site || "—"}</TableCell>}
-                                {visibleColumns.country && <TableCell className="py-0 px-3">{country}</TableCell>}
                                 {visibleColumns.date && <TableCell className="py-0 px-3">{c.contract_date ? format(new Date(c.contract_date), "dd MMM yyyy") : "—"}</TableCell>}
-                                {visibleColumns.contractor && <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>}
                                 {visibleColumns.status && <TableCell className="py-0 px-3"><Badge variant={statusVariant(c.status)}>{c.status}</Badge></TableCell>}
                                 {visibleColumns.agreementSigned && <TableCell className="py-0 px-3">{c.agreement_signed ? "Yes" : "No"}</TableCell>}
-                                {visibleColumns.description && <TableCell className="py-0 px-3 max-w-[200px] truncate">{c.description || "—"}</TableCell>}
                                 {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right">{formatAmount(contractedEur)}</TableCell>}
                                 {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(invoicedEur) : "—"}</TableCell>}
                                 {visibleColumns.balance && <TableCell className="py-0 px-3 text-right">{cInvoices.length > 0 ? formatAmount(balanceEur) : "—"}</TableCell>}
