@@ -1,67 +1,69 @@
 
 
-## Plan: ACG tab — odwzorowanie tabeli ze screena
+## Plan: Fix hover overlap on sticky cells in report tables
 
-### Plik
-- Edytowany: `src/pages/AcgReport.tsx` (obecnie placeholder)
+### Problem
+W raportach sticky komórki (Property/Country sticky-left, Total/% sticky-bottom) mają tła typu `bg-background` / `bg-muted` / `bg-muted/70`. Na hover wiersza dodajemy `group-hover:bg-muted/30` na sticky komórkach — ale **niesticky komórki w tym samym wierszu nie mają własnego tła**, więc wyglądają przezroczyście. Gdy scrollujemy, content z sąsiednich wierszy prześwituje pod nimi i nakłada się wizualnie na tekst.
 
-### Tytuł i layout
-- `<h2>Monthly CAPEX Update — ACG (Contracted Works)</h2>` + przycisk Export (placeholder)
-- Kontener: `p-4 md:p-6 flex flex-col h-full`, scroll w środku, `min-w-[1200px]`
+Dodatkowo wiersze stopki używają `bg-muted/70` (półprzezroczyste) — przy scrollu pod sticky-bottom widać przewijający się content.
 
-### Struktura tabeli
+### Pliki do naprawy
+1. `src/pages/MandatoryVsSpeculativeReport.tsx`
+2. `src/pages/MandatoryVsSpeculativeByCountryReport.tsx`
+3. `src/pages/SummaryReport.tsx`
+4. `src/pages/AcgReport.tsx`
+5. `src/pages/CapexTracker.tsx` / `ContractTracker.tsx` — sprawdzę i jeśli mają ten sam wzorzec, naprawię tak samo.
 
-Kolumny (9):
-| Group | Column | Notes |
-|---|---|---|
-| — | Country | sticky left, `min-w-[180px]` |
-| **CONTRACTED WORKS** — slate header band (colSpan=5) | Completed (EUR) | tabular-nums, right-align |
-| | Ongoing (EUR) | |
-| | Planned 3M (EUR) | |
-| | Savings (EUR) | |
-| | Postponed Works (EUR) | |
-| — | **Total (EUR)** | bold, blue tint (`bg-blue-50`), border-x dla efektu „ramki" jak na screenie |
-| — | IC Budget (EUR) | |
-| — | SocGen Budget * | |
-| — | Contracted Works as a % of SocGen Requirement | center-align, formatted as `%` lub `NA` |
+### Naprawa (jeden spójny wzorzec)
 
-Header dwurzędowy:
-- Row 1: Country (rowSpan=2), "CONTRACTED WORKS" (colSpan=5, slate `bg-slate-700 text-white`), Total (rowSpan=2, blue tint), IC Budget (rowSpan=2), SocGen Budget * (rowSpan=2), % of SocGen Requirement (rowSpan=2)
-- Row 2: Completed / Ongoing / Planned 3M / Savings / Postponed Works
+**A. Wiersze danych — tło na `<tr>`, nie na pojedynczych komórkach**
+- `<tr>`: `bg-background hover:bg-muted/50` (pełne, nieprzezroczyste)
+- Sticky komórki w wierszu: zamiast `bg-background group-hover:bg-muted/30` → **dziedziczą przez `bg-inherit`** na sticky cells, plus `tr` ma solidne tło. Tam gdzie sticky musi mieć własny kolor (np. footer), używamy pełnego `bg-muted` (bez `/70`, bez `/30`).
+- Usuwam wzorzec `group` + `group-hover:bg-muted/30` — zastępuję `bg-inherit` na sticky cells.
 
-### Wiersze (countries)
-Tylko kraje z `SAMPLE_PROPERTIES` (France, Netherlands, Poland, Spain) — sortowane alfabetycznie. **Bez Germany / Hungary / Italy** (zgodnie z zasadą jednego źródła prawdy ustaloną przy poprzednim tabie).
+**B. Footer rows (Total / % …)**
+- `bg-muted` zamiast `bg-muted/70` (pełna nieprzezroczystość, nic nie prześwituje)
+- Sticky komórki w footerze: też `bg-inherit` (dziedziczy z `tr`)
+- Wiersz "% …" dostaje osobny `bg-muted` (lub `bg-muted/95` jeśli chcemy lekko odróżnić od Total — ale solidne, nie półprzezroczyste)
 
-### Sample data (EUR) — proporcje ze screena, zachowane dla obecnych krajów
+**C. Header**
+- `thead` sticky cells: zamienić `bg-muted` (jeśli `/xx`) na pełne kolory; nagłówki kolorowe (`bg-orange-200`, `bg-slate-700`) są już solidne — OK.
+- Sticky-left nagłówek: pełne `bg-muted` (już jest).
 
-| Country | Completed | Ongoing | Planned 3M | Savings | Postponed | IC Budget | SocGen Budget |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| France | 0 | 0 | 1 375 000 | 0 | 0 | 1 375 000 | 1 375 000 |
-| Netherlands | 0 | 148 238 | 0 | 0 | 0 | 0 | 0 |
-| Poland | 0 | 9 186 | 0 | 0 | 0 | 0 | 0 |
-| Spain | 47 305 | 156 549 | 0 | 0 | 5 349 668 | 5 553 522 | 3 053 522 |
+### Wzorzec kodu (przed → po)
 
-Liczone w runtime:
-- **Total (EUR)** = Completed + Ongoing + Planned 3M + Savings + Postponed
-- **% of SocGen Requirement** = Total / SocGen Budget; jeśli SocGen Budget = 0 → `NA`; w innym razie format `0%` (zaokrąglone)
+Przed:
+```tsx
+<tr className="border-b hover:bg-muted/30 group">
+  <td className="sticky left-0 bg-background group-hover:bg-muted/30 ...">…</td>
+  <td className="...">…</td>
+</tr>
+```
 
-### Footer (sticky bottom, opaque)
-- **Total** row — sumy każdej kolumny liczbowej (Completed, Ongoing, Planned 3M, Savings, Postponed, Total, IC Budget, SocGen Budget) + wyliczone % na końcu (Total Total / Total SocGen). Bold, `bg-muted`, sticky `bottom-0`.
+Po:
+```tsx
+<tr className="border-b bg-background hover:bg-muted/50 [&>td]:bg-inherit">
+  <td className="sticky left-0 ...">…</td>
+  <td className="...">…</td>
+</tr>
+```
 
-(Pomijamy wiersze "Check" i "Column AE/AG/..." ze screena — to artefakty Excela, nie data.)
+Dzięki `[&>td]:bg-inherit` wszystkie `<td>` (w tym sticky) dziedziczą tło z `<tr>`, więc hover zmienia tło całego wiersza spójnie i sticky komórki nigdy nie są przezroczyste.
 
-### Styling (spójny z innymi reportami)
-- Slate header band: `bg-slate-700 text-white dark:bg-slate-800`
-- Total column tint: `bg-blue-50 dark:bg-blue-950/30` (cell), `bg-blue-100 dark:bg-blue-900/40` na nagłówku i w footerze, plus `border-l-2 border-r-2 border-border` dla efektu „pogrubionej ramki" widocznej na screenie wokół kolumny Total
-- Wiersz: `h-10`, `tabular-nums`, `whitespace-nowrap`
-- Sticky Country (left-0) + sticky header (top-0) + sticky Total row (bottom-0)
-- `fmt(0)` → `—` (jak w pozostałych reportach), `pct(num, den)` → `NA` jeśli `den===0`, inaczej `${Math.round(...)}%`
+Footer analogicznie:
+```tsx
+<tr className="bg-muted font-bold sticky bottom-10 z-10 [&>td]:bg-inherit">
+  …
+</tr>
+<tr className="bg-muted italic sticky bottom-0 z-10 [&>td]:bg-inherit">
+  …
+</tr>
+```
 
-### Footnote
-Mała linijka pod tabelą: `* SocGen Budget — minimum contracted works requirement per loan covenant.` — kursywa, `text-xs text-muted-foreground`.
+### Sprawdzenie
+- Otworzę każdy raport i przewinę z hoverem — żaden tekst nie powinien prześwitywać przez sticky komórki ani przez footer.
 
 ### Poza zakresem
-- Realne podpięcie do bazy (sample data only)
-- Funkcjonalny eksport .xlsx
-- Edycja/inline-edit komórek
+- Zmiany kolorystyki / hierarchii wizualnej.
+- Refaktor do wspólnego komponentu tabeli (zostawiamy lokalne tabele).
 
