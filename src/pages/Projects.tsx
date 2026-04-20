@@ -87,6 +87,7 @@ export default function Projects() {
     milestones: true,
     progress: true,
     fiscalYear: true,
+    workCategory: true,
     budget: true,
   });
   const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
@@ -97,7 +98,8 @@ export default function Projects() {
     { key: "milestones", label: "Milestones" },
     { key: "progress", label: "Progress" },
     { key: "fiscalYear", label: "Fiscal year" },
-    { key: "budget", label: "Budget/Work category" },
+    { key: "workCategory", label: "Work category" },
+    { key: "budget", label: "Budget" },
   ];
   const activeProjectTypes = useMemo(() => projectTypes.filter(pt => pt.status === "active"), [projectTypes]);
   const [formData, setFormData] = useState({
@@ -708,7 +710,8 @@ export default function Projects() {
                 {visibleColumns.milestones && <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>}
                 {visibleColumns.progress && <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>}
                 {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
-                {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Work category</th>}
+                {visibleColumns.workCategory && <th className="text-left py-2 px-4 text-sm font-medium w-44">Work category</th>}
+                {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget</th>}
               </tr>
             </thead>
             <tbody>
@@ -722,6 +725,7 @@ export default function Projects() {
                     {visibleColumns.milestones && <td className="py-2 px-4"><Skeleton className="h-6 w-40" /></td>}
                     {visibleColumns.progress && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
                     {visibleColumns.fiscalYear && <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>}
+                    {visibleColumns.workCategory && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
                     {visibleColumns.budget && <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>}
                   </tr>
                 ))
@@ -878,13 +882,17 @@ export default function Projects() {
                         {project.fiscal_year || "2025"}
                       </td>
                       )}
+                      {visibleColumns.workCategory && (
+                      <td className="py-2 px-4 text-left">
+                        <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
+                          {project.budget_line || "Unassigned"}
+                        </Badge>
+                      </td>
+                      )}
                       {visibleColumns.budget && (
                       <td className="py-2 px-4 text-right">
                         {project.total_budget && project.total_budget > 0 ? (
                           <div className="space-y-0.5">
-                            <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
-                              {project.budget_line || "Unassigned"}
-                            </Badge>
                             <div className="text-sm font-medium">
                               {project.currency || "PLN"} {project.total_budget.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
                             </div>
