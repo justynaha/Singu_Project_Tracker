@@ -256,10 +256,10 @@ export default function SummaryReport() {
                   const vOngoing = r.curOngoing - r.prevOngoing;
                   const vPlanned = r.curPlanned3M - r.prevPlanned3M;
                   return (
-                    <tr key={r.site} className="border-b border-border hover:bg-muted/30">
-                      <td className="px-4 h-10 sticky left-0 bg-background border-r border-border">{r.site}</td>
-                      <td className="px-4 h-10 border-r border-border">{r.country}</td>
-                      <td className="px-4 h-10 text-right tabular-nums">
+                   <tr key={r.site} className="border-b border-border hover:bg-muted/30 group">
+                      <td className="px-4 h-10 sticky left-0 bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[220px]">{r.site}</td>
+                      <td className="px-4 h-10 sticky left-[220px] bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[120px]">{r.country}</td>
+                      <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">
                         {r.budgetMixed ? "Mixed" : `${fmt(r.budgetLC)} ${r.budgetCurrency}`}
                       </td>
                       <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.budgetEUR)}</td>
