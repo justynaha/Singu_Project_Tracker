@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ChevronDown, ChevronRight, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
