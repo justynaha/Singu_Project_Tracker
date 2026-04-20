@@ -1,60 +1,48 @@
 
 
-## Plan: Zwijane filtry pod przyciskiem "Filters" w CapEx Tracker i Contract Tracker
+## Plan: Wyraźna prawa krawędź ostatniej sticky kolumny (wszystkie raporty)
 
 ### Problem
-W `MonthlyBreakdownList.tsx` i `ContractsList.tsx` (osadzonych w Reports):
-- Pomiędzy zakładkami a polem Search jest spory padding (`mt-4` + `mb-4` = ~32px luki).
-- Wszystkie filtry (Property group, Country, Work category, Status, Fiscal year, Budget type, Budget classification) są stale widoczne — zajmują dużo miejsca.
+Sticky lewe kolumny (np. `#` w CapEx Tracker, `Contract ID / Country / Property / Legal entity / Budget type` w Contract Tracker, kolumny opisowe w Summary / ACG / Mandatory v Speculative) wizualnie zlewają się ze scrollowaną częścią tabeli. Użytkownik nie widzi, gdzie kończy się sekcja sticky, a zaczyna scrollowalna.
 
-### Pliki
-- `src/pages/MonthlyBreakdownList.tsx`
-- `src/pages/ContractsList.tsx`
+### Rozwiązanie
+Na **ostatniej** sticky-left komórce w każdym wierszu (header, body, footer) dodać wyraźny prawy border + delikatny cień rzucany w prawo. Cień daje efekt „odklejania się" reszty tabeli przy scrollu w bok.
 
-### Zmiany
-
-**1. Zmniejszyć padding nad searchem**
-- Wiersz searcha (linie 423 / 608): `flex items-center gap-4 mb-4 mt-4` → `flex items-center gap-3 mb-3`. Usunąć `mt-4`, zmniejszyć `mb-4`→`mb-3`, `gap-4`→`gap-3`.
-
-**2. Dodać przycisk "Filters" po prawej stronie searcha**
-W tym samym wierszu co Search Input dołożyć przycisk:
-```tsx
-<Button variant="outline" size="sm" onClick={() => setShowFilters(v => !v)} className="gap-2">
-  <Filter className="h-4 w-4" />
-  Filters
-  {hasAppliedFilters && <Badge variant="secondary" className="ml-1 h-5 px-1.5">{appliedCount}</Badge>}
-  <ChevronDown className={cn("h-4 w-4 transition-transform", showFilters && "rotate-180")} />
-</Button>
+Klasy:
 ```
-- Import `Filter` z `lucide-react`.
-- `appliedCount` = liczba aktywnych filtrów (suma niepustych `filter*` + `filterSiteGroups.length > 0 ? 1 : 0`) — daje użytkownikowi wskazówkę, że filtry są aktywne mimo zwiniętej sekcji.
+border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]
+```
+W dark mode cień delikatniejszy: `dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]`.
 
-**3. Zwijać sekcję filtrów**
-- Stan `showFilters` już istnieje w obu plikach (linia 109 w MonthlyBreakdownList, 226 w ContractsList) i jest domyślnie `false` — dokładnie tak jak user prosi.
-- Owinąć cały blok `<div className="mb-4">…</div>` (linie 430-… / 620-…) warunkiem:
-  ```tsx
-  {showFilters && (
-    <div className="mb-3">
-      {/* istniejący content filtrów bez zmian */}
-    </div>
-  )}
-  ```
-- Zmienić `mb-4` → `mb-3`, żeby też pomiędzy filtrami a tabelą było ciaśniej.
+### Pliki i zmiany
 
-**4. Aktywne badge'e filtrów (chips) — zostają widoczne nawet gdy sekcja zwinięta**
-Gdy `hasAppliedFilters && !showFilters`, chcemy jednak pokazać użytkownikowi co jest aktywne. Wyciągnąć blok chipów (`{hasAppliedFilters && (<div…>…</div>)}`, linie 521+/710+) **poza** `{showFilters && …}` — tak by chipy były zawsze widoczne pod paskiem search/Filters, niezależnie od stanu rozwinięcia. Chipy `× Clear` nadal działają i czyszczą filtr od razu.
+**1. `src/pages/MonthlyBreakdownList.tsx` (CapEx Tracker)**
+- Ostatnia sticky kolumna: `#` (jedyna sticky-left). Dodać `border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]` na `<th>` w `TableHeader`, `<td>` w wierszach projektów oraz w wierszach Subtotal / Total / Grand Total.
 
-### Wynik
-- Domyślnie: tabs → mniejszy odstęp → wiersz [Search …………… Filters ▾] → (opcjonalnie chipy aktywnych filtrów) → tabela.
-- Klik Filters → rozwija pełny panel filtrów; ponowny klik → zwija. Stan zachowany per komponent (oba raporty mają niezależny stan, ale identyczne zachowanie).
-- Reszta UI bez zmian (Columns popover, Export, paginacja, sticky header z poprzedniej iteracji).
+**2. `src/pages/ContractsList.tsx` (Contract Tracker)**
+- Sticky-left kolumny: `Contract ID`, `Country`, `Property`, `Legal entity`, `Budget type`. Wyróżnić **tylko ostatnią** (`Budget type`) tymi samymi klasami — header, body, footer.
+- Pozostałe sticky kolumny zostawić bez zmian (mają już swoje `left-*`).
+
+**3. `src/pages/SummaryReport.tsx`**
+- Sprawdzić, która kolumna jest ostatnią sticky-left (typowo kolumna opisowa / kategoria) i dodać te same klasy na header + body + footer.
+
+**4. `src/pages/AcgReport.tsx`**
+- Analogicznie: ostatnia sticky-left kolumna → border-r-2 + shadow.
+
+**5. `src/pages/MandatoryVsSpeculativeReport.tsx` i `src/pages/MandatoryVsSpeculativeByCountryReport.tsx`**
+- Analogicznie: ostatnia sticky-left kolumna → border-r-2 + shadow.
+
+### Uwagi
+- Sticky-bottom (Total / Grand Total) nadal działa — komórka będąca jednocześnie sticky-left i sticky-bottom zachowuje wszystkie klasy, dodajemy tylko border + shadow.
+- Z-index bez zmian (sticky-left = `z-20/z-30`, intersection sticky-left+top = `z-40`).
+- Tło sticky komórek bez zmian (już ustawione w poprzednich iteracjach).
 
 ### Sprawdzenie
-- Reports → CapEx Tracker: domyślnie zwinięte; klik Filters rozwija; po wyborze filtra i klik Search panel można zwinąć, chipy zostają widoczne.
-- Reports → Contract Tracker: identycznie.
-- Inne raporty (Summary, ACG, Mandatory v Speculative) — bez filtrów, więc bez zmian.
+- W każdym raporcie scroll w prawo: prawa krawędź ostatniej sticky kolumny ma wyraźną linię + delikatny cień; pozostałe kolumny przesuwają się „pod" nią.
+- Na początku scrolla (scrollLeft = 0) cień jest dyskretny i nie razi.
+- Dark mode: krawędź widoczna, cień nie za ciężki.
 
 ### Poza zakresem
-- Refaktor wspólnego komponentu filtrów (na przyszłość).
-- Zmiany w innych zakładkach.
+- Dynamiczne ukrywanie cienia gdy `scrollLeft === 0` (wymagałoby JS / IntersectionObserver) — zostawiamy statyczny, subtelny cień.
+- Refaktor sticky-column logic do wspólnego komponentu.
 
