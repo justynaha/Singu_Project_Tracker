@@ -1,32 +1,52 @@
 
 
-## Plan: Freeze group header, subtotal, and grand total rows during horizontal scroll
+## Plan: Make "Columns" button on Projects list functional
 
-**Problem:** In Reports → Contract Tracker, when scrolling the table horizontally, the contents of these rows scroll with the table:
-- Group header rows ("Western Europe", "Poland", "Hungary")
-- Subtotal rows ("Subtotal — …")
-- Grand Total row
-
-They should stay visually fixed so the labels and subtotal amounts remain readable at all times.
+### Problem
+On the Projects list, the **Columns** button is a static `<Button>` with no handler. Other places (e.g. Contract Tracker) open a popover with a switch per column. Make Projects behave the same.
 
 ### File
-`src/pages/ContractsList.tsx`
+`src/pages/Projects.tsx`
 
 ### Changes
 
-1. **Group header row** (line ~832‑839): the single `colSpan` cell becomes `sticky left-0 z-10` with a solid background (`bg-muted`). Because it spans the full width, sticking it to `left-0` means the label is always visible at the left edge regardless of horizontal scroll.
+1. **Replace the lucide icon** import: swap `Settings2` for `Columns3` (consistent with Contract Tracker), and add `Popover, PopoverContent, PopoverTrigger` (already imported).
 
-2. **Subtotal rows** (line ~884‑891):
-   - The label cell (`colSpan={visibleBeforeFinancial}`) → `sticky left-0 z-10 bg-orange-100`.
-   - The 3 financial cells (Contracted / Invoiced / Balance EUR) → `sticky right-0 z-10 bg-orange-100`, with cumulative `right-[Xpx]` offsets so all three stay pinned to the right edge.
+2. **Add `visibleColumns` state** (right next to the other table state). Default: all true.
+   ```ts
+   const [visibleColumns, setVisibleColumns] = useState({
+     no: true,
+     title: true,
+     property: true,
+     owner: true,
+     milestones: true,
+     progress: true,
+     fiscalYear: true,
+     budget: true,
+   });
+   const columnDefs = [
+     { key: "no", label: "No." },
+     { key: "title", label: "Title" },
+     { key: "property", label: "Property" },
+     { key: "owner", label: "Owner" },
+     { key: "milestones", label: "Milestones" },
+     { key: "progress", label: "Progress" },
+     { key: "fiscalYear", label: "Fiscal year" },
+     { key: "budget", label: "Budget/Work category" },
+   ];
+   ```
 
-3. **Grand Total row** (line ~899‑904):
-   - Label cell → `sticky left-0 z-10 bg-amber-900`.
-   - 3 financial cells → `sticky right-0 z-10 bg-amber-900`, cumulative right offsets.
+3. **Replace the static Columns `<Button>`** (lines 655‑658) with a `Popover` whose trigger is the same button (using `Columns3` icon to match the Contract Tracker visual). The popover content is a vertical list of `label + Switch` rows toggling `visibleColumns[col.key]`. Use the exact same markup pattern as `ContractsList.tsx` lines ~768‑783 for visual consistency.
 
-4. **Background opacity**: ensure all sticky cells use opaque backgrounds (no `/40`, `/50`) so underlying scrolling rows don't bleed through. The group header currently uses `bg-muted/40` on the row — switch the sticky cell itself to opaque `bg-muted`.
+4. **Conditionally render header cells** (`<thead>` block, lines 664‑673): wrap each `<th>` in `{visibleColumns.<key> && ( ... )}`.
+
+5. **Conditionally render body cells**:
+   - Skeleton row (lines 678‑687): wrap each `<td>` the same way.
+   - "No projects found" row (lines 690‑694): change `colSpan={8}` to `colSpan={Object.values(visibleColumns).filter(Boolean).length}`.
+   - Real data rows (the 8 `<td>` cells inside the `.map(...)` further below): wrap each in `{visibleColumns.<key> && ( ... )}`.
 
 ### Out of scope
-- Vertical sticky behavior (header/footer pinning during vertical scroll) — already in place via `sticky top-0` on `<TableHeader>`; not changing.
-- Per-column sticky for data rows — already in place for the 5 frozen leftmost columns; not changing.
+- No persistence (matches Contract Tracker — state resets on reload).
+- Export logic, filtering, pagination, totals — unchanged.
+- No column reordering.
 
