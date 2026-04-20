@@ -31,8 +31,8 @@ const App = () => (
             <AppHeader />
             <main className="flex-1 overflow-y-auto overflow-x-hidden">
               <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/" element={<Navigate to="/projects" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/projects" replace />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/project/:id" element={<ProjectDetail />} />
                 <Route path="/start" element={<div className="p-6">Start page coming soon</div>} />
