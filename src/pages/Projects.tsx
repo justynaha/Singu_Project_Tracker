@@ -683,7 +683,7 @@ export default function Projects() {
                 <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-36">Site</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-36">Created by</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-36">Owner</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>
@@ -758,17 +758,12 @@ export default function Projects() {
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                             <img 
-                              src={index === 1 
-                                ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
-                                : "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
-                              } 
-                              alt="User" 
+                              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
+                              alt="Anna Snow" 
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <span className="text-sm text-foreground">
-                            {index === 1 ? "Michael Chen" : "Anna Snow"}
-                          </span>
+                          <span className="text-sm text-foreground">Anna Snow</span>
                         </div>
                       </td>
                       <td className="py-2 px-4">
