@@ -1039,22 +1039,19 @@ export default function Projects() {
                   </PopoverTrigger>
                   <PopoverContent className="w-[200px] p-0" align="start">
                     <div className="max-h-[200px] overflow-y-auto">
-                      {Array.from({ length: 31 }, (_, i) => {
-                        const year = new Date().getFullYear() + i;
-                        return (
-                          <button
-                            key={year}
-                            type="button"
-                            className={cn(
-                              "w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors",
-                              formData.fiscalYear === String(year) && "bg-primary/10 font-medium"
-                            )}
-                            onClick={() => setFormData({ ...formData, fiscalYear: String(year) })}
-                          >
-                            {year}
-                          </button>
-                        );
-                      })}
+                      {["2025/2026", "2026/2027", "2027/2028"].map((year) => (
+                        <button
+                          key={year}
+                          type="button"
+                          className={cn(
+                            "w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors",
+                            formData.fiscalYear === year && "bg-primary/10 font-medium"
+                          )}
+                          onClick={() => setFormData({ ...formData, fiscalYear: year })}
+                        >
+                          {year}
+                        </button>
+                      ))}
                     </div>
                   </PopoverContent>
                 </Popover>

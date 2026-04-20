@@ -368,22 +368,19 @@ export default function EditProjectModal({
                   </PopoverTrigger>
                   <PopoverContent className="w-[200px] p-0 z-50 bg-popover" align="start">
                     <div className="max-h-[200px] overflow-y-auto">
-                      {Array.from({ length: 31 }, (_, i) => {
-                        const year = new Date().getFullYear() + i;
-                        return (
-                          <button
-                            key={year}
-                            type="button"
-                            className={cn(
-                              "w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors",
-                              fiscalYear === String(year) && "bg-primary/10 font-medium"
-                            )}
-                            onClick={() => setFiscalYear(String(year))}
-                          >
-                            {year}
-                          </button>
-                        );
-                      })}
+                      {["2025/2026", "2026/2027", "2027/2028"].map((year) => (
+                        <button
+                          key={year}
+                          type="button"
+                          className={cn(
+                            "w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors",
+                            fiscalYear === year && "bg-primary/10 font-medium"
+                          )}
+                          onClick={() => setFiscalYear(year)}
+                        >
+                          {year}
+                        </button>
+                      ))}
                     </div>
                   </PopoverContent>
                 </Popover>
