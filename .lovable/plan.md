@@ -1,36 +1,27 @@
 
 
-## Plan: Empty state + working Import from XLS flow
+## Plan: Importowane projekty = dokładnie 6 wierszy z mock Excela
 
-### 1. Update mock Excel data (`src/pages/Projects.tsx`)
-Replace placeholder rows with realistic names matching their work category, all FY `2025/2026`, each with an Owner:
+Obecnie po kliknięciu **Import** lista pokazuje wszystkie projekty z bazy Supabase. Zamiast tego, lista ma pokazać dokładnie te 6 projektów, które były widoczne w mock Excelu.
 
-| Name | Site | Work category | FY | Budget | Currency | Owner | Type | Classification |
-|---|---|---|---|---|---|---|---|---|
-| LED Lighting Retrofit | Bedzin | ESG | 2025/2026 | 100000 | EUR | Anna Kowalska | IC | Mandatory |
-| Main Switchgear Replacement | Bedzin | ELECTRICAL SYSTEMS | 2025/2026 | 100000 | EUR | Piotr Nowak | IC | Mandatory |
-| Roof Solar Panel Installation | Marseille | Sustainability | 2025/2026 | 890000 | EUR | Claire Dubois | IC | Mandatory |
-| Automated Gate Access System | Lyon | Building upgrading works | 2025/2026 | 350000 | EUR | Marc Lefevre | Ad Hoc | Speculative |
-| Cross-Dock Area Expansion | Tilburg | Asset Enhancement Initiatives | 2025/2026 | 1250000 | EUR | Jeroen van Dijk | IC | Mandatory |
-| EV Charging Station Network | Schiphol | Sustainability | 2025/2026 | 680000 | EUR | Sophie de Vries | IC | Mandatory |
+### Zmiany w `src/pages/Projects.tsx`
 
-Add **Owner** column to the headers list (red), so total columns become 10 (A–J).
+1. Wyciągnij dane z `sampleRows` (te same 6 wierszy co w Excelu) do stałej współdzielonej między mock Excelem a listą po imporcie:
+   - LED Lighting Retrofit — Bedzin — ESG — Anna Kowalska
+   - Main Switchgear Replacement — Bedzin — ELECTRICAL SYSTEMS — Piotr Nowak
+   - Roof Solar Panel Installation — Marseille — Sustainability — Claire Dubois
+   - Automated Gate Access System — Lyon — Building upgrading works — Marc Lefevre
+   - Cross-Dock Area Expansion — Tilburg — Asset Enhancement Initiatives — Jeroen van Dijk
+   - EV Charging Station Network — Schiphol — Sustainability — Sophie de Vries
+   
+   Wszystkie: FY `2025/2026`, currency `EUR`, status `Open`.
 
-### 2. Empty state on Projects list (`src/pages/Projects.tsx`)
-Add session-level state `hasImported` (default `false`). When `false`, hide the real project list and render an empty state:
-- Centered icon (e.g. `FolderOpen` from lucide), heading "No projects yet", subtext "Import projects from XLS or add your first project to get started."
-- Existing `Add Project` and `Import from XLS` buttons stay in the header.
+2. Po `hasImported === true`, **zignoruj `projects` z hooka `useProjects`** i renderuj listę zbudowaną z tych 6 mockowych obiektów (zmapowanych do kształtu `Project` z polami: `id` (np. `mock-1`…`mock-6`), `name`, `site`, `budget_line`, `total_budget`, `currency`, `fiscal_year`, `budget_type`, `budget_classification`, `status`, `created_at = now()`, owner trzymany w lokalnym polu pomocniczym lub w `description`).
 
-### 3. Excel preview close → return to Import modal with file attached
-- When user closes the Excel preview, reopen the Import modal in an "uploaded" state (mock filename like `projects-template.xlsx`, ~28 KB) showing:
-  - File chip with name, size, and a remove (X) button.
-  - **Import** button (primary) at the bottom-right of the modal.
-  - Cancel button on the left.
+3. Toast po imporcie: zostaje "6 projects imported successfully".
 
-### 4. Import action
-- Clicking **Import** → set `hasImported = true`, close modal, show toast "6 projects imported successfully", and render the projects list normally (existing data from Supabase).
-- No DB writes; this is a visual flow only. The real projects already in the database appear once `hasImported` flips to true.
+4. **Brak zapisów do bazy** — to nadal flow czysto wizualny. Kliknięcie wiersza projektu na liście może otwierać szczegóły tylko jeśli istnieje route, w przeciwnym razie zostaw bez akcji (zgodnie z bieżącym zachowaniem listy).
 
-### Files
-- `src/pages/Projects.tsx` (only file changed)
+### Plik
+- `src/pages/Projects.tsx`
 
