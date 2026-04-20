@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, ChevronLeft, ChevronRight, ChevronDown, Check, ChevronsUpDown, X, Download, Columns3 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ChevronDown, Check, ChevronsUpDown, X, Download, Columns3, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -419,16 +419,36 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       <div className={embedded ? "p-4 flex-1 min-h-0 flex flex-col" : "p-6"}>
         {!embedded && <h1 className="text-3xl font-bold mb-6">Monthly Breakdown</h1>}
 
-        {/* Search */}
-        <div className="flex items-center gap-4 mb-4 mt-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search projects..." className="pl-10" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
-          </div>
-        </div>
+        {/* Search + Filters toggle */}
+        {(() => {
+          const appliedCount =
+            (filterSiteGroups.length > 0 ? 1 : 0) +
+            (filterCountry ? 1 : 0) +
+            (filterSite ? 1 : 0) +
+            (filterBudgetLine ? 1 : 0) +
+            (filterStatus ? 1 : 0) +
+            (filterFiscalYear ? 1 : 0) +
+            (filterBudgetType ? 1 : 0) +
+            (filterBudgetClassification ? 1 : 0);
+          return (
+            <div className="flex items-center gap-3 mb-3">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search projects..." className="pl-10" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowFilters(v => !v)} className="gap-2">
+                <Filter className="h-4 w-4" />
+                Filters
+                {appliedCount > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5">{appliedCount}</Badge>}
+                <ChevronDown className={cn("h-4 w-4 transition-transform", showFilters && "rotate-180")} />
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Filters */}
-        <div className="mb-4">
+        {showFilters && (
+        <div className="mb-3">
             <div className="space-y-4">
               <div className="flex items-end gap-3 flex-wrap">
                 <div className="min-w-[120px]">
@@ -518,26 +538,28 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                 </Button>
               </div>
 
-              {hasAppliedFilters && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  {filterSiteGroups.length > 0 && (
-                    <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
-                      Site group: {filterSiteGroups.join(", ")}
-                      <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterSiteGroups([]); setPendingSiteGroups([]); }} />
-                    </Badge>
-                  )}
-                  {filterCountry && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterCountry}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterCountry(""); setPendingCountry(""); }} /></Badge>}
-                  {filterSite && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterSite}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterSite(""); setPendingSite(""); }} /></Badge>}
-                  {filterBudgetLine && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterBudgetLine}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetLine(""); setPendingBudgetLine(""); }} /></Badge>}
-                  {filterStatus && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterStatus}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterStatus(""); setPendingStatus(""); }} /></Badge>}
-                  {filterFiscalYear && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">FY {filterFiscalYear}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFiscalYear(""); setPendingFiscalYear(""); }} /></Badge>}
-                  {filterBudgetType && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">Type: {filterBudgetType}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetType(""); setPendingBudgetType(""); }} /></Badge>}
-                  {filterBudgetClassification && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterBudgetClassification}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetClassification(""); setPendingBudgetClassification(""); }} /></Badge>}
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
-                </div>
-              )}
             </div>
         </div>
+        )}
+
+        {hasAppliedFilters && (
+          <div className="flex items-center gap-2 flex-wrap mb-3">
+            {filterSiteGroups.length > 0 && (
+              <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
+                Site group: {filterSiteGroups.join(", ")}
+                <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterSiteGroups([]); setPendingSiteGroups([]); }} />
+              </Badge>
+            )}
+            {filterCountry && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterCountry}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterCountry(""); setPendingCountry(""); }} /></Badge>}
+            {filterSite && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterSite}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterSite(""); setPendingSite(""); }} /></Badge>}
+            {filterBudgetLine && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterBudgetLine}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetLine(""); setPendingBudgetLine(""); }} /></Badge>}
+            {filterStatus && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterStatus}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterStatus(""); setPendingStatus(""); }} /></Badge>}
+            {filterFiscalYear && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">FY {filterFiscalYear}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFiscalYear(""); setPendingFiscalYear(""); }} /></Badge>}
+            {filterBudgetType && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">Type: {filterBudgetType}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetType(""); setPendingBudgetType(""); }} /></Badge>}
+            {filterBudgetClassification && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterBudgetClassification}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetClassification(""); setPendingBudgetClassification(""); }} /></Badge>}
+            <Button variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
+          </div>
+        )}
 
         {/* Toolbar: Columns + Export */}
         <div className="flex items-center justify-end gap-2 mb-3 pr-4">
