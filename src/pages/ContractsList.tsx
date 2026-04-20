@@ -726,9 +726,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     <Search className="h-4 w-4 mr-2" />Search
                   </Button>
                 </div>
+              </div>
+          </div>
+          )}
 
-                {hasAppliedFilters && (
-                  <div className="flex items-center gap-2 flex-wrap">
+          {hasAppliedFilters && (
+                  <div className="flex items-center gap-2 flex-wrap mb-3">
                     {filterSiteGroups.length > 0 && (
                       <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
                         Site group: {filterSiteGroups.join(", ")}
@@ -780,8 +783,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     <button className="text-sm text-primary hover:underline font-medium" onClick={clearFilters}>Clear</button>
                   </div>
                 )}
-              </div>
-          </div>
 
           <div className="flex items-center justify-end gap-2 mb-3 pr-4">
             <Popover>
