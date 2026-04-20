@@ -829,8 +829,8 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                         const isCollapsed = collapsedGroups.has(group.group);
                         return (
                         <>
-                          <TableRow key={`group-${group.group}`} className="h-10 bg-muted/40 cursor-pointer" onClick={() => toggleGroup(group.group)}>
-                            <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm">
+                          <TableRow key={`group-${group.group}`} className="h-10 cursor-pointer" onClick={() => toggleGroup(group.group)}>
+                            <TableCell colSpan={Object.values(visibleColumns).filter(Boolean).length} className="py-0 px-3 font-bold text-sm sticky left-0 z-10 bg-muted">
                               <span className="inline-flex items-center gap-1.5">
                                 <ChevronDown className={cn("h-4 w-4 transition-transform", isCollapsed && "-rotate-90")} />
                                 {group.label} ({group.contracts.length} contract{group.contracts.length !== 1 ? "s" : ""})
@@ -881,13 +881,13 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                             );
                           })}
                           {/* Subtotal row for group */}
-                          <TableRow key={`subtotal-${group.group}`} className="h-10 bg-orange-100">
-                            <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic">
+                          <TableRow key={`subtotal-${group.group}`} className="h-10">
+                            <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-semibold text-sm italic sticky left-0 z-10 bg-orange-100">
                               Subtotal — {group.label}
                             </TableCell>
-                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.contracted)}</span></TableCell>}
-                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.invoiced)}</span></TableCell>}
-                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.balance)}</span></TableCell>}
+                            {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right sticky right-[280px] z-10 bg-orange-100 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.contracted)}</span></TableCell>}
+                            {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right sticky right-[140px] z-10 bg-orange-100 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.invoiced)}</span></TableCell>}
+                            {visibleColumns.balance && <TableCell className="py-0 px-3 text-right sticky right-0 z-10 bg-orange-100 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-semibold">{formatAmount(group.subtotals.balance)}</span></TableCell>}
                           </TableRow>
                         </>
                         );
@@ -896,11 +896,11 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                   </TableBody>
                   {filtered.length > 0 && (
                     <TableFooter>
-                      <TableRow className="h-10 bg-amber-900 text-white">
-                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold text-white">Grand Total</TableCell>
-                        {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right text-white"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.contracted)}</span></TableCell>}
-                        {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right text-white"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.invoiced)}</span></TableCell>}
-                        {visibleColumns.balance && <TableCell className="py-0 px-3 text-right text-white"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.balance)}</span></TableCell>}
+                      <TableRow className="h-10 text-white">
+                        <TableCell colSpan={visibleBeforeFinancial} className="py-0 px-3 font-bold text-white sticky left-0 z-10 bg-amber-900">Grand Total</TableCell>
+                        {visibleColumns.contracted && <TableCell className="py-0 px-3 text-right text-white sticky right-[280px] z-10 bg-amber-900 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.contracted)}</span></TableCell>}
+                        {visibleColumns.invoiced && <TableCell className="py-0 px-3 text-right text-white sticky right-[140px] z-10 bg-amber-900 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.invoiced)}</span></TableCell>}
+                        {visibleColumns.balance && <TableCell className="py-0 px-3 text-right text-white sticky right-0 z-10 bg-amber-900 min-w-[140px]"><span className="font-normal text-xs mr-1.5">EUR</span><span className="font-bold">{formatAmount(totals.balance)}</span></TableCell>}
                       </TableRow>
                     </TableFooter>
                   )}
