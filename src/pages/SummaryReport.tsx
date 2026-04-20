@@ -128,8 +128,8 @@ export default function SummaryReport() {
                 const vPlanned = r.curPlanned3M - r.prevPlanned3M;
                 return (
                   <tr key={r.site} className="border-b border-border bg-background hover:bg-muted/50 [&>td]:bg-inherit">
-                    <td className="px-4 h-10 sticky left-0 border-r border-border whitespace-nowrap min-w-[220px]">{r.site}</td>
-                    <td className="px-4 h-10 sticky left-[220px] border-r border-border whitespace-nowrap min-w-[120px]">{r.country}</td>
+                    <td className="px-4 h-10 sticky left-0 z-10 border-r border-border whitespace-nowrap min-w-[220px]">{r.site}</td>
+                    <td className="px-4 h-10 sticky left-[220px] z-10 border-r border-border whitespace-nowrap min-w-[120px]">{r.country}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">
                       {r.budgetLC === 0 ? "—" : `${fmt(r.budgetLC)} ${r.budgetCurrency}`}
                     </td>
@@ -146,9 +146,9 @@ export default function SummaryReport() {
                   </tr>
                 );
               })}
-              <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-0 z-10 [&>td]:bg-inherit">
-                <td className="px-4 h-10 sticky left-0 z-20 border-r border-border whitespace-nowrap min-w-[220px]">Total</td>
-                <td className="px-4 h-10 sticky left-[220px] z-20 border-r border-border min-w-[120px]"></td>
+              <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-0 z-20 [&>td]:bg-inherit">
+                <td className="px-4 h-10 sticky left-0 z-30 border-r border-border whitespace-nowrap min-w-[220px]">Total</td>
+                <td className="px-4 h-10 sticky left-[220px] z-30 border-r border-border min-w-[120px]"></td>
                 <td className="px-4 h-10 text-right tabular-nums text-muted-foreground whitespace-nowrap">—</td>
                 <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(grandTotal.budgetEUR)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curCompleted)}</td>

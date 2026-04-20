@@ -107,7 +107,7 @@ export default function AcgReport() {
                 const total = totalOf(r);
                 return (
                   <TableRow key={r.country} className="h-10 bg-background hover:bg-muted/50 [&>td]:bg-inherit">
-                    <TableCell className="sticky left-0 z-10 border-r border-border font-medium">
+                    <TableCell className="sticky left-0 z-20 border-r border-border font-medium">
                       {r.country}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{fmt(r.completed)}</TableCell>
@@ -126,8 +126,8 @@ export default function AcgReport() {
               })}
             </TableBody>
             <tfoot>
-              <TableRow className="h-10 sticky bottom-0 z-10 bg-muted font-semibold hover:bg-muted [&>td]:bg-inherit">
-                <TableCell className="sticky left-0 z-20 border-r border-border">Total</TableCell>
+              <TableRow className="h-10 sticky bottom-0 z-20 bg-muted font-semibold hover:bg-muted [&>td]:bg-inherit">
+                <TableCell className="sticky left-0 z-30 border-r border-border">Total</TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(totals.completed)}</TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(totals.ongoing)}</TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(totals.planned3m)}</TableCell>
