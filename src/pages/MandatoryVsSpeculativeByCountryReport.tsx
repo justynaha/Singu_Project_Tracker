@@ -1,7 +1,8 @@
+import { useMemo } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SAMPLE_PROPERTIES, getPropertyCountry } from "@/data/sampleProperties";
-import { MAND_SPEC_AMOUNTS, ZERO_AMOUNTS } from "@/data/mandatoryVsSpeculativeAmounts";
+import { MAND_SPEC_AMOUNTS, ZERO_AMOUNTS, type MandSpecAmounts } from "@/data/mandatoryVsSpeculativeAmounts";
 
 const fmt = (v: number) => (v === 0 ? "—" : v.toLocaleString("en-US", { maximumFractionDigits: 0 }));
 const pct = (num: number, den: number) => {
@@ -9,35 +10,41 @@ const pct = (num: number, den: number) => {
   return `${((num / den) * 100).toFixed(1)}%`;
 };
 
-interface Row {
-  property: string;
+interface CountryRow extends MandSpecAmounts {
   country: string;
-  mandBudget: number;
-  specBudget: number;
-  mandContracted: number;
-  specContracted: number;
 }
-
-const SAMPLE_DATA: Row[] = SAMPLE_PROPERTIES.map((p) => ({
-  property: p.property,
-  country: getPropertyCountry(p.property),
-  ...(MAND_SPEC_AMOUNTS[p.property] ?? ZERO_AMOUNTS),
-}));
 
 const orangeHead = "bg-orange-200 dark:bg-orange-900/40 text-foreground";
 const slateHead = "bg-slate-700 text-white dark:bg-slate-800";
 const totalCol = "bg-blue-50 dark:bg-blue-950/30";
 const totalColStrong = "bg-blue-100 dark:bg-blue-900/40";
 
-export default function MandatoryVsSpeculativeReport() {
-  const totals = SAMPLE_DATA.reduce(
+export default function MandatoryVsSpeculativeByCountryReport() {
+  const rows = useMemo<CountryRow[]>(() => {
+    const map = new Map<string, MandSpecAmounts>();
+    for (const p of SAMPLE_PROPERTIES) {
+      const country = getPropertyCountry(p.property);
+      const a = MAND_SPEC_AMOUNTS[p.property] ?? ZERO_AMOUNTS;
+      const cur = map.get(country) ?? { ...ZERO_AMOUNTS };
+      cur.mandBudget += a.mandBudget;
+      cur.specBudget += a.specBudget;
+      cur.mandContracted += a.mandContracted;
+      cur.specContracted += a.specContracted;
+      map.set(country, cur);
+    }
+    return Array.from(map.entries())
+      .map(([country, a]) => ({ country, ...a }))
+      .sort((a, b) => a.country.localeCompare(b.country));
+  }, []);
+
+  const totals = rows.reduce(
     (acc, r) => ({
       mandBudget: acc.mandBudget + r.mandBudget,
       specBudget: acc.specBudget + r.specBudget,
       mandContracted: acc.mandContracted + r.mandContracted,
       specContracted: acc.specContracted + r.specContracted,
     }),
-    { mandBudget: 0, specBudget: 0, mandContracted: 0, specContracted: 0 }
+    { ...ZERO_AMOUNTS }
   );
   const totalBudget = totals.mandBudget + totals.specBudget;
   const totalContracted = totals.mandContracted + totals.specContracted;
@@ -45,7 +52,7 @@ export default function MandatoryVsSpeculativeReport() {
   return (
     <div className="p-4 md:p-6 flex flex-col h-full">
       <div className="pb-3 flex-shrink-0 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Monthly CAPEX Update — Mandatory v Speculative</h2>
+        <h2 className="text-xl font-semibold">Monthly CAPEX Update — Mandatory v Speculative by Country</h2>
         <Button variant="outline" size="sm">
           <Download className="h-4 w-4 mr-2" />
           Export
@@ -54,11 +61,10 @@ export default function MandatoryVsSpeculativeReport() {
 
       <div className="flex-1 min-h-0 rounded-lg border border-border overflow-hidden flex flex-col">
         <div className="flex-1 overflow-auto">
-          <table className="w-full text-sm border-collapse min-w-[1100px]">
+          <table className="w-full text-sm border-collapse min-w-[900px]">
             <thead className="sticky top-0 z-10 bg-muted">
               <tr className="border-b border-border">
-                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border min-w-[220px]">Property</th>
-                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]">Country</th>
+                <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border min-w-[200px]">Country</th>
                 <th colSpan={3} className={`text-center font-semibold px-4 h-10 border-r border-border ${orangeHead}`}>FY25/26 Budget (EUR)</th>
                 <th colSpan={3} className={`text-center font-semibold px-4 h-10 ${slateHead}`}>Contracted (EUR)</th>
               </tr>
@@ -72,13 +78,12 @@ export default function MandatoryVsSpeculativeReport() {
               </tr>
             </thead>
             <tbody>
-              {SAMPLE_DATA.map((r) => {
+              {rows.map((r) => {
                 const budget = r.mandBudget + r.specBudget;
                 const contracted = r.mandContracted + r.specContracted;
                 return (
-                  <tr key={r.property} className="border-b border-border hover:bg-muted/30 group">
-                    <td className="px-4 h-10 sticky left-0 bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[220px]">{r.property}</td>
-                    <td className="px-4 h-10 sticky left-[220px] bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[120px]">{r.country}</td>
+                  <tr key={r.country} className="border-b border-border hover:bg-muted/30 group">
+                    <td className="px-4 h-10 sticky left-0 bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[200px] font-medium">{r.country}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.mandBudget)}</td>
                     <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(r.specBudget)}</td>
                     <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{fmt(budget)}</td>
@@ -89,8 +94,7 @@ export default function MandatoryVsSpeculativeReport() {
                 );
               })}
               <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-10 z-10">
-                <td className="px-4 h-10 sticky left-0 bg-muted z-20 border-r border-border whitespace-nowrap min-w-[220px]">Total</td>
-                <td className="px-4 h-10 sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]"></td>
+                <td className="px-4 h-10 sticky left-0 bg-muted z-20 border-r border-border whitespace-nowrap min-w-[200px]">Total</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.mandBudget)}</td>
                 <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{fmt(totals.specBudget)}</td>
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalColStrong}`}>{fmt(totalBudget)}</td>
@@ -99,14 +103,13 @@ export default function MandatoryVsSpeculativeReport() {
                 <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap ${totalColStrong}`}>{fmt(totalContracted)}</td>
               </tr>
               <tr className="bg-muted/70 italic border-t border-border sticky bottom-0 z-10">
-                <td className="px-4 h-10 sticky left-0 bg-muted/70 z-20 border-r border-border whitespace-nowrap min-w-[220px]">% Breakdown</td>
-                <td className="px-4 h-10 sticky left-[220px] bg-muted/70 z-20 border-r border-border min-w-[120px]"></td>
-                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.mandBudget, totalBudget)}</td>
-                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.specBudget, totalBudget)}</td>
-                <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{totalBudget ? "100.0%" : "—"}</td>
-                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.mandContracted, totalContracted)}</td>
-                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.specContracted, totalContracted)}</td>
-                <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap ${totalCol}`}>{totalContracted ? "100.0%" : "—"}</td>
+                <td className="px-4 h-10 sticky left-0 bg-muted/70 z-20 border-r border-border whitespace-nowrap min-w-[200px]">% Contracted</td>
+                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.mandContracted, totals.mandBudget)}</td>
+                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.specContracted, totals.specBudget)}</td>
+                <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap border-r border-border ${totalCol}`}>{pct(totalContracted, totalBudget)}</td>
+                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.mandContracted, totals.mandBudget)}</td>
+                <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">{pct(totals.specContracted, totals.specBudget)}</td>
+                <td className={`px-4 h-10 text-right tabular-nums whitespace-nowrap ${totalCol}`}>{pct(totalContracted, totalBudget)}</td>
               </tr>
             </tbody>
           </table>
