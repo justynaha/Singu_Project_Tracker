@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info } from "lucide-react";
+import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info, FolderOpen, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
 
 import { useProjectTypes } from "@/hooks/useProjectTypes";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -62,6 +63,8 @@ export default function Projects() {
   const [showNewProject, setShowNewProject] = useState(false);
   const [showImportXLS, setShowImportXLS] = useState(false);
   const [showExcelPreview, setShowExcelPreview] = useState(false);
+  const [importFileAttached, setImportFileAttached] = useState(false);
+  const [hasImported, setHasImported] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
