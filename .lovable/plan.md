@@ -1,59 +1,85 @@
 
 
-## Plan: Add Summary and ACG tabs to Reports + Summary table
+## Plan: Rozbudowa tabeli Summary w Reports
 
-### Files
-- `src/pages/Reports.tsx` — add 2 new tabs at the start of tabs array
-- `src/pages/SummaryReport.tsx` — new component for Summary tab content
-- `src/pages/AcgReport.tsx` — new placeholder component for ACG tab
+### Plik
+`src/pages/SummaryReport.tsx`
 
-### Tab order (left → right)
-1. **Summary** (new, default active)
-2. **ACG** (new, placeholder)
-3. CAPEX Tracker (existing)
-4. Contract Tracker (existing)
+### Zmiany w strukturze kolumn
 
-Default `activeTab` in `Reports.tsx` changes from `monthly-breakdown` to `summary`.
+Nowy układ (lewo → prawo):
 
-### Summary tab content — property-level table
-
-Reuses the same data hooks as MonthlyBreakdownList (`useProjects`, `monthly_breakdown`, `contracts`, `invoices`) and aggregates by **property (site)**, then groups by region (WE / PL / HU) like the CAPEX Tracker, with subtotals + grand total row at the bottom (matches the "MUSEL TOTAL" styling from the screenshot).
-
-#### Columns
-| Group | Column | Source |
+| Sekcja | Kolumna | Źródło / logika |
 |---|---|---|
-| — | Property | `project.site` (deduped) |
+| — | Property | `project.site` |
 | — | Country | `siteToCountry[site]` |
-| Current | Ongoing (EUR) | sum of `contracts.amount_lc` where status = `Ongoing` for projects on that site |
-| Current | Planned 3M (EUR) | sum of next 3 months from `monthly_breakdown` (apr+may+jun for FY2026) |
-| Previous Month | Completed (EUR) | placeholder `—` (hardcoded, matching screenshot's blue "copy-paste" cells) |
-| Previous Month | Ongoing (EUR) | placeholder `—` |
-| Previous Month | Planned 3M (EUR) | placeholder `—` |
-| Variance | Completed (EUR) | placeholder `—` (or computed as 0 where prev = 0) |
-| Variance | Ongoing (EUR) | current Ongoing − prev Ongoing (= current when prev is 0) |
-| Variance | Planned 3M (EUR) | current Planned 3M − prev Planned 3M |
+| **Budget** | Budget LC | `sum(project.total_budget)` per site, w lokalnej walucie |
+| **Budget** | Budget EUR | Budget LC × kurs FX (PLN→EUR 0.23, HUF→EUR 0.0025, EUR→EUR 1.0) |
+| **Current** (zielone tło) | Completed (EUR) | placeholder przykładowy (deterministyczny pseudo-random per site, ~10–30% Budget EUR) |
+| **Current** (zielone tło) | Ongoing (EUR) | sum `contracts.amount_lc` ze statusem `Ongoing` |
+| **Current** (zielone tło) | Planned 3M (EUR) | sum `monthly_breakdown` apr+may+jun |
+| **Previous Month** | Completed (EUR) | przykładowe dane (~85% wartości Current Completed) |
+| **Previous Month** | Ongoing (EUR) | przykładowe dane (~95% wartości Current Ongoing) |
+| **Previous Month** | Planned 3M (EUR) | przykładowe dane (~90% wartości Current Planned 3M) |
+| **Variance** | Completed (EUR) | Current − Previous (Completed) |
+| **Variance** | Ongoing (EUR) | Current − Previous (Ongoing) |
+| **Variance** | Planned 3M (EUR) | Current − Previous (Planned 3M) |
 
-Two-row header: top row spans the 3 column groups (Current implicit / `PREVIOUS MONTH` / `VARIANCE`), bottom row has the individual labels. This matches the screenshot.
+Łącznie: 13 kolumn (2 sticky-left identity + 2 Budget + 3 Current + 3 Previous Month + 3 Variance).
 
-#### Rows
-- Grouped by region (Western Europe / Poland / Hungary) using existing `COUNTRY_TO_SITE_GROUP`, with collapsible group headers and per-group subtotal rows — same pattern as CAPEX Tracker.
-- Final **Grand Total** row styled with `bg-muted/50 font-semibold` (matching "MUSEL TOTAL" dark band in screenshot).
-- Empty/zero values rendered as `—` (matching screenshot dashes).
+### Dane przykładowe (Previous Month)
 
-#### Styling — consistent with other report tabs
-- `Table` from `@/components/ui/table` with `h-10` rows and sticky header
-- Region group header rows: same `bg-muted` styling as CAPEX Tracker
-- Grand total row: `bg-muted/50 font-semibold border-t-2`
-- Numbers right-aligned, formatted with `toLocaleString("en-US")`, "—" for zero/null
-- Property + Country columns sticky-left (like CAPEX Tracker's first columns)
-- Header section above table: title "Summary" + Export button (placeholder, no-op for now)
-- Outer wrapper matches `MonthlyBreakdownList` `embedded` mode (no own padding, inherits from `Reports.tsx`)
+Aby uniknąć "magic numbers" w UI i zachować wizualną spójność z Current, wartości wyliczane deterministycznie z Current per wiersz:
 
-### ACG tab
-Empty placeholder card with text "ACG report — coming soon" using same outer layout (`p-4 md:p-6`). No data wiring.
+- `prev.completed = round(current.completed * 0.85)`
+- `prev.ongoing = round(current.ongoing * 0.95)`
+- `prev.planned3M = round(current.planned3M * 0.90)`
 
-### Out of scope
-- Real "previous month" data source — using placeholders matching the screenshot's hardcoded blue cells.
-- Excel export for Summary tab (button is a non-functional placeholder for visual parity).
-- Filters / search in Summary tab (can be added later if requested).
+`current.completed` (nowy placeholder) wyliczany jako `round(budgetEur * 0.20)` — daje wiarygodną proporcję względem budżetu i niezerowe wariancje.
+
+Subtotaly i Grand Total liczą się automatycznie ze wszystkich nowych kolumn (włącznie z Budget LC — uwaga: sumowanie LC ma sens tylko per kraj/grupa o tej samej walucie; w grand total Budget LC pokażemy `—`, w subtotalach też `—`, sumujemy tylko Budget EUR).
+
+### FX rates (hardcoded fallback)
+
+```ts
+const FX_TO_EUR: Record<string, number> = {
+  EUR: 1, PLN: 0.23, HUF: 0.0025, USD: 0.92,
+};
+```
+
+Lokalna waluta brana z `project.currency` (PLN domyślnie). Jeśli wszystkie projekty na site mają tę samą walutę → pokaż w kolumnie LC, w innym przypadku `Mixed`.
+
+### Styling sekcji Current
+
+Bladozielone tło na nagłówkach grupy + komórkach danych całej sekcji Current (3 kolumny):
+
+- nagłówek grupy: `bg-green-100` (light) — Tailwind klasa
+- komórki danych w tych 3 kolumnach: `bg-green-50`
+- separatory pionowe `border-r border-border` zachowane
+
+Pozostałe sekcje: bez zmian (domyślne `bg-muted` na nagłówkach grup, białe tło komórek).
+
+### Nagłówek tabeli (2-rzędowy)
+
+Górny rząd:
+- Property (rowSpan=2, sticky)
+- Country (rowSpan=2)
+- **Budget** (colSpan=2)
+- **Current** (colSpan=3, bg-green-100)
+- **Previous Month** (colSpan=3)
+- **Variance** (colSpan=3)
+
+Dolny rząd: nazwy podkolumn (Budget LC / Budget EUR / Completed / Ongoing / Planned 3M / Completed / Ongoing / Planned 3M / Completed / Ongoing / Planned 3M).
+
+### Zmiany w wierszach
+
+Wszystkie wiersze (data, subtotal, grand total) rozszerzone o nowe kolumny. Kolumny w sekcji Current dostają klasę `bg-green-50` (data) lub `bg-green-100` (subtotal/total — odcień ciemniejszy dla rozróżnienia).
+
+`min-w-[1100px]` zwiększone do `min-w-[1500px]` z powodu 4 dodatkowych kolumn.
+
+### Poza zakresem
+
+- Brak realnego źródła Previous Month (nadal placeholdery, tylko teraz wypełnione liczbami zamiast `—`).
+- Brak edycji kursów FX (hardcoded w komponencie, można później podmienić na hook z `fx_rates`).
+- Brak zmian w pozostałych tabach Reports.
 
