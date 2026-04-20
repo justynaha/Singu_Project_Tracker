@@ -1,5 +1,6 @@
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SAMPLE_PROPERTIES, getPropertyCountry } from "@/data/sampleProperties";
 
 const fmt = (v: number) => (v === 0 ? "—" : v.toLocaleString("en-US", { maximumFractionDigits: 0 }));
 const pct = (num: number, den: number) => {
@@ -16,18 +17,25 @@ interface Row {
   specContracted: number;
 }
 
-const SAMPLE_DATA: Row[] = [
-  { property: "Mapletree Park Lyon", country: "France", mandBudget: 725000, specBudget: 0, mandContracted: 0, specContracted: 0 },
-  { property: "Mapletree Park Schiphol", country: "Netherlands", mandBudget: 105839, specBudget: 0, mandContracted: 105839, specContracted: 0 },
-  { property: "Mapletree Park Marseille", country: "France", mandBudget: 650000, specBudget: 0, mandContracted: 0, specContracted: 0 },
-  { property: "Mapletree Park Piotrków 1", country: "Poland", mandBudget: 2326, specBudget: 0, mandContracted: 2326, specContracted: 0 },
-  { property: "Mapletree Park Piotrków 2", country: "Poland", mandBudget: 1163, specBudget: 0, mandContracted: 6395, specContracted: 0 },
-  { property: "Mapletree Park Tilburg", country: "Netherlands", mandBudget: 42399, specBudget: 0, mandContracted: 42399, specContracted: 0 },
-  { property: "Mapletree Park Szczecin", country: "Poland", mandBudget: 465, specBudget: 0, mandContracted: 465, specContracted: 0 },
-  { property: "Mapletree Park Fogars", country: "Spain", mandBudget: 2332908, specBudget: 0, mandContracted: 130710, specContracted: 0 },
-  { property: "Mapletree Park Sallent", country: "Spain", mandBudget: 3220614, specBudget: 0, mandContracted: 73144, specContracted: 0 },
-  { property: "Mapletree Park Valls", country: "Spain", mandBudget: 0, specBudget: 0, mandContracted: 0, specContracted: 0 },
-];
+// Per-property amounts keyed by property name. Country comes from shared sample list.
+const AMOUNTS: Record<string, Omit<Row, "property" | "country">> = {
+  "Mapletree Park Lyon": { mandBudget: 725000, specBudget: 0, mandContracted: 0, specContracted: 0 },
+  "Mapletree Park Schiphol": { mandBudget: 105839, specBudget: 0, mandContracted: 105839, specContracted: 0 },
+  "Mapletree Park Marseille": { mandBudget: 650000, specBudget: 0, mandContracted: 0, specContracted: 0 },
+  "Mapletree Park Piotrków 1": { mandBudget: 2326, specBudget: 0, mandContracted: 2326, specContracted: 0 },
+  "Mapletree Park Piotrków 2": { mandBudget: 1163, specBudget: 0, mandContracted: 6395, specContracted: 0 },
+  "Mapletree Park Tilburg": { mandBudget: 42399, specBudget: 0, mandContracted: 42399, specContracted: 0 },
+  "Mapletree Park Szczecin": { mandBudget: 465, specBudget: 0, mandContracted: 465, specContracted: 0 },
+  "Mapletree Park Fogars": { mandBudget: 2332908, specBudget: 0, mandContracted: 130710, specContracted: 0 },
+  "Mapletree Park Sallent": { mandBudget: 3220614, specBudget: 0, mandContracted: 73144, specContracted: 0 },
+  "Mapletree Park Valls": { mandBudget: 0, specBudget: 0, mandContracted: 0, specContracted: 0 },
+};
+
+const SAMPLE_DATA: Row[] = SAMPLE_PROPERTIES.map((p) => ({
+  property: p.property,
+  country: getPropertyCountry(p.property),
+  ...(AMOUNTS[p.property] ?? { mandBudget: 0, specBudget: 0, mandContracted: 0, specContracted: 0 }),
+}));
 
 const orangeHead = "bg-orange-200 dark:bg-orange-900/40 text-foreground";
 const slateHead = "bg-slate-700 text-white dark:bg-slate-800";
