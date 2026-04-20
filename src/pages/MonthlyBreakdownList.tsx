@@ -135,7 +135,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     Object.fromEntries([...MONTH_KEYS.map(k => [k, true]), ["total", true]])
   );
   const [visibleExtraColumns, setVisibleExtraColumns] = useState({ country: true, site: true, projectName: true, budgetType: true, budgetClassification: true });
-  const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V2");
 
   const monthColumnDefs = [
     ...MONTH_KEYS.map((k, i) => ({ key: k, label: MONTH_HEADERS[i] })),
@@ -542,16 +541,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
 
         {/* Toolbar: Columns + Export */}
         <div className="flex items-center justify-end gap-2 mb-3 pr-4">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground">View</Label>
-            <Select value={viewVersion} onValueChange={(v) => setViewVersion(v as "V1" | "V2")}>
-              <SelectTrigger className="h-9 w-[80px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="V1">V1</SelectItem>
-                <SelectItem value="V2">V2</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm">
@@ -731,29 +720,14 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             </TableCell>
                           )}
                         </TableRow>
-                        {/* Remaining to allocate (V1 only) */}
-                        {viewVersion === "V1" && (() => {
-                          const remaining = (summaryTotals.grandBudget || 0) - (grandTotals.total || 0);
-                          return (
-                            <TableRow className="h-10">
-                              <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm font-medium" colSpan={fixedColCount}>Remaining to allocate (EUR)</TableCell>
-                              {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
-                              {visibleMonths.total && (
-                                <TableCell className={cn("py-0 px-3 text-right text-sm tabular-nums bg-background sticky right-0 z-10 font-medium", remaining < 0 && "text-destructive")}>
-                                  {formatAmount(remaining || null)}
-                                </TableCell>
-                              )}
-                            </TableRow>
-                          );
-                        })()}
                         {/* Budget */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={fixedColCount}>Budget (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && <TableCell className="py-0 px-3 text-right text-sm text-muted-foreground tabular-nums bg-background sticky right-0 z-10">{formatAmount(summaryTotals.grandBudget || null)}</TableCell>}
                         </TableRow>
-                        {/* Contracted (V2 only) */}
-                        {viewVersion === "V2" && <TableRow className="h-10">
+                        {/* Contracted */}
+                        <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={fixedColCount}>Contracted (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
@@ -762,9 +736,9 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               {formatAmount(summaryTotals.grandContracted || null)}
                             </TableCell>
                           )}
-                        </TableRow>}
-                        {/* Invoiced (V2 only) */}
-                        {viewVersion === "V2" && <TableRow className="h-10">
+                        </TableRow>
+                        {/* Invoiced */}
+                        <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={fixedColCount}>Invoiced (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
@@ -773,9 +747,9 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               {formatAmount(summaryTotals.grandInvoiced || null)}
                             </TableCell>
                           )}
-                        </TableRow>}
-                        {/* Ongoing (V2 only) */}
-                        {viewVersion === "V2" && <TableRow className="h-10">
+                        </TableRow>
+                        {/* Ongoing */}
+                        <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={fixedColCount}>Ongoing (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
@@ -784,7 +758,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               {formatAmount(summaryTotals.grandOngoing || null)}
                             </TableCell>
                           )}
-                        </TableRow>}
+                        </TableRow>
                         {/* Planned 3M */}
                         <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={fixedColCount}>Planned 3M (EUR)</TableCell>
@@ -796,8 +770,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             </TableCell>
                           )}
                         </TableRow>
-                        {/* Savings (V2 only) */}
-                        {viewVersion === "V2" && <TableRow className="h-10">
+                        {/* Savings */}
+                        <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={fixedColCount}>Savings (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
@@ -806,9 +780,9 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               {formatAmount(summaryTotals.grandSavings || null)}
                             </TableCell>
                           )}
-                        </TableRow>}
-                        {/* Postponed (V2 only) */}
-                        {viewVersion === "V2" && <TableRow className="h-10">
+                        </TableRow>
+                        {/* Postponed */}
+                        <TableRow className="h-10">
                           <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 text-left text-sm text-muted-foreground" colSpan={fixedColCount}>Postponed (EUR)</TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && <TableCell key={k} className="py-0 px-3" />)}
                           {visibleMonths.total && (
@@ -817,7 +791,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               {formatAmount(summaryTotals.grandPostponed || null)}
                             </TableCell>
                           )}
-                        </TableRow>}
+                        </TableRow>
                       </>
                     )}
                   </TableBody>
