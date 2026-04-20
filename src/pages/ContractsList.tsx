@@ -121,6 +121,48 @@ const siteToCountry: Record<string, string> = {
   "Marseille": "France",
 };
 
+const siteToLegalEntity: Record<string, string> = {
+  // Poland
+  "Mapletree Park Bedzin": "AlexandraLog PLC01 Sp. Z.o.o.",
+  "Bedzin": "AlexandraLog PLC01 Sp. Z.o.o.",
+  "Mapletree Park Blonie 2": "AlexandraLog PLC03 Sp. Z.o.o.",
+  "Blonie 2": "AlexandraLog PLC03 Sp. Z.o.o.",
+  "Mapletree Park Gdańsk-Airport": "AlexandraLog PLC05 Sp. Z.o.o.",
+  "Gdańsk-Airport": "AlexandraLog PLC05 Sp. Z.o.o.",
+  "Mapletree Park Nadarzyn": "AlexandraLog PLC07 Sp. Z.o.o.",
+  "Nadarzyn": "AlexandraLog PLC07 Sp. Z.o.o.",
+  "Mapletree Park Piotrków 1": "AlexandraLog PLC08 Sp. Z.o.o.",
+  "Piotrków 1": "AlexandraLog PLC08 Sp. Z.o.o.",
+  "Mapletree Park Piotrków 2": "AlexandraLog PLC09 Sp. Z.o.o.",
+  "Mapletree Park Szczecin": "AlexandraLog PLC10 Sp. Z.o.o.",
+  "Szczecin": "AlexandraLog PLC10 Sp. Z.o.o.",
+  // Italy
+  "Mapletree Park Bologna Castel San Pietro": "AlexandraLog PLIT01 S.r.l.",
+  "Bologna Castel San Pietro": "AlexandraLog PLIT01 S.r.l.",
+  // Spain
+  "Mapletree Park Fogars": "AlexandraLog SPNE01 S.L.",
+  "Fogars": "AlexandraLog SPNE01 S.L.",
+  "Mapletree Park Les Franqueses": "AlexandraLog SPNE02 S.L.",
+  "Les Franqueses": "AlexandraLog SPNE02 S.L.",
+  "Mapletree Park Sallent": "AlexandraLog SPNE03 S.L.",
+  "Sallent": "AlexandraLog SPNE03 S.L.",
+  "Mapletree Park Valls": "AlexandraLog SPNE04 S.L.",
+  "Valls": "AlexandraLog SPNE04 S.L.",
+  // Hungary
+  "Százhalombatta": "AlexandraLog PLHU01 Kft.",
+  "Üllő": "AlexandraLog PLHU02 Kft.",
+  // Netherlands
+  "Mapletree Park Tilburg": "AlexandraLog NL01 B.V.",
+  "Tilburg": "AlexandraLog NL01 B.V.",
+  "Mapletree Park Schiphol": "AlexandraLog NL02 B.V.",
+  "Schiphol": "AlexandraLog NL02 B.V.",
+  // France
+  "Mapletree Park Lyon": "AlexandraLog FR01 SAS",
+  "Lyon": "AlexandraLog FR01 SAS",
+  "Mapletree Park Marseille": "AlexandraLog FR02 SAS",
+  "Marseille": "AlexandraLog FR02 SAS",
+};
+
 const budgetLineLabels: Record<string, string> = {
   common_areas: "Common Areas",
   tenant_fitout: "Tenant Fit-Out",
@@ -814,7 +856,7 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                                 {visibleColumns.contractId && <TableCell className={cn("py-0 px-3 font-medium sticky left-0 z-10 min-w-[140px]", isSelected ? "bg-muted" : "bg-card")}>{c.contract_number}</TableCell>}
                                 {visibleColumns.country && <TableCell className={cn("py-0 px-3 sticky left-[140px] z-10 min-w-[120px]", isSelected ? "bg-muted" : "bg-card")}>{country}</TableCell>}
                                 {visibleColumns.site && <TableCell className={cn("py-0 px-3 sticky left-[260px] z-10 min-w-[160px]", isSelected ? "bg-muted" : "bg-card")}>{proj?.site || "—"}</TableCell>}
-                                {visibleColumns.legalEntity && <TableCell className={cn("py-0 px-3 sticky left-[420px] z-10 min-w-[140px]", isSelected ? "bg-muted" : "bg-card")}>—</TableCell>}
+                                {visibleColumns.legalEntity && <TableCell className={cn("py-0 px-3 sticky left-[420px] z-10 min-w-[140px]", isSelected ? "bg-muted" : "bg-card")}>{(proj?.site && siteToLegalEntity[proj.site]) || "—"}</TableCell>}
                                 {visibleColumns.budgetType && <TableCell className={cn("py-0 px-3 sticky left-[560px] z-10 min-w-[120px]", isSelected ? "bg-muted" : "bg-card")}>{proj?.budget_type || "—"}</TableCell>}
                                 {visibleColumns.contractor && <TableCell className="py-0 px-3">{c.contractor || "—"}</TableCell>}
                                 {visibleColumns.description && <TableCell className="py-0 px-3 max-w-[200px] truncate">{c.description || "—"}</TableCell>}
