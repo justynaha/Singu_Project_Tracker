@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Search, ChevronLeft, ChevronRight, ChevronDown, Plus, Pencil, X, Trash2, Paperclip, ChevronsUpDown, Check, Download, Columns3 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ChevronDown, Plus, Pencil, X, Trash2, Paperclip, ChevronsUpDown, Check, Download, Columns3, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -605,19 +605,39 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
             </div>
           )}
 
-          <div className="flex items-center gap-4 mb-4 mt-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search contracts..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              />
-            </div>
-          </div>
+          {(() => {
+            const appliedCount =
+              (filterSiteGroups.length > 0 ? 1 : 0) +
+              (filterCountry ? 1 : 0) +
+              (filterSite ? 1 : 0) +
+              (filterBudgetLine ? 1 : 0) +
+              (filterStatus ? 1 : 0) +
+              (filterFiscalYear ? 1 : 0) +
+              (filterBudgetType ? 1 : 0) +
+              (filterBudgetClassification ? 1 : 0);
+            return (
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search contracts..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  />
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setShowFilters(v => !v)} className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                  {appliedCount > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5">{appliedCount}</Badge>}
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", showFilters && "rotate-180")} />
+                </Button>
+              </div>
+            );
+          })()}
 
-          <div className="mb-4">
+          {showFilters && (
+          <div className="mb-3">
               <div className="space-y-4">
               <div className="flex items-end gap-3 flex-wrap">
                   <div className="min-w-[120px]">
@@ -706,9 +726,12 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     <Search className="h-4 w-4 mr-2" />Search
                   </Button>
                 </div>
+              </div>
+          </div>
+          )}
 
-                {hasAppliedFilters && (
-                  <div className="flex items-center gap-2 flex-wrap">
+          {hasAppliedFilters && (
+                  <div className="flex items-center gap-2 flex-wrap mb-3">
                     {filterSiteGroups.length > 0 && (
                       <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">
                         Site group: {filterSiteGroups.join(", ")}
@@ -760,8 +783,6 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                     <button className="text-sm text-primary hover:underline font-medium" onClick={clearFilters}>Clear</button>
                   </div>
                 )}
-              </div>
-          </div>
 
           <div className="flex items-center justify-end gap-2 mb-3 pr-4">
             <Popover>
