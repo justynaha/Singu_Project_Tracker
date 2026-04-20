@@ -63,31 +63,13 @@ const MOCK_IMPORTED_PROJECTS = [
   { name: "Automated Gate Access System", site: "Lyon", budget_line: "Building upgrading works", total_budget: 350000, owner: "Marc Lefevre", budget_type: "Ad Hoc", budget_classification: "Speculative" },
   { name: "Cross-Dock Area Expansion", site: "Tilburg", budget_line: "Asset Enhancement Initiatives", total_budget: 1250000, owner: "Jeroen van Dijk", budget_type: "IC", budget_classification: "Mandatory" },
   { name: "EV Charging Station Network", site: "Schiphol", budget_line: "Sustainability", total_budget: 680000, owner: "Sophie de Vries", budget_type: "IC", budget_classification: "Mandatory" },
-].map((p, i) => ({
-  id: `mock-${i + 1}`,
-  name: p.name,
-  description: `Owner: ${p.owner}`,
-  status: "Open",
-  start_date: null as string | null,
-  end_date: null as string | null,
-  total_budget: p.total_budget,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  site: p.site,
-  building: null as string | null,
-  tenant: null as string | null,
-  budget_line: p.budget_line,
-  fiscal_year: "2025/2026",
-  currency: "EUR",
-  budget_type: p.budget_type,
-  budget_classification: p.budget_classification,
-}));
+];
 
 export default function Projects() {
   const navigate = useNavigate();
-  const { projects: dbProjects, loading, createProject } = useProjects();
+  const { projects: dbProjects, loading, createProject, fetchProjects } = useProjects();
   const [hasImported, setHasImported] = useState(false);
-  const projects = hasImported ? MOCK_IMPORTED_PROJECTS : dbProjects;
+  const projects = dbProjects;
   const [showFilters, setShowFilters] = useState(false);
   const [showNewProject, setShowNewProject] = useState(false);
   const [showImportXLS, setShowImportXLS] = useState(false);
@@ -601,7 +583,7 @@ export default function Projects() {
         </div>
 
         {/* Table */}
-        {!hasImported ? (
+        {dbProjects.length === 0 && !hasImported ? (
           <div className="border border-border rounded-lg bg-card flex flex-col items-center justify-center py-24 px-6 text-center">
             <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <FolderOpen className="h-8 w-8 text-muted-foreground" />
@@ -1214,7 +1196,39 @@ export default function Projects() {
             <Button variant="outline" onClick={() => { setShowImportXLS(false); setImportFileAttached(false); }}>Cancel</Button>
             <Button
               disabled={!importFileAttached}
-              onClick={() => {
+              onClick={async () => {
+                const rows = MOCK_IMPORTED_PROJECTS.map((p) => ({
+                  name: p.name,
+                  description: `Owner: Anna Snow`,
+                  status: "Open",
+                  site: p.site,
+                  budget_line: p.budget_line,
+                  total_budget: p.total_budget,
+                  currency: "EUR",
+                  fiscal_year: "2025/2026",
+                  budget_type: p.budget_type,
+                  budget_classification: p.budget_classification,
+                }));
+                const { data: inserted, error } = await supabase
+                  .from("projects")
+                  .insert(rows)
+                  .select();
+                if (error || !inserted) {
+                  toast.error("Failed to import projects: " + (error?.message || "unknown error"));
+                  return;
+                }
+                const milestones = inserted.flatMap((proj) =>
+                  DEFAULT_MILESTONES.map((name, index) => ({
+                    project_id: proj.id,
+                    name,
+                    type: "milestone",
+                    status: "not-started",
+                    sort_order: index,
+                    include_in_cashflow: true,
+                  }))
+                );
+                await supabase.from("timeline_items").insert(milestones);
+                await fetchProjects();
                 setHasImported(true);
                 setShowImportXLS(false);
                 setImportFileAttached(false);
