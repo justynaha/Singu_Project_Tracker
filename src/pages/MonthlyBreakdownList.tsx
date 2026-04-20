@@ -795,7 +795,6 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     )}
                   </TableBody>
                 </Table>
-              </div>
             </div>
 
           </>
