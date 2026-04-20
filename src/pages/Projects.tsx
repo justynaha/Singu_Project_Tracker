@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info } from "lucide-react";
+import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info, FolderOpen, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
 
 import { useProjectTypes } from "@/hooks/useProjectTypes";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -62,6 +63,8 @@ export default function Projects() {
   const [showNewProject, setShowNewProject] = useState(false);
   const [showImportXLS, setShowImportXLS] = useState(false);
   const [showExcelPreview, setShowExcelPreview] = useState(false);
+  const [importFileAttached, setImportFileAttached] = useState(false);
+  const [hasImported, setHasImported] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
@@ -570,6 +573,17 @@ export default function Projects() {
         </div>
 
         {/* Table */}
+        {!hasImported ? (
+          <div className="border border-border rounded-lg bg-card flex flex-col items-center justify-center py-24 px-6 text-center">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <FolderOpen className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+            <p className="text-sm text-muted-foreground max-w-md">
+              Import projects from XLS or add your first project to get started.
+            </p>
+          </div>
+        ) : (
         <div className="border border-border rounded-lg overflow-hidden bg-card">
           {/* Pagination and actions */}
           <div className="flex items-center justify-between p-4 border-b border-border">
@@ -836,6 +850,7 @@ export default function Projects() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* New Project Dialog */}
@@ -1130,7 +1145,7 @@ export default function Projects() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showImportXLS} onOpenChange={setShowImportXLS}>
+      <Dialog open={showImportXLS} onOpenChange={(open) => { setShowImportXLS(open); if (!open) setImportFileAttached(false); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Import from XLS</DialogTitle>
@@ -1151,14 +1166,41 @@ export default function Projects() {
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs text-muted-foreground shrink-0">3</div>
               <div className="flex-1 space-y-2">
                 <p className="text-sm font-medium">Choose an Excel file on your computer and upload it below</p>
-                <label className="flex items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/30 px-4 py-4 text-sm cursor-pointer hover:bg-muted/50 transition-colors">
-                  <span className="text-muted-foreground">Drag &amp; drop files here or</span>
-                  <span className="text-primary font-medium">Browse files</span>
-                  <input type="file" accept=".xls,.xlsx" className="hidden" />
-                </label>
+                {importFileAttached ? (
+                  <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+                    <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-medium">projects-template.xlsx</p>
+                      <p className="text-xs text-muted-foreground">28 KB</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImportFileAttached(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/30 px-4 py-4 text-sm cursor-pointer hover:bg-muted/50 transition-colors">
+                    <span className="text-muted-foreground">Drag &amp; drop files here or</span>
+                    <span className="text-primary font-medium">Browse files</span>
+                    <input type="file" accept=".xls,.xlsx" className="hidden" onChange={() => setImportFileAttached(true)} />
+                  </label>
+                )}
               </div>
             </div>
           </div>
+          <DialogFooter className="flex sm:justify-between">
+            <Button variant="outline" onClick={() => { setShowImportXLS(false); setImportFileAttached(false); }}>Cancel</Button>
+            <Button
+              disabled={!importFileAttached}
+              onClick={() => {
+                setHasImported(true);
+                setShowImportXLS(false);
+                setImportFileAttached(false);
+                toast.success("6 projects imported successfully");
+              }}
+            >
+              Import
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1166,7 +1208,7 @@ export default function Projects() {
         <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col gap-0">
           <div className="flex items-center justify-between px-4 py-2 bg-zinc-100 border-b border-zinc-300">
             <span className="text-sm font-medium text-zinc-800">projects_import_template.xlsx</span>
-            <Button variant="ghost" size="sm" onClick={() => setShowExcelPreview(false)}>
+            <Button variant="ghost" size="sm" onClick={() => { setShowExcelPreview(false); setImportFileAttached(true); setShowImportXLS(true); }}>
               <X className="h-4 w-4 mr-1" /> Close
             </Button>
           </div>
@@ -1185,12 +1227,12 @@ export default function Projects() {
                 { label: "Budget classification", red: false },
               ];
               const sampleRows = [
-                ["Test 1", "", "Bedzin", "ESG", "2026", "100000", "EUR", "", "IC", "Mandatory"],
-                ["Test 1", "", "Bedzin", "ELECTRICAL SYSTEMS", "2026", "100000", "EUR", "", "IC", "Mandatory"],
-                ["Roof Solar Panel Installation", "", "Marseille", "Sustainability", "2025/2026", "890000", "EUR", "", "IC", "Mandatory"],
-                ["Automated Gate Access System", "", "Lyon", "Building upgrading works", "2025/2026", "350000", "EUR", "", "Ad Hoc", "Speculative"],
-                ["Cross-Dock Area Expansion", "", "Tilburg", "Asset Enhancement Initiatives", "2025/2026", "1250000", "EUR", "", "IC", "Mandatory"],
-                ["EV Charging Station Network", "", "Schiphol", "Sustainability", "2025/2026", "680000", "EUR", "", "IC", "Mandatory"],
+                ["LED Lighting Retrofit", "", "Bedzin", "ESG", "2025/2026", "100000", "EUR", "Anna Kowalska", "IC", "Mandatory"],
+                ["Main Switchgear Replacement", "", "Bedzin", "ELECTRICAL SYSTEMS", "2025/2026", "100000", "EUR", "Piotr Nowak", "IC", "Mandatory"],
+                ["Roof Solar Panel Installation", "", "Marseille", "Sustainability", "2025/2026", "890000", "EUR", "Claire Dubois", "IC", "Mandatory"],
+                ["Automated Gate Access System", "", "Lyon", "Building upgrading works", "2025/2026", "350000", "EUR", "Marc Lefevre", "Ad Hoc", "Speculative"],
+                ["Cross-Dock Area Expansion", "", "Tilburg", "Asset Enhancement Initiatives", "2025/2026", "1250000", "EUR", "Jeroen van Dijk", "IC", "Mandatory"],
+                ["EV Charging Station Network", "", "Schiphol", "Sustainability", "2025/2026", "680000", "EUR", "Sophie de Vries", "IC", "Mandatory"],
               ];
               const colLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
               const totalRows = 34;
