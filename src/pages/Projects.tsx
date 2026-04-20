@@ -850,6 +850,7 @@ export default function Projects() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* New Project Dialog */}
