@@ -1196,7 +1196,39 @@ export default function Projects() {
             <Button variant="outline" onClick={() => { setShowImportXLS(false); setImportFileAttached(false); }}>Cancel</Button>
             <Button
               disabled={!importFileAttached}
-              onClick={() => {
+              onClick={async () => {
+                const rows = MOCK_IMPORTED_PROJECTS.map((p) => ({
+                  name: p.name,
+                  description: `Owner: Anna Snow`,
+                  status: "Open",
+                  site: p.site,
+                  budget_line: p.budget_line,
+                  total_budget: p.total_budget,
+                  currency: "EUR",
+                  fiscal_year: "2025/2026",
+                  budget_type: p.budget_type,
+                  budget_classification: p.budget_classification,
+                }));
+                const { data: inserted, error } = await supabase
+                  .from("projects")
+                  .insert(rows)
+                  .select();
+                if (error || !inserted) {
+                  toast.error("Failed to import projects: " + (error?.message || "unknown error"));
+                  return;
+                }
+                const milestones = inserted.flatMap((proj) =>
+                  DEFAULT_MILESTONES.map((name, index) => ({
+                    project_id: proj.id,
+                    name,
+                    type: "milestone",
+                    status: "not-started",
+                    sort_order: index,
+                    include_in_cashflow: true,
+                  }))
+                );
+                await supabase.from("timeline_items").insert(milestones);
+                await fetchProjects();
                 setHasImported(true);
                 setShowImportXLS(false);
                 setImportFileAttached(false);
