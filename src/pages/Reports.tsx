@@ -4,9 +4,11 @@ import ContractsList from "./ContractsList";
 import MonthlyBreakdownList from "./MonthlyBreakdownList";
 import SummaryReport from "./SummaryReport";
 import AcgReport from "./AcgReport";
+import MandatoryVsSpeculativeReport from "./MandatoryVsSpeculativeReport";
 
 const tabs = [
   { id: "summary", label: "Summary" },
+  { id: "mandatory-speculative", label: "Mandatory v Speculative" },
   { id: "acg", label: "ACG" },
   { id: "monthly-breakdown", label: "CAPEX Tracker" },
   { id: "contracts", label: "Contract Tracker" },
@@ -45,6 +47,7 @@ export default function Reports() {
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto">
             {activeTab === "summary" && <SummaryReport />}
+            {activeTab === "mandatory-speculative" && <MandatoryVsSpeculativeReport />}
             {activeTab === "acg" && <AcgReport />}
             {activeTab === "contracts" && <ContractsList embedded />}
             {activeTab === "monthly-breakdown" && <MonthlyBreakdownList embedded />}
