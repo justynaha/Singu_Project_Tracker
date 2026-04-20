@@ -51,7 +51,7 @@ const navigationItems: NavItem[] = [{
   icon: Building2,
   path: "/buildings",
   submenu: [{
-    title: "Sites",
+    title: "Properties",
     icon: MapPin,
     path: "/buildings/sites"
   }, {

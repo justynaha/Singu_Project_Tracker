@@ -412,7 +412,7 @@ export default function Projects() {
             <div className="p-4 border border-border rounded-lg bg-card space-y-4">
               <div className="flex items-end gap-4">
                 <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-2 block">Site group</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Property group</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-between text-sm font-normal">
@@ -451,13 +451,13 @@ export default function Projects() {
                   </Select>
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-2 block">Site</Label>
+                  <Label className="text-xs text-muted-foreground mb-2 block">Property</Label>
                   <Select value={pendingSite || "all"} onValueChange={(val) => setPendingSite(val === "all" ? "" : val)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="All sites" />
+                      <SelectValue placeholder="All properties" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All sites</SelectItem>
+                      <SelectItem value="all">All properties</SelectItem>
                       {filterOptions.sites.map((site) => (
                         <SelectItem key={site} value={site}>{site}</SelectItem>
                       ))}
@@ -664,7 +664,7 @@ export default function Projects() {
               <tr>
                 <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-36">Site</th>
+                <th className="text-left py-2 px-4 text-sm font-medium w-36">Property</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-36">Owner</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>
                 <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>
@@ -891,11 +891,11 @@ export default function Projects() {
 
             <div>
               <Label htmlFor="site">
-                Site<span className="text-destructive">*</span>
+                Property<span className="text-destructive">*</span>
               </Label>
               <Select value={formData.site} onValueChange={(val) => setFormData({ ...formData, site: val })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose site" />
+                  <SelectValue placeholder="Choose property" />
                 </SelectTrigger>
                 <SelectContent>
                   {filterOptions.sites.map((site) => (
@@ -1254,7 +1254,7 @@ export default function Projects() {
               const headers = [
                 { label: "Name", red: true },
                 { label: "Description", red: false },
-                { label: "Site", red: true },
+                { label: "Property", red: true },
                 { label: "Work category", red: false },
                 { label: "Fiscal year", red: false },
                 { label: "Budget", red: false },

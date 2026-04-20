@@ -18,7 +18,7 @@ const SitesList = () => {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">Sites</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Properties</h1>
         <div className="flex gap-2">
           <Button variant="default" size="sm">+ Add</Button>
           <Button variant="outline" size="sm">Import template</Button>

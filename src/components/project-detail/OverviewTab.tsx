@@ -76,7 +76,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
       <DetailRow label="Name" value={project.name} />
       <DetailRow label="Work description" value={project.work_description} />
       <div className="flex py-4 border-b border-border">
-        <div className="w-48 text-sm font-semibold text-foreground shrink-0">Site</div>
+          <div className="w-48 text-sm font-semibold text-foreground shrink-0">Property</div>
         <div className="text-sm">
           {matchedSite ? (
             <span

@@ -165,7 +165,7 @@ export default function Dashboard() {
         </div>
 
         <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">Site group</Label>
+          <Label className="text-xs text-muted-foreground mb-1 block">Property group</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-[180px] justify-between text-sm font-normal">
@@ -202,11 +202,11 @@ export default function Dashboard() {
         </div>
 
         <div>
-          <Label className="text-xs text-muted-foreground mb-1 block">Site</Label>
+          <Label className="text-xs text-muted-foreground mb-1 block">Property</Label>
           <Select value={filters.site || "all"} onValueChange={val => updateFilter("site", val === "all" ? "" : val)}>
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="All" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Sites</SelectItem>
+              <SelectItem value="all">All Properties</SelectItem>
               {filterOptions.sites.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -232,7 +232,7 @@ export default function Dashboard() {
       </div>
 
       {hasFilters && <div className="flex flex-wrap gap-2 mb-4">
-          {filters.siteGroups.length > 0 && <Badge variant="secondary">Site group: {filters.siteGroups.join(", ")}</Badge>}
+          {filters.siteGroups.length > 0 && <Badge variant="secondary">Property group: {filters.siteGroups.join(", ")}</Badge>}
           {filters.country && <Badge variant="secondary">Country: {filters.country}</Badge>}
           {filters.site && <Badge variant="secondary">Site: {filters.site}</Badge>}
         </div>}
@@ -400,8 +400,8 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>CAPEX by {filters.site ? "Project" : filters.country ? "Site" : "Country"}</CardTitle>
-                <CardDescription>Total budget by {filters.site ? "project" : filters.country ? "site" : "country"}{effectiveBaselineYear && !filters.site && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
+                <CardTitle>CAPEX by {filters.site ? "Project" : filters.country ? "Property" : "Country"}</CardTitle>
+                <CardDescription>Total budget by {filters.site ? "project" : filters.country ? "property" : "country"}{effectiveBaselineYear && !filters.site && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}</CardDescription>
               </div>
               {effectiveBaselineYear && !filters.site && <Button variant="ghost" size="sm" onClick={() => toggleSeries('baselineCapex')} className="text-xs gap-1.5 px-0 h-auto py-1 text-muted-foreground hover:text-foreground">
                   {visibleSeries.baselineCapex ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
@@ -508,9 +508,9 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>CAPEX per m² by {filters.site ? "Project" : filters.country ? "Site" : "Country"}</CardTitle>
+                <CardTitle>CAPEX per m² by {filters.site ? "Project" : filters.country ? "Property" : "Country"}</CardTitle>
                 <CardDescription>
-                  {filters.site ? "Cost efficiency by project" : filters.country ? "Cost efficiency by site" : "Average cost efficiency by country"}
+                  {filters.site ? "Cost efficiency by project" : filters.country ? "Cost efficiency by property" : "Average cost efficiency by country"}
                   <Badge variant="outline" className="ml-2 text-xs">Gross Floor Area</Badge>
                   {effectiveBaselineYear && !filters.site && <span className="ml-1 text-xs">• vs FY{effectiveBaselineYear}</span>}
                 </CardDescription>
