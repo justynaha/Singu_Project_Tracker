@@ -701,14 +701,14 @@ export default function Projects() {
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-36">Property</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-36">Owner</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>
-                <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Work category</th>
+                {visibleColumns.no && <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>}
+                {visibleColumns.title && <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>}
+                {visibleColumns.property && <th className="text-left py-2 px-4 text-sm font-medium w-36">Property</th>}
+                {visibleColumns.owner && <th className="text-left py-2 px-4 text-sm font-medium w-36">Owner</th>}
+                {visibleColumns.milestones && <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>}
+                {visibleColumns.progress && <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>}
+                {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
+                {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Work category</th>}
               </tr>
             </thead>
             <tbody>
