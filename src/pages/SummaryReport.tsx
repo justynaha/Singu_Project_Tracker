@@ -229,8 +229,8 @@ export default function SummaryReport() {
             <table className="w-full text-sm border-collapse min-w-[1500px]">
               <thead className="sticky top-0 z-10 bg-muted">
                 <tr className="border-b border-border">
-                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border">Property</th>
-                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle border-r border-border">Country</th>
+                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border min-w-[220px]">Property</th>
+                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]">Country</th>
                   <th colSpan={2} className="text-center font-semibold px-4 h-10 border-r border-border">Budget</th>
                   <th colSpan={3} className={`text-center font-semibold px-4 h-10 border-r border-border ${curHeadCls}`}>Current</th>
                   <th colSpan={3} className="text-center font-semibold px-4 h-10 border-r border-border">Previous Month</th>
@@ -256,10 +256,10 @@ export default function SummaryReport() {
                   const vOngoing = r.curOngoing - r.prevOngoing;
                   const vPlanned = r.curPlanned3M - r.prevPlanned3M;
                   return (
-                    <tr key={r.site} className="border-b border-border hover:bg-muted/30">
-                      <td className="px-4 h-10 sticky left-0 bg-background border-r border-border">{r.site}</td>
-                      <td className="px-4 h-10 border-r border-border">{r.country}</td>
-                      <td className="px-4 h-10 text-right tabular-nums">
+                   <tr key={r.site} className="border-b border-border hover:bg-muted/30 group">
+                      <td className="px-4 h-10 sticky left-0 bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[220px]">{r.site}</td>
+                      <td className="px-4 h-10 sticky left-[220px] bg-background group-hover:bg-muted/30 border-r border-border whitespace-nowrap min-w-[120px]">{r.country}</td>
+                      <td className="px-4 h-10 text-right tabular-nums whitespace-nowrap">
                         {r.budgetMixed ? "Mixed" : `${fmt(r.budgetLC)} ${r.budgetCurrency}`}
                       </td>
                       <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.budgetEUR)}</td>
@@ -275,10 +275,10 @@ export default function SummaryReport() {
                     </tr>
                   );
                 })}
-                <tr className="bg-muted/70 font-bold border-t-2 border-border sticky bottom-0">
-                  <td className="px-4 h-10 sticky left-0 bg-muted/70 border-r border-border uppercase">MUSEL Total</td>
-                  <td className="px-4 h-10 border-r border-border"></td>
-                  <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
+                <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-0 z-10">
+                  <td className="px-4 h-10 sticky left-0 bg-muted z-20 border-r border-border uppercase whitespace-nowrap min-w-[220px]">Total</td>
+                  <td className="px-4 h-10 sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]"></td>
+                  <td className="px-4 h-10 text-right tabular-nums text-muted-foreground whitespace-nowrap">—</td>
                   <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(grandTotal.budgetEUR)}</td>
                   <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curCompleted)}</td>
                   <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curOngoing)}</td>
