@@ -1355,7 +1355,8 @@ export default function TimelineV2Tab({
               visibleColumns={visibleColumns}
             />
 
-            {/* Total row */}
+            {/* Total row - only when finance columns are visible */}
+            {visibleColumns.some((colId) => ["forecasted", "contracted", "invoiced", "remaining"].includes(colId)) && (
             <tr className="bg-muted/50 font-semibold border-t-2 border-border">
               <td className={cn("py-3 px-4", cellBorder)}></td>
               {visibleColumns.map((colId) => (
@@ -1395,6 +1396,7 @@ export default function TimelineV2Tab({
                 </td>
               ))}
             </tr>
+            )}
           </tbody>
         </table>
       </div>
