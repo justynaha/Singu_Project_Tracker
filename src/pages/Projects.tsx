@@ -359,10 +359,15 @@ export default function Projects() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Projects</h1>
-          <Button onClick={() => setShowNewProject(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add project
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" className="text-primary hover:text-primary" onClick={() => setShowImportXLS(true)}>
+              Import from XLS
+            </Button>
+            <Button onClick={() => setShowNewProject(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add project
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
