@@ -2,15 +2,19 @@ import { useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import ContractsList from "./ContractsList";
 import MonthlyBreakdownList from "./MonthlyBreakdownList";
+import SummaryReport from "./SummaryReport";
+import AcgReport from "./AcgReport";
 
 const tabs = [
+  { id: "summary", label: "Summary" },
+  { id: "acg", label: "ACG" },
   { id: "monthly-breakdown", label: "CAPEX Tracker" },
   { id: "contracts", label: "Contract Tracker" },
 ];
 
 export default function Reports() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "monthly-breakdown";
+  const activeTab = searchParams.get("tab") || "summary";
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
@@ -40,6 +44,8 @@ export default function Reports() {
             ))}
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto">
+            {activeTab === "summary" && <SummaryReport />}
+            {activeTab === "acg" && <AcgReport />}
             {activeTab === "contracts" && <ContractsList embedded />}
             {activeTab === "monthly-breakdown" && <MonthlyBreakdownList embedded />}
           </div>
