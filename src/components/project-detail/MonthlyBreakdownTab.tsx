@@ -237,7 +237,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
       </div>
 
       {/* Export */}
-      <div className="px-4 md:px-6 pb-3 flex-shrink-0 flex justify-end">
+      <div className="pb-3 flex-shrink-0 flex justify-end">
         <Button variant="ghost" size="sm" onClick={handleExport}>
           <Download className="mr-1 h-4 w-4" />
           Export
@@ -245,7 +245,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
       </div>
 
       {/* Table */}
-      <div className="flex-1 min-h-0 border-t border-border overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 rounded-lg border border-border overflow-hidden flex flex-col">
         <div className="flex-1 overflow-auto">
           <table className="w-full text-sm border-collapse min-w-[900px]">
             <thead>
