@@ -251,60 +251,28 @@ export default function SummaryReport() {
                 </tr>
               </thead>
               <tbody>
-                {groupedRows.map((g) => {
-                  const collapsed = collapsedGroups.has(g.group);
+                {propertyRows.map((r) => {
+                  const vCompleted = r.curCompleted - r.prevCompleted;
+                  const vOngoing = r.curOngoing - r.prevOngoing;
+                  const vPlanned = r.curPlanned3M - r.prevPlanned3M;
                   return (
-                    <>
-                      <tr key={`g-${g.group}`} className="bg-muted/60 border-b border-border cursor-pointer hover:bg-muted" onClick={() => toggleGroup(g.group)}>
-                        <td colSpan={13} className="px-4 h-10 font-semibold sticky left-0">
-                          <div className="flex items-center gap-2">
-                            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                            {g.label} ({g.rows.length} {g.rows.length === 1 ? "property" : "properties"})
-                          </div>
-                        </td>
-                      </tr>
-                      {!collapsed && g.rows.map((r) => {
-                        const vCompleted = r.curCompleted - r.prevCompleted;
-                        const vOngoing = r.curOngoing - r.prevOngoing;
-                        const vPlanned = r.curPlanned3M - r.prevPlanned3M;
-                        return (
-                          <tr key={r.site} className="border-b border-border hover:bg-muted/30">
-                            <td className="px-4 h-10 sticky left-0 bg-background border-r border-border">{r.site}</td>
-                            <td className="px-4 h-10 border-r border-border">{r.country}</td>
-                            <td className="px-4 h-10 text-right tabular-nums">
-                              {r.budgetMixed ? "Mixed" : `${fmt(r.budgetLC)} ${r.budgetCurrency}`}
-                            </td>
-                            <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.budgetEUR)}</td>
-                            <td className={`px-4 h-10 text-right tabular-nums ${curCellCls}`}>{fmt(r.curCompleted)}</td>
-                            <td className={`px-4 h-10 text-right tabular-nums ${curCellCls}`}>{fmt(r.curOngoing)}</td>
-                            <td className={`px-4 h-10 text-right tabular-nums border-r border-border ${curCellCls}`}>{fmt(r.curPlanned3M)}</td>
-                            <td className="px-4 h-10 text-right tabular-nums">{fmt(r.prevCompleted)}</td>
-                            <td className="px-4 h-10 text-right tabular-nums">{fmt(r.prevOngoing)}</td>
-                            <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.prevPlanned3M)}</td>
-                            <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vCompleted)}</td>
-                            <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vOngoing)}</td>
-                            <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vPlanned)}</td>
-                          </tr>
-                        );
-                      })}
-                      {!collapsed && (
-                        <tr key={`s-${g.group}`} className="bg-muted/30 border-b border-border font-medium">
-                          <td className="px-4 h-10 sticky left-0 bg-muted/30 border-r border-border">Subtotal — {g.label}</td>
-                          <td className="px-4 h-10 border-r border-border"></td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(g.subtotal.budgetEUR)}</td>
-                          <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(g.subtotal.curCompleted)}</td>
-                          <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(g.subtotal.curOngoing)}</td>
-                          <td className={`px-4 h-10 text-right tabular-nums border-r border-border ${curSubCls}`}>{fmt(g.subtotal.curPlanned3M)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(g.subtotal.prevCompleted)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(g.subtotal.prevOngoing)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(g.subtotal.prevPlanned3M)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(g.subtotal.curCompleted - g.subtotal.prevCompleted)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(g.subtotal.curOngoing - g.subtotal.prevOngoing)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(g.subtotal.curPlanned3M - g.subtotal.prevPlanned3M)}</td>
-                        </tr>
-                      )}
-                    </>
+                    <tr key={r.site} className="border-b border-border hover:bg-muted/30">
+                      <td className="px-4 h-10 sticky left-0 bg-background border-r border-border">{r.site}</td>
+                      <td className="px-4 h-10 border-r border-border">{r.country}</td>
+                      <td className="px-4 h-10 text-right tabular-nums">
+                        {r.budgetMixed ? "Mixed" : `${fmt(r.budgetLC)} ${r.budgetCurrency}`}
+                      </td>
+                      <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.budgetEUR)}</td>
+                      <td className={`px-4 h-10 text-right tabular-nums ${curCellCls}`}>{fmt(r.curCompleted)}</td>
+                      <td className={`px-4 h-10 text-right tabular-nums ${curCellCls}`}>{fmt(r.curOngoing)}</td>
+                      <td className={`px-4 h-10 text-right tabular-nums border-r border-border ${curCellCls}`}>{fmt(r.curPlanned3M)}</td>
+                      <td className="px-4 h-10 text-right tabular-nums">{fmt(r.prevCompleted)}</td>
+                      <td className="px-4 h-10 text-right tabular-nums">{fmt(r.prevOngoing)}</td>
+                      <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.prevPlanned3M)}</td>
+                      <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vCompleted)}</td>
+                      <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vOngoing)}</td>
+                      <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vPlanned)}</td>
+                    </tr>
                   );
                 })}
                 <tr className="bg-muted/70 font-bold border-t-2 border-border sticky bottom-0">
