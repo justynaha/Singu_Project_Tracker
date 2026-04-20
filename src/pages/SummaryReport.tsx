@@ -212,7 +212,7 @@ export default function SummaryReport() {
   return (
     <div className="p-4 md:p-6 flex flex-col h-full">
       <div className="pb-3 flex-shrink-0 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Summary</h2>
+        <h2 className="text-xl font-semibold">CAPEX Budget Breakdown</h2>
         <Button variant="outline" size="sm">
           <Download className="h-4 w-4 mr-2" />
           Export
