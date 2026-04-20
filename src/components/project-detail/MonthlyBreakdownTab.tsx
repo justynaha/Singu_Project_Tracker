@@ -196,9 +196,9 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="p-4 md:p-6 flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 md:px-6 pt-4 md:pt-6 pb-3 flex-shrink-0 flex flex-wrap items-center justify-between gap-4">
+      <div className="pb-3 flex-shrink-0 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-foreground">Monthly Breakdown</h2>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
