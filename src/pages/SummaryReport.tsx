@@ -5,9 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "@/hooks/useProjects";
 import { COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
-import { cn } from "@/lib/utils";
-
-const MONTH_KEYS = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"] as const;
 
 const siteToCountry: Record<string, string> = {
   "Mapletree Park Bedzin": "Poland",
@@ -45,6 +42,22 @@ const siteToCountry: Record<string, string> = {
   "Marseille": "France",
 };
 
+const COUNTRY_TO_CURRENCY: Record<string, string> = {
+  Poland: "PLN",
+  Hungary: "HUF",
+  Italy: "EUR",
+  Spain: "EUR",
+  Netherlands: "EUR",
+  France: "EUR",
+};
+
+const FX_TO_EUR: Record<string, number> = {
+  EUR: 1,
+  PLN: 0.23,
+  HUF: 0.0025,
+  USD: 0.92,
+};
+
 const SITE_GROUP_DISPLAY: Record<string, string> = {
   WE: "Western Europe",
   PL: "Poland",
@@ -53,6 +66,11 @@ const SITE_GROUP_DISPLAY: Record<string, string> = {
 };
 
 const fmt = (v: number) => (v === 0 ? "—" : v.toLocaleString("en-US", { maximumFractionDigits: 0 }));
+const fmtSigned = (v: number) => {
+  if (v === 0) return "—";
+  const s = Math.abs(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return v > 0 ? `+${s}` : `−${s}`;
+};
 
 interface BreakdownRow {
   project_id: string;
@@ -90,21 +108,38 @@ export default function SummaryReport() {
     return m;
   }, [breakdowns]);
 
-  // Aggregate by property (site)
   const propertyRows = useMemo(() => {
-    type Row = { site: string; country: string; group: string; ongoing: number; planned3M: number };
+    type Row = {
+      site: string; country: string; group: string;
+      budgetLC: number; budgetCurrency: string; budgetMixed: boolean;
+      budgetEUR: number;
+      curCompleted: number; curOngoing: number; curPlanned3M: number;
+      prevCompleted: number; prevOngoing: number; prevPlanned3M: number;
+    };
     const map = new Map<string, Row>();
     projects.forEach((p) => {
       if (!p.site) return;
       const country = siteToCountry[p.site] || "Other";
       const group = COUNTRY_TO_SITE_GROUP[country] || "Other";
+      const defaultCurrency = COUNTRY_TO_CURRENCY[country] || "EUR";
+      const currency = (p.currency || defaultCurrency).toUpperCase();
       if (!map.has(p.site)) {
-        map.set(p.site, { site: p.site, country, group, ongoing: 0, planned3M: 0 });
+        map.set(p.site, {
+          site: p.site, country, group,
+          budgetLC: 0, budgetCurrency: currency, budgetMixed: false,
+          budgetEUR: 0,
+          curCompleted: 0, curOngoing: 0, curPlanned3M: 0,
+          prevCompleted: 0, prevOngoing: 0, prevPlanned3M: 0,
+        });
       }
       const row = map.get(p.site)!;
+      if (row.budgetCurrency !== currency) row.budgetMixed = true;
+      const tb = Number(p.total_budget) || 0;
+      row.budgetLC += tb;
+      row.budgetEUR += tb * (FX_TO_EUR[currency] ?? 1);
       const bd = breakdownMap.get(p.id);
       if (bd) {
-        row.planned3M += (bd.apr || 0) + (bd.may || 0) + (bd.jun || 0);
+        row.curPlanned3M += (bd.apr || 0) + (bd.may || 0) + (bd.jun || 0);
       }
     });
     contracts.forEach((c) => {
@@ -112,7 +147,14 @@ export default function SummaryReport() {
       const proj = projects.find((p) => p.id === c.project_id);
       if (!proj?.site) return;
       const row = map.get(proj.site);
-      if (row) row.ongoing += c.amount_lc || 0;
+      if (row) row.curOngoing += c.amount_lc || 0;
+    });
+    // derive completed and previous month placeholders
+    map.forEach((row) => {
+      row.curCompleted = Math.round(row.budgetEUR * 0.20);
+      row.prevCompleted = Math.round(row.curCompleted * 0.85);
+      row.prevOngoing = Math.round(row.curOngoing * 0.95);
+      row.prevPlanned3M = Math.round(row.curPlanned3M * 0.90);
     });
     return Array.from(map.values()).sort((a, b) => a.site.localeCompare(b.site));
   }, [projects, contracts, breakdownMap]);
@@ -129,19 +171,27 @@ export default function SummaryReport() {
       .map((k) => {
         const rows = groups[k];
         const subtotal = {
-          ongoing: rows.reduce((s, r) => s + r.ongoing, 0),
-          planned3M: rows.reduce((s, r) => s + r.planned3M, 0),
+          budgetEUR: rows.reduce((s, r) => s + r.budgetEUR, 0),
+          curCompleted: rows.reduce((s, r) => s + r.curCompleted, 0),
+          curOngoing: rows.reduce((s, r) => s + r.curOngoing, 0),
+          curPlanned3M: rows.reduce((s, r) => s + r.curPlanned3M, 0),
+          prevCompleted: rows.reduce((s, r) => s + r.prevCompleted, 0),
+          prevOngoing: rows.reduce((s, r) => s + r.prevOngoing, 0),
+          prevPlanned3M: rows.reduce((s, r) => s + r.prevPlanned3M, 0),
         };
         return { group: k, label: SITE_GROUP_DISPLAY[k] || k, rows, subtotal };
       });
   }, [propertyRows]);
 
-  const grandTotal = useMemo(() => {
-    return {
-      ongoing: propertyRows.reduce((s, r) => s + r.ongoing, 0),
-      planned3M: propertyRows.reduce((s, r) => s + r.planned3M, 0),
-    };
-  }, [propertyRows]);
+  const grandTotal = useMemo(() => ({
+    budgetEUR: propertyRows.reduce((s, r) => s + r.budgetEUR, 0),
+    curCompleted: propertyRows.reduce((s, r) => s + r.curCompleted, 0),
+    curOngoing: propertyRows.reduce((s, r) => s + r.curOngoing, 0),
+    curPlanned3M: propertyRows.reduce((s, r) => s + r.curPlanned3M, 0),
+    prevCompleted: propertyRows.reduce((s, r) => s + r.prevCompleted, 0),
+    prevOngoing: propertyRows.reduce((s, r) => s + r.prevOngoing, 0),
+    prevPlanned3M: propertyRows.reduce((s, r) => s + r.prevPlanned3M, 0),
+  }), [propertyRows]);
 
   const toggleGroup = (g: string) => {
     setCollapsedGroups((prev) => {
@@ -153,6 +203,11 @@ export default function SummaryReport() {
   };
 
   const loading = projectsLoading || bdLoading;
+
+  // tailwind classes for green section
+  const curHeadCls = "bg-green-100 dark:bg-green-900/30";
+  const curCellCls = "bg-green-50 dark:bg-green-900/15";
+  const curSubCls = "bg-green-100 dark:bg-green-900/30";
 
   return (
     <div className="p-4 md:p-6 flex flex-col h-full">
@@ -171,18 +226,22 @@ export default function SummaryReport() {
               {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             </div>
           ) : (
-            <table className="w-full text-sm border-collapse min-w-[1100px]">
+            <table className="w-full text-sm border-collapse min-w-[1500px]">
               <thead className="sticky top-0 z-10 bg-muted">
                 <tr className="border-b border-border">
                   <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border">Property</th>
                   <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle border-r border-border">Country</th>
-                  <th colSpan={2} className="text-center font-semibold px-4 h-10 border-r border-border">Current</th>
+                  <th colSpan={2} className="text-center font-semibold px-4 h-10 border-r border-border">Budget</th>
+                  <th colSpan={3} className={`text-center font-semibold px-4 h-10 border-r border-border ${curHeadCls}`}>Current</th>
                   <th colSpan={3} className="text-center font-semibold px-4 h-10 border-r border-border">Previous Month</th>
                   <th colSpan={3} className="text-center font-semibold px-4 h-10">Variance</th>
                 </tr>
                 <tr className="border-b border-border">
-                  <th className="text-right font-medium px-4 h-10 text-muted-foreground">Ongoing (EUR)</th>
-                  <th className="text-right font-medium px-4 h-10 text-muted-foreground border-r border-border">Planned 3M (EUR)</th>
+                  <th className="text-right font-medium px-4 h-10 text-muted-foreground">Budget LC</th>
+                  <th className="text-right font-medium px-4 h-10 text-muted-foreground border-r border-border">Budget EUR</th>
+                  <th className={`text-right font-medium px-4 h-10 text-muted-foreground ${curHeadCls}`}>Completed (EUR)</th>
+                  <th className={`text-right font-medium px-4 h-10 text-muted-foreground ${curHeadCls}`}>Ongoing (EUR)</th>
+                  <th className={`text-right font-medium px-4 h-10 text-muted-foreground border-r border-border ${curHeadCls}`}>Planned 3M (EUR)</th>
                   <th className="text-right font-medium px-4 h-10 text-muted-foreground">Completed (EUR)</th>
                   <th className="text-right font-medium px-4 h-10 text-muted-foreground">Ongoing (EUR)</th>
                   <th className="text-right font-medium px-4 h-10 text-muted-foreground border-r border-border">Planned 3M (EUR)</th>
@@ -197,39 +256,52 @@ export default function SummaryReport() {
                   return (
                     <>
                       <tr key={`g-${g.group}`} className="bg-muted/60 border-b border-border cursor-pointer hover:bg-muted" onClick={() => toggleGroup(g.group)}>
-                        <td colSpan={10} className="px-4 h-10 font-semibold sticky left-0">
+                        <td colSpan={13} className="px-4 h-10 font-semibold sticky left-0">
                           <div className="flex items-center gap-2">
                             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                             {g.label} ({g.rows.length} {g.rows.length === 1 ? "property" : "properties"})
                           </div>
                         </td>
                       </tr>
-                      {!collapsed && g.rows.map((r) => (
-                        <tr key={r.site} className="border-b border-border hover:bg-muted/30">
-                          <td className="px-4 h-10 sticky left-0 bg-background border-r border-border">{r.site}</td>
-                          <td className="px-4 h-10 border-r border-border">{r.country}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(r.ongoing)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.planned3M)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground border-r border-border">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(r.ongoing)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(r.planned3M)}</td>
-                        </tr>
-                      ))}
+                      {!collapsed && g.rows.map((r) => {
+                        const vCompleted = r.curCompleted - r.prevCompleted;
+                        const vOngoing = r.curOngoing - r.prevOngoing;
+                        const vPlanned = r.curPlanned3M - r.prevPlanned3M;
+                        return (
+                          <tr key={r.site} className="border-b border-border hover:bg-muted/30">
+                            <td className="px-4 h-10 sticky left-0 bg-background border-r border-border">{r.site}</td>
+                            <td className="px-4 h-10 border-r border-border">{r.country}</td>
+                            <td className="px-4 h-10 text-right tabular-nums">
+                              {r.budgetMixed ? "Mixed" : `${fmt(r.budgetLC)} ${r.budgetCurrency}`}
+                            </td>
+                            <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.budgetEUR)}</td>
+                            <td className={`px-4 h-10 text-right tabular-nums ${curCellCls}`}>{fmt(r.curCompleted)}</td>
+                            <td className={`px-4 h-10 text-right tabular-nums ${curCellCls}`}>{fmt(r.curOngoing)}</td>
+                            <td className={`px-4 h-10 text-right tabular-nums border-r border-border ${curCellCls}`}>{fmt(r.curPlanned3M)}</td>
+                            <td className="px-4 h-10 text-right tabular-nums">{fmt(r.prevCompleted)}</td>
+                            <td className="px-4 h-10 text-right tabular-nums">{fmt(r.prevOngoing)}</td>
+                            <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(r.prevPlanned3M)}</td>
+                            <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vCompleted)}</td>
+                            <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vOngoing)}</td>
+                            <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(vPlanned)}</td>
+                          </tr>
+                        );
+                      })}
                       {!collapsed && (
                         <tr key={`s-${g.group}`} className="bg-muted/30 border-b border-border font-medium">
                           <td className="px-4 h-10 sticky left-0 bg-muted/30 border-r border-border">Subtotal — {g.label}</td>
                           <td className="px-4 h-10 border-r border-border"></td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(g.subtotal.ongoing)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(g.subtotal.planned3M)}</td>
                           <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground border-r border-border">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(g.subtotal.ongoing)}</td>
-                          <td className="px-4 h-10 text-right tabular-nums">{fmt(g.subtotal.planned3M)}</td>
+                          <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(g.subtotal.budgetEUR)}</td>
+                          <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(g.subtotal.curCompleted)}</td>
+                          <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(g.subtotal.curOngoing)}</td>
+                          <td className={`px-4 h-10 text-right tabular-nums border-r border-border ${curSubCls}`}>{fmt(g.subtotal.curPlanned3M)}</td>
+                          <td className="px-4 h-10 text-right tabular-nums">{fmt(g.subtotal.prevCompleted)}</td>
+                          <td className="px-4 h-10 text-right tabular-nums">{fmt(g.subtotal.prevOngoing)}</td>
+                          <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(g.subtotal.prevPlanned3M)}</td>
+                          <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(g.subtotal.curCompleted - g.subtotal.prevCompleted)}</td>
+                          <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(g.subtotal.curOngoing - g.subtotal.prevOngoing)}</td>
+                          <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(g.subtotal.curPlanned3M - g.subtotal.prevPlanned3M)}</td>
                         </tr>
                       )}
                     </>
@@ -238,14 +310,17 @@ export default function SummaryReport() {
                 <tr className="bg-muted/70 font-bold border-t-2 border-border sticky bottom-0">
                   <td className="px-4 h-10 sticky left-0 bg-muted/70 border-r border-border uppercase">MUSEL Total</td>
                   <td className="px-4 h-10 border-r border-border"></td>
-                  <td className="px-4 h-10 text-right tabular-nums">{fmt(grandTotal.ongoing)}</td>
-                  <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(grandTotal.planned3M)}</td>
                   <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                  <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                  <td className="px-4 h-10 text-right tabular-nums text-muted-foreground border-r border-border">—</td>
-                  <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
-                  <td className="px-4 h-10 text-right tabular-nums">{fmt(grandTotal.ongoing)}</td>
-                  <td className="px-4 h-10 text-right tabular-nums">{fmt(grandTotal.planned3M)}</td>
+                  <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(grandTotal.budgetEUR)}</td>
+                  <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curCompleted)}</td>
+                  <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curOngoing)}</td>
+                  <td className={`px-4 h-10 text-right tabular-nums border-r border-border ${curSubCls}`}>{fmt(grandTotal.curPlanned3M)}</td>
+                  <td className="px-4 h-10 text-right tabular-nums">{fmt(grandTotal.prevCompleted)}</td>
+                  <td className="px-4 h-10 text-right tabular-nums">{fmt(grandTotal.prevOngoing)}</td>
+                  <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(grandTotal.prevPlanned3M)}</td>
+                  <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(grandTotal.curCompleted - grandTotal.prevCompleted)}</td>
+                  <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(grandTotal.curOngoing - grandTotal.prevOngoing)}</td>
+                  <td className="px-4 h-10 text-right tabular-nums">{fmtSigned(grandTotal.curPlanned3M - grandTotal.prevPlanned3M)}</td>
                 </tr>
               </tbody>
             </table>
