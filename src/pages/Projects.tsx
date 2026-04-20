@@ -1208,7 +1208,7 @@ export default function Projects() {
         <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col gap-0">
           <div className="flex items-center justify-between px-4 py-2 bg-zinc-100 border-b border-zinc-300">
             <span className="text-sm font-medium text-zinc-800">projects_import_template.xlsx</span>
-            <Button variant="ghost" size="sm" onClick={() => setShowExcelPreview(false)}>
+            <Button variant="ghost" size="sm" onClick={() => { setShowExcelPreview(false); setImportFileAttached(true); setShowImportXLS(true); }}>
               <X className="h-4 w-4 mr-1" /> Close
             </Button>
           </div>
@@ -1227,12 +1227,12 @@ export default function Projects() {
                 { label: "Budget classification", red: false },
               ];
               const sampleRows = [
-                ["Test 1", "", "Bedzin", "ESG", "2026", "100000", "EUR", "", "IC", "Mandatory"],
-                ["Test 1", "", "Bedzin", "ELECTRICAL SYSTEMS", "2026", "100000", "EUR", "", "IC", "Mandatory"],
-                ["Roof Solar Panel Installation", "", "Marseille", "Sustainability", "2025/2026", "890000", "EUR", "", "IC", "Mandatory"],
-                ["Automated Gate Access System", "", "Lyon", "Building upgrading works", "2025/2026", "350000", "EUR", "", "Ad Hoc", "Speculative"],
-                ["Cross-Dock Area Expansion", "", "Tilburg", "Asset Enhancement Initiatives", "2025/2026", "1250000", "EUR", "", "IC", "Mandatory"],
-                ["EV Charging Station Network", "", "Schiphol", "Sustainability", "2025/2026", "680000", "EUR", "", "IC", "Mandatory"],
+                ["LED Lighting Retrofit", "", "Bedzin", "ESG", "2025/2026", "100000", "EUR", "Anna Kowalska", "IC", "Mandatory"],
+                ["Main Switchgear Replacement", "", "Bedzin", "ELECTRICAL SYSTEMS", "2025/2026", "100000", "EUR", "Piotr Nowak", "IC", "Mandatory"],
+                ["Roof Solar Panel Installation", "", "Marseille", "Sustainability", "2025/2026", "890000", "EUR", "Claire Dubois", "IC", "Mandatory"],
+                ["Automated Gate Access System", "", "Lyon", "Building upgrading works", "2025/2026", "350000", "EUR", "Marc Lefevre", "Ad Hoc", "Speculative"],
+                ["Cross-Dock Area Expansion", "", "Tilburg", "Asset Enhancement Initiatives", "2025/2026", "1250000", "EUR", "Jeroen van Dijk", "IC", "Mandatory"],
+                ["EV Charging Station Network", "", "Schiphol", "Sustainability", "2025/2026", "680000", "EUR", "Sophie de Vries", "IC", "Mandatory"],
               ];
               const colLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
               const totalRows = 34;
