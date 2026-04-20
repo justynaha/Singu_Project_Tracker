@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info, FolderOpen, FileSpreadsheet } from "lucide-react";
+import { Search, Plus, Download, Columns3, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info, FolderOpen, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 
 import { useProjectTypes } from "@/hooks/useProjectTypes";
