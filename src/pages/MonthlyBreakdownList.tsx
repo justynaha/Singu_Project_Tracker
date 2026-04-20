@@ -666,7 +666,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                       Subtotal {sub.label} — {group.label}
                                     </TableCell>
                                     {MONTH_KEYS.map(k => visibleMonths[k] && (
-                                      <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-green-100 dark:bg-green-900/30">{formatAmount(sub.subtotals[k] || null)}</TableCell>
+                                      <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-green-100 dark:bg-green-900/30">{formatAmount(sub.subtotals[k])}</TableCell>
                                     ))}
                                     {visibleMonths.total && (
                                       <TableCell className={cn("py-0 px-3 text-right tabular-nums font-semibold sticky right-0 z-10", sub.subtotalBg)}>
@@ -682,7 +682,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                   Total — {group.label}
                                 </TableCell>
                                 {MONTH_KEYS.map(k => visibleMonths[k] && (
-                                  <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-green-100 dark:bg-green-900/30">{formatAmount(group.subtotals[k] || null)}</TableCell>
+                                  <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-green-100 dark:bg-green-900/30">{formatAmount(group.subtotals[k])}</TableCell>
                                 ))}
                                 {visibleMonths.total && (
                                   <TableCell className="py-0 px-3 text-right tabular-nums font-semibold bg-orange-100 sticky right-0 z-10">
@@ -707,7 +707,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             Grand Total (EUR)
                           </TableCell>
                           {MONTH_KEYS.map(k => visibleMonths[k] && (
-                            <TableCell key={k} className="py-0 px-3 text-right tabular-nums bg-green-100 dark:bg-green-900/30">{formatAmount(grandTotals[k] || null)}</TableCell>
+                            <TableCell key={k} className="py-0 px-3 text-right tabular-nums bg-green-100 dark:bg-green-900/30">{formatAmount(grandTotals[k])}</TableCell>
                           ))}
                           {visibleMonths.total && (
                             <TableCell className="py-0 px-3 text-right tabular-nums bg-gray-200 sticky right-0 z-10">
