@@ -1,48 +1,64 @@
 
 
-## Plan: Ujednolicenie listy Property we wszystkich tabach Reports
+## Plan: Dodać tab "Mandatory v Speculative — by Country"
 
-### Cel
-Lista 10 properties z tabu **Mandatory v Speculative** staje się jedynym źródłem prawdy dla sample data we wszystkich tabach Reports. Te same nazwy + te same kraje wszędzie.
+### Pozycja w nawigacji Reports
+1. Summary
+2. Mandatory v Speculative
+3. **Mandatory v Speculative — by Country** (nowy)
+4. ACG
+5. CAPEX Tracker
+6. Contract Tracker
 
-### Kanoniczna lista (ze `MandatoryVsSpeculativeReport.tsx`)
+Etykieta tabu w pasku: **"By Country"** (krótka), pełny tytuł jako `<h2>` w środku.
 
-| Property | Country |
+### Plik
+- Nowy: `src/pages/MandatoryVsSpeculativeByCountryReport.tsx`
+- Edytowany: `src/pages/Reports.tsx` (dodanie wpisu i renderowania)
+
+### Struktura tabeli (lustrzane odbicie tabu Mandatory v Speculative, ale agregacja po Country)
+
+Kolumny (7):
+| Group | Column |
 |---|---|
-| Mapletree Park Lyon | France |
-| Mapletree Park Schiphol | Netherlands |
-| Mapletree Park Marseille | France |
-| Mapletree Park Piotrków 1 | Poland |
-| Mapletree Park Piotrków 2 | Poland |
-| Mapletree Park Tilburg | Netherlands |
-| Mapletree Park Szczecin | Poland |
-| Mapletree Park Fogars | Spain |
-| Mapletree Park Sallent | Spain |
-| Mapletree Park Valls | Spain |
+| — | Country (sticky left, `min-w-[200px]`) |
+| **FY25/26 Budget (EUR)** — pomarańczowy nagłówek | Mandatory |
+| | Speculative |
+| | Budget (subtelny niebieski tint, = Mand + Spec) |
+| **Contracted (EUR)** — slate nagłówek | Mandatory |
+| | Speculative |
+| | Contracted (subtelny niebieski tint, = Mand + Spec) |
 
-### Krok 1 — Wyciągnięcie do współdzielonego modułu
+Brak kolumny Property — to jest widok zagregowany.
 
-Nowy plik: `src/data/sampleProperties.ts`
-- Eksportuje `SAMPLE_PROPERTIES: { property: string; country: string; currency: string }[]` (waluty: France/Netherlands/Spain → EUR, Poland → PLN)
-- Eksportuje też helpery: `getPropertyCountry(name)`, `getPropertyCurrency(name)`
+### Źródło danych
+Agregacja w pamięci z istniejących kwot zdefiniowanych w `MandatoryVsSpeculativeReport.tsx` (mapa `AMOUNTS`). Żeby nie duplikować liczb, **wyciągam mapę `AMOUNTS` do współdzielonego pliku**:
 
-### Krok 2 — Zaktualizowane pliki
+- Nowy plik: `src/data/mandatoryVsSpeculativeAmounts.ts`
+  - eksportuje `MAND_SPEC_AMOUNTS: Record<string, { mandBudget; specBudget; mandContracted; specContracted }>`
+- `MandatoryVsSpeculativeReport.tsx` importuje z tego pliku zamiast definiować lokalnie.
+- Nowy tab agreguje per Country używając `getPropertyCountry()` z `sampleProperties.ts`.
 
-**`src/pages/MandatoryVsSpeculativeReport.tsx`** — importuje z `sampleProperties.ts` zamiast lokalnej listy; kwoty zostają jak są (mapowane po nazwie).
+### Country na ekranie
+Pokazane są **wszystkie kraje obecne w `SAMPLE_PROPERTIES`** (czyli France, Netherlands, Poland, Spain — bez Germany/Hungary/Italy ze screena, bo nie ma tam żadnych nieruchomości w sample secie). Trzymamy się jednego źródła prawdy — nie dodajemy fikcyjnych krajów. Kolejność alfabetyczna.
 
-**`src/pages/SummaryReport.tsx`** — zastępuje obecną listę properties (pochodzącą z `useProjects` / `siteToCountry`) statycznym sample setem z `sampleProperties.ts`. Kwoty Budget LC / Budget EUR / Current / Previous Month generowane deterministycznie per property (zachowane proporcje obecnych wartości — żeby tabela nadal wyglądała wiarygodnie).
+### Wiersze stopki (sticky bottom, opaque)
+- **Total** — sumy wszystkich kolumn liczbowych, bold, `bg-muted`. (Słowo "MUSEL" ze screena → "Total".)
+- **% Contracted** — italic. Per kolumna: `Contracted / Budget`. Dla par (Mandatory budget vs Mandatory contracted itd.). Guard div/0 → "—" (bez `#DIV/0!` jak na screenie).
 
-**`src/pages/AcgReport.tsx`** — placeholder, brak zmian (nie ma jeszcze tabeli).
+### Styling
+- Identyczne klasy nagłówków co w Mandatory v Speculative:
+  - `bg-orange-200 dark:bg-orange-900/40` dla bloku Budget
+  - `bg-slate-700 text-white dark:bg-slate-800` dla bloku Contracted
+  - `bg-blue-50` / `bg-blue-100` dla kolumn sumarycznych Budget i Contracted
+- Wysokość wiersza `h-10`, `tabular-nums`, `whitespace-nowrap`, sticky header (top-0), sticky Country (left-0), sticky Total + % Contracted (bottom-0/-1).
+- Kontener: `p-4 md:p-6 flex flex-col h-full`, `min-w-[900px]`.
 
-**CAPEX Tracker / Contract Tracker** — sprawdzę, czy używają własnych sample list. Jeżeli tak, podmieniam na `SAMPLE_PROPERTIES`. Jeżeli ciągną realne projekty z `useProjects`, dodaję komentarz, ale **nie** zmieniam (bo to nie jest sample data).
-
-### Krok 3 — Zachowanie spójności
-
-- Kolejność wierszy = kolejność w `SAMPLE_PROPERTIES` (żeby ten sam property był w tym samym miejscu w każdej tabeli).
-- Country zawsze pobierane z helpera, nie hardkodowane per-tab.
-- Waluta lokalna pobierana z helpera (rozwiązuje problem PLN vs EUR w Summary).
+### Eksport
+Przycisk Export — wizualny placeholder (jak w innych tabach).
 
 ### Poza zakresem
-- Zmiana danych w realnych modułach (Projects, Buildings) — tam właściciel danych to baza, nie sample set.
-- Przepisywanie liczb na nowe (zachowuję bieżące proporcje, tylko mapuję po nowej liście properties).
+- Realne podpięcie do bazy.
+- Działający eksport .xlsx.
+- Dodawanie krajów spoza sample setu (Germany/Hungary/Italy).
 
