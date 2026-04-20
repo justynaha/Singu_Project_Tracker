@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Plus, Download, Settings2, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info, FolderOpen, FileSpreadsheet } from "lucide-react";
+import { Search, Plus, Download, Columns3, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Check, ChevronsUpDown, CalendarIcon, X, ChevronDown, Info, FolderOpen, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 
 import { useProjectTypes } from "@/hooks/useProjectTypes";
@@ -79,6 +79,26 @@ export default function Projects() {
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [cashflowData, setCashflowData] = useState<CashflowData[]>([]);
   const { projectTypes } = useProjectTypes();
+  const [visibleColumns, setVisibleColumns] = useState({
+    no: true,
+    title: true,
+    property: true,
+    owner: true,
+    milestones: true,
+    progress: true,
+    fiscalYear: true,
+    budget: true,
+  });
+  const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
+    { key: "no", label: "No." },
+    { key: "title", label: "Title" },
+    { key: "property", label: "Property" },
+    { key: "owner", label: "Owner" },
+    { key: "milestones", label: "Milestones" },
+    { key: "progress", label: "Progress" },
+    { key: "fiscalYear", label: "Fiscal year" },
+    { key: "budget", label: "Budget/Work category" },
+  ];
   const activeProjectTypes = useMemo(() => projectTypes.filter(pt => pt.status === "active"), [projectTypes]);
   const [formData, setFormData] = useState({
     name: "",
@@ -652,43 +672,62 @@ export default function Projects() {
                   <DropdownMenuItem>XLS</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="ghost" size="sm">
-                <Settings2 className="h-4 w-4 mr-2" />
-                Columns
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Columns3 className="h-4 w-4 mr-2" />
+                    Columns
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-3" align="end">
+                  <div className="space-y-2">
+                    {columnDefs.map(col => (
+                      <div key={col.key} className="flex items-center justify-between">
+                        <span className="text-sm">{col.label}</span>
+                        <Switch
+                          checked={visibleColumns[col.key]}
+                          onCheckedChange={(checked) =>
+                            setVisibleColumns(prev => ({ ...prev, [col.key]: checked }))
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-36">Property</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-36">Owner</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>
-                <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>
-                <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Work category</th>
+                {visibleColumns.no && <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>}
+                {visibleColumns.title && <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>}
+                {visibleColumns.property && <th className="text-left py-2 px-4 text-sm font-medium w-36">Property</th>}
+                {visibleColumns.owner && <th className="text-left py-2 px-4 text-sm font-medium w-36">Owner</th>}
+                {visibleColumns.milestones && <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>}
+                {visibleColumns.progress && <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>}
+                {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
+                {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget/Work category</th>}
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx} className="border-t border-border">
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-32" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-24" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-24" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-40" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>
-                    <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>
+                    {visibleColumns.no && <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>}
+                    {visibleColumns.title && <td className="py-2 px-4"><Skeleton className="h-4 w-32" /></td>}
+                    {visibleColumns.property && <td className="py-2 px-4"><Skeleton className="h-4 w-24" /></td>}
+                    {visibleColumns.owner && <td className="py-2 px-4"><Skeleton className="h-6 w-24" /></td>}
+                    {visibleColumns.milestones && <td className="py-2 px-4"><Skeleton className="h-6 w-40" /></td>}
+                    {visibleColumns.progress && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
+                    {visibleColumns.fiscalYear && <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>}
+                    {visibleColumns.budget && <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>}
                   </tr>
                 ))
               ) : filteredProjects.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={Object.values(visibleColumns).filter(Boolean).length} className="p-8 text-center text-muted-foreground">
                     No projects found. Click "Add project" to create one.
                   </td>
                 </tr>
@@ -729,13 +768,20 @@ export default function Projects() {
                       className="border-t border-border hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={() => handleProjectClick(project)}
                     >
+                      {visibleColumns.no && (
                       <td className="py-2 px-4 text-sm text-primary font-medium">
                         {13536 + globalIndex}
                       </td>
+                      )}
+                      {visibleColumns.title && (
                       <td className="py-2 px-4 text-sm text-primary font-medium">{project.name}</td>
+                      )}
+                      {visibleColumns.property && (
                       <td className="py-2 px-4 text-sm text-muted-foreground">
                         {project.site || "-"}
                       </td>
+                      )}
+                      {visibleColumns.owner && (
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden">
@@ -748,6 +794,8 @@ export default function Projects() {
                           <span className="text-sm text-foreground">Anna Snow</span>
                         </div>
                       </td>
+                      )}
+                      {visibleColumns.milestones && (
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-1.5 text-sm">
                           <span className="text-muted-foreground">◇</span>
@@ -757,6 +805,8 @@ export default function Projects() {
                           )}
                         </div>
                       </td>
+                      )}
+                      {visibleColumns.progress && (
                       <td className="py-2 px-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
@@ -822,9 +872,13 @@ export default function Projects() {
                           </TooltipProvider>
                         </div>
                       </td>
+                      )}
+                      {visibleColumns.fiscalYear && (
                       <td className="py-2 px-4 text-sm text-muted-foreground">
                         {project.fiscal_year || "2025"}
                       </td>
+                      )}
+                      {visibleColumns.budget && (
                       <td className="py-2 px-4 text-right">
                         {project.total_budget && project.total_budget > 0 ? (
                           <div className="space-y-0.5">
@@ -848,6 +902,7 @@ export default function Projects() {
                           <span className="text-sm text-muted-foreground italic">No budget</span>
                         )}
                       </td>
+                      )}
                     </tr>
                   );
                 })
