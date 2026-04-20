@@ -196,9 +196,9 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
   };
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="px-4 md:px-6 pt-4 md:pt-6 pb-3 flex-shrink-0 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-foreground">Monthly Breakdown</h2>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
       </div>
 
       {/* Export */}
-      <div className="mb-4 flex justify-end">
+      <div className="px-4 md:px-6 pb-3 flex-shrink-0 flex justify-end">
         <Button variant="ghost" size="sm" onClick={handleExport}>
           <Download className="mr-1 h-4 w-4" />
           Export
@@ -245,8 +245,8 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="flex-1 min-h-0 border-t border-border overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-auto">
           <table className="w-full text-sm border-collapse min-w-[900px]">
             <thead>
               <tr className="bg-muted">
