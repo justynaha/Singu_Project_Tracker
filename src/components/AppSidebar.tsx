@@ -44,11 +44,7 @@ const navigationItems: NavItem[] = [{
   }, {
     title: "Reports",
     icon: FileText,
-    path: "/reports",
-    children: [
-      { title: "CAPEX Tracker", path: "/reports?tab=monthly-breakdown" },
-      { title: "Contract Tracker", path: "/reports?tab=contracts" },
-    ]
+    path: "/reports"
   }]
 }, {
   title: "Buildings",
