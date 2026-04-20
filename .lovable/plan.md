@@ -1,33 +1,21 @@
 
+## Plan: Przenieś toggle V1/V2 z Reports do zakładki projektu
 
-## Plan: Add V1/V2 view switcher to Monthly Breakdown (CAPEX Tracker)
+### Krok 1: Wycofaj zmianę w Reports
+W `src/pages/MonthlyBreakdownList.tsx`:
+- Usuń stan `viewVersion` oraz dropdown "View" w toolbarze.
+- Usuń warunkowe renderowanie wierszy summary (przywróć wszystkie: Contracted, Invoiced, Ongoing, Savings, Postponed jako zawsze widoczne).
+- Usuń wiersz "Remaining to allocate".
 
-### What
-Add a version dropdown (V1 / V2) in the top-right toolbar of the CAPEX Tracker. V2 = current full view (default). V1 = simplified view that hides several summary rows.
+### Krok 2: Dodaj toggle V1/V2 w zakładce Monthly Breakdown projektu
+W `src/components/project-detail/MonthlyBreakdownTab.tsx`:
 
-### V1 hides (below Grand Total):
-- Contracted
-- Invoiced
-- Ongoing
-- Savings
-- Postponed
+1. Dodaj stan: `const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V2")`.
+2. Dodaj `Select` (V1 / V2) w prawym górnym rogu nagłówka — obok przełącznika walut "Local currency / EUR".
+3. **V2 (domyślny)** = bieżący widok bez zmian: pokazuje Budget, Contracted, Invoiced, Ongoing, Planned 3M, Savings, Postponed.
+4. **V1 (uproszczony)** ukrywa: Contracted, Invoiced, Ongoing, Savings, Postponed. Zostają: Budget, Planned 3M.
+5. W V1 dodaj nowy wiersz **"Remaining to allocate"** bezpośrednio pod Grand Total (nad Budget). Wartość = `totalBudget - total` (w aktualnej walucie). Czerwony jeśli ujemny.
 
-### V1 keeps:
-- Budget
-- Planned 3M
-- A new row **"Remaining to allocate"** added right after Grand Total (above Budget). Value = `summaryTotals.grandBudget − grandTotals.total` (formatted in EUR, with same styling as other summary rows; red if negative).
-
-### V2 (current behavior, unchanged):
-- Shows all existing rows: Budget, Contracted, Invoiced, Ongoing, Planned 3M, Savings, Postponed.
-- Does NOT show "Remaining to allocate".
-
-### Implementation in `src/pages/MonthlyBreakdownList.tsx`
-1. Add state: `const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V2")`.
-2. Add a `Select` (or compact dropdown) in the toolbar area near the existing Columns popover (line ~550), aligned right, labeled "View" with options V1 / V2.
-3. Wrap the five summary rows (Contracted, Invoiced, Ongoing, Savings, Postponed) with `{viewVersion === "V2" && (...)}`.
-4. Add new "Remaining to allocate" row directly after the Grand Total row, rendered only when `viewVersion === "V1"`. Same `<TableRow className="h-10">` pattern as other summary rows; sticky left + sticky right total cell.
-5. No changes to export logic, data fetching, or column toggles.
-
-### Files to edit
-- `src/pages/MonthlyBreakdownList.tsx`
-
+### Pliki do edycji
+- `src/pages/MonthlyBreakdownList.tsx` — wycofanie
+- `src/components/project-detail/MonthlyBreakdownTab.tsx` — dodanie toggle + logika V1/V2
