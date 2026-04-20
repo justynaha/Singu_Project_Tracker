@@ -229,8 +229,8 @@ export default function SummaryReport() {
             <table className="w-full text-sm border-collapse min-w-[1500px]">
               <thead className="sticky top-0 z-10 bg-muted">
                 <tr className="border-b border-border">
-                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border">Property</th>
-                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[180px] bg-muted z-20 border-r border-border">Country</th>
+                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-0 bg-muted z-20 border-r border-border min-w-[220px]">Property</th>
+                  <th rowSpan={2} className="text-left font-semibold px-4 h-10 align-middle sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]">Country</th>
                   <th colSpan={2} className="text-center font-semibold px-4 h-10 border-r border-border">Budget</th>
                   <th colSpan={3} className={`text-center font-semibold px-4 h-10 border-r border-border ${curHeadCls}`}>Current</th>
                   <th colSpan={3} className="text-center font-semibold px-4 h-10 border-r border-border">Previous Month</th>
