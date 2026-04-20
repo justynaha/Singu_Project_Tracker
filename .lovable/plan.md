@@ -1,50 +1,32 @@
 
 
-## Plan: Reorder + change default visibility of columns in Contract Tracker
+## Plan: Freeze group header, subtotal, and grand total rows during horizontal scroll
+
+**Problem:** In Reports → Contract Tracker, when scrolling the table horizontally, the contents of these rows scroll with the table:
+- Group header rows ("Western Europe", "Poland", "Hungary")
+- Subtotal rows ("Subtotal — …")
+- Grand Total row
+
+They should stay visually fixed so the labels and subtotal amounts remain readable at all times.
 
 ### File
-- `src/pages/ContractsList.tsx`
+`src/pages/ContractsList.tsx`
 
 ### Changes
 
-1. **Add two new columns to `visibleColumns` state and `columnDefs`**:
-   - `legalEntity` — label "Legal entity"
-   - `budgetType` — label "Budget type"
-   
-   Both use data from the linked project (`projectMap`). Note: there's no `legal_entity` field on projects today, so the cell will render `"—"` as a placeholder until that field exists. `budget_type` already exists on `projects` and will render the actual value.
+1. **Group header row** (line ~832‑839): the single `colSpan` cell becomes `sticky left-0 z-10` with a solid background (`bg-muted`). Because it spans the full width, sticking it to `left-0` means the label is always visible at the left edge regardless of horizontal scroll.
 
-2. **New default visibility** (the `useState` initializer):
-   - Visible by default: `contractId`, `country`, `site`, `legalEntity`, `budgetType`, `contractor`, `contracted`, `invoiced`, `balance`
-   - Hidden by default: `projectNumber`, `projectTitle`, `description`, `date`, `status`, `agreementSigned`
-   
-   All remain toggleable via the existing **Columns** popover.
+2. **Subtotal rows** (line ~884‑891):
+   - The label cell (`colSpan={visibleBeforeFinancial}`) → `sticky left-0 z-10 bg-orange-100`.
+   - The 3 financial cells (Contracted / Invoiced / Balance EUR) → `sticky right-0 z-10 bg-orange-100`, with cumulative `right-[Xpx]` offsets so all three stay pinned to the right edge.
 
-3. **New column order** in both `<TableHeader>` and `<TableBody>` rows (left→right):
-   1. Contract ID
-   2. Country
-   3. Site
-   4. Legal entity
-   5. Budget type
-   6. Contractor
-   7. Contract description (= existing `description` column)
-   8. Project Number
-   9. Project Title
-   10. Date
-   11. Status
-   12. Agreement Signed
-   13. Contracted (EUR)
-   14. Invoiced (EUR)
-   15. Balance (EUR)
-   
-   The same order is mirrored in `columnDefs` so the Columns popover lists them in the same sequence.
+3. **Grand Total row** (line ~899‑904):
+   - Label cell → `sticky left-0 z-10 bg-amber-900`.
+   - 3 financial cells → `sticky right-0 z-10 bg-amber-900`, cumulative right offsets.
 
-4. **Sticky (frozen) leftmost columns**: Contract ID, Country, Site, Legal entity, Budget type.
-   - Add `sticky left-[Xpx] bg-card z-10` classes on those `<TableHead>` and `<TableCell>` cells with cumulative `left` offsets.
-   - Wrapping `div` already has `overflow-auto`, so horizontal scrolling will reveal the non-sticky columns while the 5 leftmost stay fixed.
-   - The group header row and subtotal/grand-total rows that use `colSpan` continue to span the full width — no sticky needed for them.
+4. **Background opacity**: ensure all sticky cells use opaque backgrounds (no `/40`, `/50`) so underlying scrolling rows don't bleed through. The group header currently uses `bg-muted/40` on the row — switch the sticky cell itself to opaque `bg-muted`.
 
-5. **No changes to**: filtering, totals/subtotals math, export logic (export already iterates the visible-column set, so it picks up the new defaults automatically), side panel.
-
-### Note for the user
-"Legal entity" doesn't exist as a field on projects yet, so its cell will show `—`. Let me know when you want to add a real Legal entity field (on projects or sites) and I'll wire it in.
+### Out of scope
+- Vertical sticky behavior (header/footer pinning during vertical scroll) — already in place via `sticky top-0` on `<TableHeader>`; not changing.
+- Per-column sticky for data rows — already in place for the 5 frozen leftmost columns; not changing.
 
