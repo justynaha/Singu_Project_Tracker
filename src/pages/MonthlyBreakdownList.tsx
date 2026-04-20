@@ -135,6 +135,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     Object.fromEntries([...MONTH_KEYS.map(k => [k, true]), ["total", true]])
   );
   const [visibleExtraColumns, setVisibleExtraColumns] = useState({ country: true, site: true, projectName: true, budgetType: true, budgetClassification: true });
+  const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V2");
 
   const monthColumnDefs = [
     ...MONTH_KEYS.map((k, i) => ({ key: k, label: MONTH_HEADERS[i] })),
