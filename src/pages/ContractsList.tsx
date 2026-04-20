@@ -759,16 +759,18 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
                 <Table>
                   <TableHeader>
                     <TableRow className="h-10">
-                      {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3">Contract ID</TableHead>}
+                      {visibleColumns.contractId && <TableHead className="h-10 py-0 px-3 sticky left-0 bg-card z-20 min-w-[140px]">Contract ID</TableHead>}
+                      {visibleColumns.country && <TableHead className="h-10 py-0 px-3 sticky left-[140px] bg-card z-20 min-w-[120px]">Country</TableHead>}
+                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3 sticky left-[260px] bg-card z-20 min-w-[160px]">Site</TableHead>}
+                      {visibleColumns.legalEntity && <TableHead className="h-10 py-0 px-3 sticky left-[420px] bg-card z-20 min-w-[140px]">Legal entity</TableHead>}
+                      {visibleColumns.budgetType && <TableHead className="h-10 py-0 px-3 sticky left-[560px] bg-card z-20 min-w-[120px]">Budget type</TableHead>}
+                      {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
+                      {visibleColumns.description && <TableHead className="h-10 py-0 px-3">Contract description</TableHead>}
                       {visibleColumns.projectNumber && <TableHead className="h-10 py-0 px-3">Project Number</TableHead>}
                       {visibleColumns.projectTitle && <TableHead className="h-10 py-0 px-3">Project Title</TableHead>}
-                      {visibleColumns.site && <TableHead className="h-10 py-0 px-3">Site</TableHead>}
-                      {visibleColumns.country && <TableHead className="h-10 py-0 px-3">Country</TableHead>}
                       {visibleColumns.date && <TableHead className="h-10 py-0 px-3">Date</TableHead>}
-                      {visibleColumns.contractor && <TableHead className="h-10 py-0 px-3">Contractor</TableHead>}
                       {visibleColumns.status && <TableHead className="h-10 py-0 px-3">Status</TableHead>}
                       {visibleColumns.agreementSigned && <TableHead className="h-10 py-0 px-3">Agreement Signed</TableHead>}
-                      {visibleColumns.description && <TableHead className="h-10 py-0 px-3">Description</TableHead>}
                       {visibleColumns.contracted && <TableHead className="h-10 py-0 px-3 text-right">Contracted (EUR)</TableHead>}
                       {visibleColumns.invoiced && <TableHead className="h-10 py-0 px-3 text-right">Invoiced (EUR)</TableHead>}
                       {visibleColumns.balance && <TableHead className="h-10 py-0 px-3 text-right">Balance (EUR)</TableHead>}
