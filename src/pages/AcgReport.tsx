@@ -68,7 +68,7 @@ export default function AcgReport() {
               <TableRow className="hover:bg-transparent">
                 <TableHead
                   rowSpan={2}
-                  className="sticky left-0 top-0 z-30 bg-background border-r border-border min-w-[180px] align-bottom"
+                  className="sticky left-0 top-0 z-30 bg-background border-r-2 border-border min-w-[180px] align-bottom shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]"
                 >
                   Country
                 </TableHead>
@@ -107,7 +107,7 @@ export default function AcgReport() {
                 const total = totalOf(r);
                 return (
                   <TableRow key={r.country} className="h-10 bg-background hover:bg-muted/50 [&>td]:bg-inherit">
-                    <TableCell className="sticky left-0 z-20 border-r border-border font-medium">
+                    <TableCell className="sticky left-0 z-20 border-r-2 border-border font-medium shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">
                       {r.country}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{fmt(r.completed)}</TableCell>
@@ -127,7 +127,7 @@ export default function AcgReport() {
             </TableBody>
             <tfoot>
               <TableRow className="h-10 sticky bottom-0 z-20 bg-muted font-semibold hover:bg-muted [&>td]:bg-inherit">
-                <TableCell className="sticky left-0 z-30 border-r border-border">Total</TableCell>
+                <TableCell className="sticky left-0 z-30 border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">Total</TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(totals.completed)}</TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(totals.ongoing)}</TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(totals.planned3m)}</TableCell>
