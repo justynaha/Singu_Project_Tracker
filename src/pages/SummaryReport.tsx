@@ -275,10 +275,10 @@ export default function SummaryReport() {
                     </tr>
                   );
                 })}
-                <tr className="bg-muted/70 font-bold border-t-2 border-border sticky bottom-0">
-                  <td className="px-4 h-10 sticky left-0 bg-muted/70 border-r border-border uppercase">MUSEL Total</td>
-                  <td className="px-4 h-10 border-r border-border"></td>
-                  <td className="px-4 h-10 text-right tabular-nums text-muted-foreground">—</td>
+                <tr className="bg-muted font-bold border-t-2 border-border sticky bottom-0 z-10">
+                  <td className="px-4 h-10 sticky left-0 bg-muted z-20 border-r border-border uppercase whitespace-nowrap min-w-[220px]">Total</td>
+                  <td className="px-4 h-10 sticky left-[220px] bg-muted z-20 border-r border-border min-w-[120px]"></td>
+                  <td className="px-4 h-10 text-right tabular-nums text-muted-foreground whitespace-nowrap">—</td>
                   <td className="px-4 h-10 text-right tabular-nums border-r border-border">{fmt(grandTotal.budgetEUR)}</td>
                   <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curCompleted)}</td>
                   <td className={`px-4 h-10 text-right tabular-nums ${curSubCls}`}>{fmt(grandTotal.curOngoing)}</td>
