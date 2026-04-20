@@ -87,6 +87,7 @@ export default function Projects() {
     milestones: true,
     progress: true,
     fiscalYear: true,
+    workCategory: true,
     budget: true,
   });
   const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
@@ -97,7 +98,8 @@ export default function Projects() {
     { key: "milestones", label: "Milestones" },
     { key: "progress", label: "Progress" },
     { key: "fiscalYear", label: "Fiscal year" },
-    { key: "budget", label: "Budget/Work category" },
+    { key: "workCategory", label: "Work category" },
+    { key: "budget", label: "Budget" },
   ];
   const activeProjectTypes = useMemo(() => projectTypes.filter(pt => pt.status === "active"), [projectTypes]);
   const [formData, setFormData] = useState({
