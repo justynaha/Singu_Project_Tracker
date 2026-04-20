@@ -1,28 +1,33 @@
 
 
-## Plan: Fix sticky rows & populate monthly breakdown data
+## Plan: Add V1/V2 view switcher to Monthly Breakdown (CAPEX Tracker)
 
-### Part 1: Fix sticky rows for Site Group headers and IC/Ad Hoc subsection headers
+### What
+Add a version dropdown (V1 / V2) in the top-right toolbar of the CAPEX Tracker. V2 = current full view (default). V1 = simplified view that hides several summary rows.
 
-**Problem**: Group headers (e.g. "Western Europe"), IC/Ad Hoc subsection headers, and subtotal rows use `colSpan` across the full row but scroll horizontally instead of staying pinned.
+### V1 hides (below Grand Total):
+- Contracted
+- Invoiced
+- Ongoing
+- Savings
+- Postponed
 
-**Fix in `src/pages/MonthlyBreakdownList.tsx`**:
+### V1 keeps:
+- Budget
+- Planned 3M
+- A new row **"Remaining to allocate"** added right after Grand Total (above Budget). Value = `summaryTotals.grandBudget − grandTotals.total` (formatted in EUR, with same styling as other summary rows; red if negative).
 
-- **Group header row** (line 617-624): The `TableCell` with `colSpan` already has `sticky left-0` but uses `bg-muted/40` (semi-transparent). Change to opaque `bg-gray-100`.
-- **IC/Ad Hoc subsection header** (line 632-636): Same issue — `sticky left-0` with semi-transparent `bg-blue-50`/`bg-orange-50`. These are already opaque colors, but the `TableRow` bg and `TableCell` bg may not match. Ensure `TableCell` explicitly gets the same opaque bg class.
-- **Subtotal rows** (line 664-676): The sticky cell has the correct bg, but month cells don't — ensure consistency.
-- **Grand Total row** (line 705-722): Sticky cell uses `bg-muted/50` (semi-transparent). Change to opaque `bg-gray-200`.
-- **Summary rows** (Budget, Contracted, etc. lines 724-793): Already use `bg-background` — these should be fine.
+### V2 (current behavior, unchanged):
+- Shows all existing rows: Budget, Contracted, Invoiced, Ongoing, Planned 3M, Savings, Postponed.
+- Does NOT show "Remaining to allocate".
 
-The key fix: replace all `bg-muted/40` and `bg-muted/50` on sticky cells with opaque equivalents like `bg-gray-100` or `bg-gray-200`.
-
-### Part 2: Insert monthly breakdown data for 24 projects
-
-Use the database insert tool to add monthly_breakdown rows for these 24 projects that currently have no data. Amounts will be distributed across months summing to ~70-90% of each project's total_budget, with realistic distribution patterns (not uniform).
+### Implementation in `src/pages/MonthlyBreakdownList.tsx`
+1. Add state: `const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V2")`.
+2. Add a `Select` (or compact dropdown) in the toolbar area near the existing Columns popover (line ~550), aligned right, labeled "View" with options V1 / V2.
+3. Wrap the five summary rows (Contracted, Invoiced, Ongoing, Savings, Postponed) with `{viewVersion === "V2" && (...)}`.
+4. Add new "Remaining to allocate" row directly after the Grand Total row, rendered only when `viewVersion === "V1"`. Same `<TableRow className="h-10">` pattern as other summary rows; sticky left + sticky right total cell.
+5. No changes to export logic, data fetching, or column toggles.
 
 ### Files to edit
-- `src/pages/MonthlyBreakdownList.tsx` — opaque backgrounds on sticky group/subsection rows
-
-### Data changes
-- Insert 24 rows into `monthly_breakdown` table with realistic monthly distributions
+- `src/pages/MonthlyBreakdownList.tsx`
 
