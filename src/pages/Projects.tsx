@@ -768,13 +768,20 @@ export default function Projects() {
                       className="border-t border-border hover:bg-muted/30 cursor-pointer transition-colors"
                       onClick={() => handleProjectClick(project)}
                     >
+                      {visibleColumns.no && (
                       <td className="py-2 px-4 text-sm text-primary font-medium">
                         {13536 + globalIndex}
                       </td>
+                      )}
+                      {visibleColumns.title && (
                       <td className="py-2 px-4 text-sm text-primary font-medium">{project.name}</td>
+                      )}
+                      {visibleColumns.property && (
                       <td className="py-2 px-4 text-sm text-muted-foreground">
                         {project.site || "-"}
                       </td>
+                      )}
+                      {visibleColumns.owner && (
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden">
@@ -787,6 +794,8 @@ export default function Projects() {
                           <span className="text-sm text-foreground">Anna Snow</span>
                         </div>
                       </td>
+                      )}
+                      {visibleColumns.milestones && (
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-1.5 text-sm">
                           <span className="text-muted-foreground">◇</span>
@@ -796,6 +805,8 @@ export default function Projects() {
                           )}
                         </div>
                       </td>
+                      )}
+                      {visibleColumns.progress && (
                       <td className="py-2 px-4">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
