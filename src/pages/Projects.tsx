@@ -1145,7 +1145,7 @@ export default function Projects() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showImportXLS} onOpenChange={setShowImportXLS}>
+      <Dialog open={showImportXLS} onOpenChange={(open) => { setShowImportXLS(open); if (!open) setImportFileAttached(false); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Import from XLS</DialogTitle>
@@ -1166,14 +1166,41 @@ export default function Projects() {
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs text-muted-foreground shrink-0">3</div>
               <div className="flex-1 space-y-2">
                 <p className="text-sm font-medium">Choose an Excel file on your computer and upload it below</p>
-                <label className="flex items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/30 px-4 py-4 text-sm cursor-pointer hover:bg-muted/50 transition-colors">
-                  <span className="text-muted-foreground">Drag &amp; drop files here or</span>
-                  <span className="text-primary font-medium">Browse files</span>
-                  <input type="file" accept=".xls,.xlsx" className="hidden" />
-                </label>
+                {importFileAttached ? (
+                  <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+                    <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-medium">projects-template.xlsx</p>
+                      <p className="text-xs text-muted-foreground">28 KB</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setImportFileAttached(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/30 px-4 py-4 text-sm cursor-pointer hover:bg-muted/50 transition-colors">
+                    <span className="text-muted-foreground">Drag &amp; drop files here or</span>
+                    <span className="text-primary font-medium">Browse files</span>
+                    <input type="file" accept=".xls,.xlsx" className="hidden" onChange={() => setImportFileAttached(true)} />
+                  </label>
+                )}
               </div>
             </div>
           </div>
+          <DialogFooter className="flex sm:justify-between">
+            <Button variant="outline" onClick={() => { setShowImportXLS(false); setImportFileAttached(false); }}>Cancel</Button>
+            <Button
+              disabled={!importFileAttached}
+              onClick={() => {
+                setHasImported(true);
+                setShowImportXLS(false);
+                setImportFileAttached(false);
+                toast.success("6 projects imported successfully");
+              }}
+            >
+              Import
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
