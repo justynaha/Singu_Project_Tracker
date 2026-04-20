@@ -67,9 +67,9 @@ const MOCK_IMPORTED_PROJECTS = [
 
 export default function Projects() {
   const navigate = useNavigate();
-  const { projects: dbProjects, loading, createProject } = useProjects();
+  const { projects: dbProjects, loading, createProject, fetchProjects } = useProjects();
   const [hasImported, setHasImported] = useState(false);
-  const projects = hasImported ? MOCK_IMPORTED_PROJECTS : dbProjects;
+  const projects = dbProjects;
   const [showFilters, setShowFilters] = useState(false);
   const [showNewProject, setShowNewProject] = useState(false);
   const [showImportXLS, setShowImportXLS] = useState(false);
