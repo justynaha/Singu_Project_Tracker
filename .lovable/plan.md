@@ -1,23 +1,39 @@
 
 
-## Plan: Hide Finance column by default on Project Detail
+## Plan: Highlight in‑progress milestone diamond with blue background
 
 ### File
-`src/components/project-detail/TimelineV2Tab.tsx`
+`src/components/project-detail/TimelineV2Tab.tsx` (lines ~628‑642)
 
 ### Change
-In `DEFAULT_COLUMNS` (lines 63‑82), set the `cashflow` ("Finance") group's `visible` to `false`. Its children stay `visible: true`, so when the user toggles Finance back on, all four sub‑columns (Forecasted, Contracted, Invoiced, Remaining) appear as before.
+Add a third visual state for the milestone diamond when `milestone.status === "in-progress"`. Currently only two states exist: `done` (green) and everything else (muted gray). The in‑progress state should match the blue "In progress" label already shown below the diamond.
 
-```ts
-{ 
-  id: "cashflow", 
-  label: "Finance", 
-  visible: false,   // was true
-  children: [ … unchanged … ]
-}
+### Updated rendering logic
+```tsx
+<div
+  className={cn(
+    "w-8 h-8 flex items-center justify-center mb-2 transition-colors rotate-45",
+    isDone
+      ? "bg-success text-success-foreground"
+      : isInProgress
+        ? "bg-primary text-primary-foreground"
+        : "bg-muted text-muted-foreground"
+  )}
+>
+  {isDone ? (
+    <Check className="h-4 w-4 -rotate-45" />
+  ) : (
+    <span className="-rotate-45 text-xs font-medium">{idx + 1}</span>
+  )}
+</div>
 ```
 
-### Notes
-- Other columns (Name, Status, Responsible, Start Date, End Date, Comments, Files) remain visible by default.
-- Users with a previously persisted preference in localStorage (if any) will keep their saved setting; only the fresh default changes.
+### Visual result
+- **Done** → green diamond with check (unchanged)
+- **In progress** → blue diamond (`bg-primary`) with white number, matching the blue "In progress" status text below
+- **Open / not started** → muted gray diamond (unchanged)
+
+### Out of scope
+- No change to label colors, status text, or progress line.
+- No change to `ProjectStatusTimeline.tsx` (a different component for project-level status).
 
