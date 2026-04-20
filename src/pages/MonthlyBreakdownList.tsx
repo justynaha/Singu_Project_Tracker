@@ -624,8 +624,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                               </TableRow>
                               {/* Subsections: IC and Ad Hoc */}
                               {!isCollapsed && [
-                                { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals, headerBg: "bg-blue-50", subtotalBg: "bg-blue-100" },
-                                { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals, headerBg: "bg-orange-50", subtotalBg: "bg-orange-50" },
+                                { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals, headerBg: "bg-blue-50", subtotalBg: "bg-green-100 dark:bg-green-900/30" },
+                                { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals, headerBg: "bg-orange-50", subtotalBg: "bg-green-100 dark:bg-green-900/30" },
                               ].map(sub => sub.projects.length === 0 ? null : (
                                 <React.Fragment key={`sub-${group.group}-${sub.label}`}>
                                   {/* Subsection header */}
