@@ -611,7 +611,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                 <Table>
                   <TableHeader className="sticky top-0 z-30 bg-background [&_th]:bg-background">
                     <TableRow className="h-10">
-                      <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-40">#</TableHead>
+                      <TableHead className="h-10 py-0 px-3 sticky left-0 bg-background z-40 border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">#</TableHead>
                       {visibleExtraColumns.country && <TableHead className="h-10 py-0 px-3">Country</TableHead>}
                       {visibleExtraColumns.site && <TableHead className="h-10 py-0 px-3">Property</TableHead>}
                       {visibleExtraColumns.projectName && <TableHead className="h-10 py-0 px-3 min-w-[200px]">Project Name</TableHead>}
