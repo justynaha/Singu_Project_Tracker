@@ -882,13 +882,17 @@ export default function Projects() {
                         {project.fiscal_year || "2025"}
                       </td>
                       )}
+                      {visibleColumns.workCategory && (
+                      <td className="py-2 px-4 text-left">
+                        <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
+                          {project.budget_line || "Unassigned"}
+                        </Badge>
+                      </td>
+                      )}
                       {visibleColumns.budget && (
                       <td className="py-2 px-4 text-right">
                         {project.total_budget && project.total_budget > 0 ? (
                           <div className="space-y-0.5">
-                            <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
-                              {project.budget_line || "Unassigned"}
-                            </Badge>
                             <div className="text-sm font-medium">
                               {project.currency || "PLN"} {project.total_budget.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
                             </div>
