@@ -108,17 +108,17 @@ export default function SummaryReport() {
                 <th colSpan={3} className="text-center font-semibold px-4 h-10">Variance</th>
               </tr>
               <tr className="border-b border-border">
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground">Budget LC</th>
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground border-r border-border">Budget EUR</th>
-                <th className={`text-right font-medium px-4 h-10 text-muted-foreground ${curHeadCls}`}>Completed (EUR)</th>
-                <th className={`text-right font-medium px-4 h-10 text-muted-foreground ${curHeadCls}`}>Ongoing (EUR)</th>
-                <th className={`text-right font-medium px-4 h-10 text-muted-foreground border-r border-border ${curHeadCls}`}>Planned 3M (EUR)</th>
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground">Completed (EUR)</th>
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground">Ongoing (EUR)</th>
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground border-r border-border">Planned 3M (EUR)</th>
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground">Completed (EUR)</th>
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground">Ongoing (EUR)</th>
-                <th className="text-right font-medium px-4 h-10 text-muted-foreground">Planned 3M (EUR)</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[140px]">Budget LC</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground border-r border-border whitespace-nowrap min-w-[140px]">Budget EUR</th>
+                <th className={`text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[140px] ${curHeadCls}`}>Completed (EUR)</th>
+                <th className={`text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[140px] ${curHeadCls}`}>Ongoing (EUR)</th>
+                <th className={`text-right font-medium px-4 h-10 text-muted-foreground border-r border-border whitespace-nowrap min-w-[160px] ${curHeadCls}`}>Planned 3M (EUR)</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[140px]">Completed (EUR)</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[140px]">Ongoing (EUR)</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground border-r border-border whitespace-nowrap min-w-[160px]">Planned 3M (EUR)</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[140px]">Completed (EUR)</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[140px]">Ongoing (EUR)</th>
+                <th className="text-right font-medium px-4 h-10 text-muted-foreground whitespace-nowrap min-w-[160px]">Planned 3M (EUR)</th>
               </tr>
             </thead>
             <tbody>
