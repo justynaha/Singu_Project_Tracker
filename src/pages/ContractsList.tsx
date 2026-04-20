@@ -596,9 +596,9 @@ export default function ContractsList({ embedded = false }: { embedded?: boolean
   ].filter(Boolean).length;
 
   return (
-    <div className={embedded ? "" : "bg-background"}>
-      <div className={embedded ? "flex overflow-hidden" : "flex h-[calc(100vh-64px)] overflow-hidden"}>
-        <div className={cn("flex-1 min-w-0 overflow-y-auto", embedded ? "p-4" : "p-6")}>
+    <div className={embedded ? "h-full flex flex-col min-h-0" : "bg-background"}>
+      <div className={embedded ? "flex flex-1 min-h-0 overflow-hidden" : "flex h-[calc(100vh-64px)] overflow-hidden"}>
+        <div className={cn("flex-1 min-w-0 flex flex-col min-h-0", embedded ? "p-4" : "p-6 overflow-y-auto")}>
           {!embedded && (
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold">Contracts</h1>
