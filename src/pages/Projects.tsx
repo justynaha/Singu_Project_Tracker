@@ -1128,6 +1128,38 @@ export default function Projects() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showImportXLS} onOpenChange={setShowImportXLS}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Import from XLS</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 py-2">
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs text-muted-foreground shrink-0">1</div>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium">Download Excel template</p>
+                <Button size="sm">Download</Button>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs text-muted-foreground shrink-0">2</div>
+              <p className="text-sm font-medium pt-0.5">Fill in the template on your computer</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs text-muted-foreground shrink-0">3</div>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium">Choose an Excel file on your computer and upload it below</p>
+                <label className="flex items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/30 px-4 py-4 text-sm cursor-pointer hover:bg-muted/50 transition-colors">
+                  <span className="text-muted-foreground">Drag &amp; drop files here or</span>
+                  <span className="text-primary font-medium">Browse files</span>
+                  <input type="file" accept=".xls,.xlsx" className="hidden" />
+                </label>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
