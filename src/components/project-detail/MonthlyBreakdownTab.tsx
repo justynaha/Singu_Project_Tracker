@@ -10,6 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const MONTH_KEYS = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"] as const;
 const MONTH_LABELS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
@@ -97,6 +99,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState<Currency>("local");
   const [locked, setLocked] = useState(false);
+  const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V2");
 
   const localCurrencyCode = projectCurrency || "PLN";
   const currencyLabel = currency === "EUR" ? "EUR" : localCurrencyCode;
@@ -197,7 +200,18 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
       {/* Header */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-foreground">Monthly Breakdown</h2>
-        <div className="flex rounded-md border border-input overflow-hidden">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-muted-foreground">View</Label>
+            <Select value={viewVersion} onValueChange={(v) => setViewVersion(v as "V1" | "V2")}>
+              <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="V1">V1</SelectItem>
+                <SelectItem value="V2">V2</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex rounded-md border border-input overflow-hidden">
           <button
             onClick={() => setCurrency("local")}
             className={`px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -218,6 +232,7 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
           >
             EUR
           </button>
+          </div>
         </div>
       </div>
 
