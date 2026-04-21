@@ -727,7 +727,7 @@ export default function Projects() {
             <thead className="bg-muted/50">
               <tr>
                 {visibleColumns.no && <th className="text-left py-2 px-4 text-sm font-medium w-16">No.</th>}
-                {visibleColumns.title && <th className="text-left py-2 px-4 text-sm font-medium w-44">Title</th>}
+                {visibleColumns.title && <th className="text-left py-2 px-4 text-sm font-medium whitespace-nowrap w-auto" style={{ maxWidth: '400px' }}>Title</th>}
                 {visibleColumns.property && <th className="text-left py-2 px-4 text-sm font-medium w-36">Property</th>}
                 {visibleColumns.owner && <th className="text-left py-2 px-4 text-sm font-medium w-36">Owner</th>}
                 {visibleColumns.milestones && <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>}
@@ -805,7 +805,7 @@ export default function Projects() {
                       </td>
                       )}
                       {visibleColumns.title && (
-                      <td className="py-2 px-4 text-sm text-primary font-medium">{project.name}</td>
+                      <td className="py-2 px-4 text-sm text-primary font-medium whitespace-nowrap overflow-hidden text-ellipsis" style={{ maxWidth: '400px' }}>{project.name}</td>
                       )}
                       {visibleColumns.property && (
                       <td className="py-2 px-4 text-sm text-muted-foreground">
