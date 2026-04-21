@@ -99,7 +99,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState<Currency>("local");
   const [locked, setLocked] = useState(false);
-  const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V1");
 
   const localCurrencyCode = projectCurrency || "PLN";
   const currencyLabel = currency === "EUR" ? "EUR" : localCurrencyCode;
