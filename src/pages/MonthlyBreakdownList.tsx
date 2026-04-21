@@ -639,7 +639,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                       </TableRow>
                     ) : (
                       <>
-                        {groupedProjects.map(group => {
+                        {showGroups && groupedProjects.map(group => {
                           const isCollapsed = collapsedGroups.has(group.group);
                           const colCount = fixedColCount + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0);
                           const colsBeforeTotal = colCount - (visibleMonths.total ? 1 : 0);
