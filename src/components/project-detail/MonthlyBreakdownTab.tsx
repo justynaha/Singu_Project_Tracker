@@ -200,16 +200,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
       <div className="pb-3 flex-shrink-0 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-foreground">Monthly Breakdown</h2>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground">View</Label>
-            <Select value={viewVersion} onValueChange={(v) => setViewVersion(v as "V1" | "V2")}>
-              <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="V1">V1</SelectItem>
-                <SelectItem value="V2">V2</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <div className="flex rounded-md border border-input overflow-hidden">
           <button
             onClick={() => setCurrency("local")}
