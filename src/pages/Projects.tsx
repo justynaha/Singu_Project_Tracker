@@ -931,7 +931,17 @@ export default function Projects() {
                       {visibleColumns.budgetClassification && (
                       <td className="py-2 px-4 text-left">
                         {project.budget_classification ? (
-                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs",
+                              project.budget_classification === "Mandatory"
+                                ? "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                                : project.budget_classification === "Speculative"
+                                ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+                                : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+                            )}
+                          >
                             {project.budget_classification}
                           </Badge>
                         ) : (
