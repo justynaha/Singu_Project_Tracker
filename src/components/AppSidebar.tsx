@@ -100,11 +100,6 @@ const navigationItems: NavItem[] = [{
   path: "/equipment",
   hasSubmenu: true
 }, {
-  title: "Settlements",
-  icon: CreditCard,
-  path: "/settlements",
-  hasSubmenu: true
-}, {
   title: "ESG",
   icon: Leaf,
   path: "/esg",
