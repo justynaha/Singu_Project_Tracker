@@ -388,15 +388,19 @@ export type Database = {
       projects: {
         Row: {
           address: string | null
+          area_sqm: number | null
           budget_classification: string | null
+          budget_eur: number | null
           budget_line: string | null
           budget_type: string | null
           building: string | null
+          cc_code: string | null
           created_at: string
           currency: string | null
           description: string | null
           end_date: string | null
           fiscal_year: string | null
+          fund_id: string | null
           id: string
           name: string
           postponed: number | null
@@ -411,15 +415,19 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          area_sqm?: number | null
           budget_classification?: string | null
+          budget_eur?: number | null
           budget_line?: string | null
           budget_type?: string | null
           building?: string | null
+          cc_code?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
           end_date?: string | null
           fiscal_year?: string | null
+          fund_id?: string | null
           id?: string
           name: string
           postponed?: number | null
@@ -434,15 +442,19 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          area_sqm?: number | null
           budget_classification?: string | null
+          budget_eur?: number | null
           budget_line?: string | null
           budget_type?: string | null
           building?: string | null
+          cc_code?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
           end_date?: string | null
           fiscal_year?: string | null
+          fund_id?: string | null
           id?: string
           name?: string
           postponed?: number | null
