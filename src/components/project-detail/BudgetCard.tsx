@@ -87,7 +87,7 @@ export default function BudgetCard({
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Budget Variance = Approved Budget – max(Forecast Cost, Committed Cost)</p>
+              <p>Variance = Budget - max(Forcasted, Contracted)</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
