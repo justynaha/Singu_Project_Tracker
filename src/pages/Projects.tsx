@@ -912,7 +912,7 @@ export default function Projects() {
                       )}
                       {visibleColumns.workCategory && (
                       <td className="py-2 px-4 text-left">
-                        <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
+                        <Badge variant="outline" className={cn("text-xs", getWorkCategoryColor(project.budget_line || "Unassigned"))}>
                           {project.budget_line || "Unassigned"}
                         </Badge>
                       </td>
