@@ -801,7 +801,7 @@ export default function Projects() {
                     >
                       {visibleColumns.no && (
                       <td className="py-2 px-4 text-sm text-primary font-medium">
-                        {13536 + globalIndex}
+                        {filteredProjects.length - globalIndex}
                       </td>
                       )}
                       {visibleColumns.title && (
