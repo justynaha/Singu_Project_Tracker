@@ -11,6 +11,19 @@ const SiteDetail = () => {
   const { siteId } = useParams<{ siteId: string }>();
   const site = sites.find((s) => s.id === siteId);
   const [fxRate, setFxRate] = useState<number | null>(null);
+  const [budgetLc, setBudgetLc] = useState<number | null>(null);
+
+  const loadBudget = async () => {
+    if (!siteId) return;
+    const { data } = await (supabase as any)
+      .from("site_budgets")
+      .select("budget_lc")
+      .eq("site_id", siteId)
+      .maybeSingle();
+    setBudgetLc(data ? Number(data.budget_lc) : null);
+  };
+
+  useEffect(() => { loadBudget(); }, [siteId]);
 
   useEffect(() => {
     if (!site?.currency) return;
@@ -40,7 +53,12 @@ const SiteDetail = () => {
           <span className="text-muted-foreground"> / Edit</span>
         </div>
         <h1 className="text-2xl font-semibold text-foreground mb-4">Edit: {site.name}</h1>
-        <EditSiteForm site={site} onCancel={() => setIsEditing(false)} />
+        <EditSiteForm
+          site={site}
+          initialBudget={budgetLc}
+          onCancel={() => setIsEditing(false)}
+          onSaved={() => { loadBudget(); setIsEditing(false); }}
+        />
       </div>
     );
   }
@@ -64,14 +82,14 @@ const SiteDetail = () => {
     { label: "Dictionary type:", value: site.dictionaryType },
   ];
 
-  const budgetNum = site ? Number((site.budget ?? "").toString().replace(/[^\d.-]/g, "")) : 0;
   const fmt = (n: number, cur: string) =>
     `${cur} ${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const budgetValue = site?.budget
-    ? fxRate && fxRate > 0
-      ? `${fmt(budgetNum, site.currency)}  /  ${fmt(budgetNum / fxRate, "EUR")}`
-      : fmt(budgetNum, site!.currency)
-    : "";
+  const budgetValue =
+    budgetLc != null
+      ? fxRate && fxRate > 0
+        ? `${fmt(budgetLc, site.currency)}  /  ${fmt(budgetLc / fxRate, "EUR")}`
+        : fmt(budgetLc, site.currency)
+      : "";
 
   const projectTrackerFields = [
     { label: "Fund ID:", value: site.fundId },
