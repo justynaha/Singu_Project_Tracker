@@ -340,29 +340,19 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const handleExportXls = () => {
     const rows: Record<string, any>[] = [];
 
-    // Grouped project rows with headers and subtotals
-    groupedProjects.forEach(group => {
-      // Group header row
-      rows.push({ "#": "", "Project Name": `${group.label} (${group.projects.length} project${group.projects.length !== 1 ? "s" : ""})` });
-
-      const subsections = [
-        { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals },
-        { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals },
-      ];
-
+    const renderSubsectionsToRows = (
+      subsections: { label: string; projects: typeof filteredProjects; subtotals: Record<string, number> }[],
+      groupLabel?: string,
+    ) => {
       subsections.forEach(sub => {
         if (sub.projects.length === 0) return;
-        // Subsection header
         rows.push({ "#": "", "Project Name": sub.label });
-
         sub.projects.forEach(p => {
           const bd = breakdownMap.get(p.id);
           let rowTotal = 0;
           const country = p.site ? siteToCountry[p.site] || "" : "";
           const site = p.site || "";
-          const row: Record<string, any> = {
-            "#": projectNumberMap.get(p.id) ?? "",
-          };
+          const row: Record<string, any> = { "#": projectNumberMap.get(p.id) ?? "" };
           if (visibleExtraColumns.country) row["Country"] = country;
           if (visibleExtraColumns.site) row["Property"] = site;
           if (visibleExtraColumns.projectName) row["Project Name"] = p.name;
@@ -373,20 +363,28 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
               const v = bd ? (bd as any)[k] || 0 : 0;
               row[MONTH_HEADERS[i]] = v;
               rowTotal += v;
-            } else {
-              if (bd) rowTotal += (bd as any)[k] || 0;
-            }
+            } else if (bd) rowTotal += (bd as any)[k] || 0;
           });
           if (visibleMonths.total) row["Total"] = rowTotal;
           rows.push(row);
         });
-
-        // Subsection subtotal
-        const subRow: Record<string, any> = { "#": "", "Project Name": `Subtotal ${sub.label} — ${group.label}` };
+        const subRow: Record<string, any> = { "#": "", "Project Name": groupLabel ? `Subtotal ${sub.label} — ${groupLabel}` : `Subtotal ${sub.label}` };
         MONTH_KEYS.forEach((k, i) => { if (visibleMonths[k]) subRow[MONTH_HEADERS[i]] = sub.subtotals[k] || 0; });
         if (visibleMonths.total) subRow["Total"] = sub.subtotals.total || 0;
         rows.push(subRow);
       });
+    };
+
+    if (showGroups) {
+      // Grouped project rows with headers and subtotals
+      groupedProjects.forEach(group => {
+      // Group header row
+      rows.push({ "#": "", "Project Name": `${group.label} (${group.projects.length} project${group.projects.length !== 1 ? "s" : ""})` });
+
+      renderSubsectionsToRows([
+        { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals },
+        { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals },
+      ], group.label);
 
       // Group total row
       const totalRow: Record<string, any> = { "#": "", "Project Name": `Total — ${group.label}` };
@@ -395,7 +393,11 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       rows.push(totalRow);
       // Separator row
       rows.push({});
-    });
+      });
+    } else {
+      renderSubsectionsToRows(flatBuckets.map(b => ({ label: b.label, projects: b.projects, subtotals: b.subtotals })));
+      rows.push({});
+    }
 
     // Grand Total row
     const gtRow: Record<string, any> = { "#": "", "Project Name": "Grand Total" };
