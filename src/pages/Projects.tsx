@@ -88,6 +88,8 @@ export default function Projects() {
     progress: true,
     fiscalYear: true,
     workCategory: true,
+    budgetType: true,
+    budgetClassification: true,
     budget: true,
   });
   const columnDefs: { key: keyof typeof visibleColumns; label: string }[] = [
@@ -99,6 +101,8 @@ export default function Projects() {
     { key: "progress", label: "Progress" },
     { key: "fiscalYear", label: "Fiscal year" },
     { key: "workCategory", label: "Work category" },
+    { key: "budgetType", label: "Budget type" },
+    { key: "budgetClassification", label: "Budget classification" },
     { key: "budget", label: "Budget" },
   ];
   const activeProjectTypes = useMemo(() => projectTypes.filter(pt => pt.status === "active"), [projectTypes]);
@@ -711,6 +715,8 @@ export default function Projects() {
                 {visibleColumns.progress && <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>}
                 {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
                 {visibleColumns.workCategory && <th className="text-left py-2 px-4 text-sm font-medium w-44">Work category</th>}
+                {visibleColumns.budgetType && <th className="text-left py-2 px-4 text-sm font-medium w-32">Budget type</th>}
+                {visibleColumns.budgetClassification && <th className="text-left py-2 px-4 text-sm font-medium w-40">Budget classification</th>}
                 {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget</th>}
               </tr>
             </thead>
@@ -726,6 +732,8 @@ export default function Projects() {
                     {visibleColumns.progress && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
                     {visibleColumns.fiscalYear && <td className="py-2 px-4"><Skeleton className="h-4 w-12" /></td>}
                     {visibleColumns.workCategory && <td className="py-2 px-4"><Skeleton className="h-6 w-28" /></td>}
+                    {visibleColumns.budgetType && <td className="py-2 px-4"><Skeleton className="h-6 w-16" /></td>}
+                    {visibleColumns.budgetClassification && <td className="py-2 px-4"><Skeleton className="h-6 w-24" /></td>}
                     {visibleColumns.budget && <td className="py-2 px-4"><Skeleton className="h-6 w-32" /></td>}
                   </tr>
                 ))
@@ -887,6 +895,28 @@ export default function Projects() {
                         <Badge variant="outline" className="text-xs bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:border-cyan-800">
                           {project.budget_line || "Unassigned"}
                         </Badge>
+                      </td>
+                      )}
+                      {visibleColumns.budgetType && (
+                      <td className="py-2 px-4 text-left">
+                        {project.budget_type ? (
+                          <Badge variant="outline" className="text-xs bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                            {project.budget_type}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </td>
+                      )}
+                      {visibleColumns.budgetClassification && (
+                      <td className="py-2 px-4 text-left">
+                        {project.budget_classification ? (
+                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+                            {project.budget_classification}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
                       </td>
                       )}
                       {visibleColumns.budget && (
