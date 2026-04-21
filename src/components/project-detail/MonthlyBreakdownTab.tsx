@@ -99,7 +99,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
   const [loading, setLoading] = useState(true);
   const [currency, setCurrency] = useState<Currency>("local");
   const [locked, setLocked] = useState(false);
-  const [viewVersion, setViewVersion] = useState<"V1" | "V2">("V1");
 
   const localCurrencyCode = projectCurrency || "PLN";
   const currencyLabel = currency === "EUR" ? "EUR" : localCurrencyCode;
@@ -201,16 +200,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
       <div className="pb-3 flex-shrink-0 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-foreground">Monthly Breakdown</h2>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground">View</Label>
-            <Select value={viewVersion} onValueChange={(v) => setViewVersion(v as "V1" | "V2")}>
-              <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="V1">V1</SelectItem>
-                <SelectItem value="V2">V2</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <div className="flex rounded-md border border-input overflow-hidden">
           <button
             onClick={() => setCurrency("local")}
@@ -359,34 +348,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                   )}
 
                   {/* Summary rows */}
-                  {viewVersion === "V2" && (
-                    <>
-                      <SummaryRow
-                        label="Contracted"
-                        value={contracted}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                      <SummaryRow
-                        label="Invoiced"
-                        value={invoiced}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                      <SummaryRow
-                        label="Ongoing"
-                        value={ongoing}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                    </>
-                  )}
                   <SummaryRow
                     label="Planned 3M"
                     value={planned3M}
@@ -395,28 +356,8 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                     currencyLabel={currencyLabel}
                     colCount={headers.length}
                   />
-                  {viewVersion === "V2" && (
-                    <>
-                      <SummaryRow
-                        label="Savings"
-                        value={savings}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                      <SummaryRow
-                        label="Postponed"
-                        value={postponed}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                    </>
-                  )}
-                  {/* Remaining to allocate (V1 only, last row) */}
-                  {viewVersion === "V1" && totalBudget != null && totalBudget > 0 && (() => {
+                  {/* Remaining to allocate */}
+                  {totalBudget != null && totalBudget > 0 && (() => {
                     const remaining = convertValue(totalBudget, currency) - convertValue(total, currency);
                     return (
                       <tr className="border-t border-border bg-muted/30">
