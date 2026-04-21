@@ -348,34 +348,6 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                   )}
 
                   {/* Summary rows */}
-                  {viewVersion === "V2" && (
-                    <>
-                      <SummaryRow
-                        label="Contracted"
-                        value={contracted}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                      <SummaryRow
-                        label="Invoiced"
-                        value={invoiced}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                      <SummaryRow
-                        label="Ongoing"
-                        value={ongoing}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                    </>
-                  )}
                   <SummaryRow
                     label="Planned 3M"
                     value={planned3M}
@@ -384,28 +356,8 @@ export default function MonthlyBreakdownTab({ projectId, fiscalYear, projectCurr
                     currencyLabel={currencyLabel}
                     colCount={headers.length}
                   />
-                  {viewVersion === "V2" && (
-                    <>
-                      <SummaryRow
-                        label="Savings"
-                        value={savings}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                      <SummaryRow
-                        label="Postponed"
-                        value={postponed}
-                        total={total}
-                        currency={currency}
-                        currencyLabel={currencyLabel}
-                        colCount={headers.length}
-                      />
-                    </>
-                  )}
-                  {/* Remaining to allocate (V1 only, last row) */}
-                  {viewVersion === "V1" && totalBudget != null && totalBudget > 0 && (() => {
+                  {/* Remaining to allocate */}
+                  {totalBudget != null && totalBudget > 0 && (() => {
                     const remaining = convertValue(totalBudget, currency) - convertValue(total, currency);
                     return (
                       <tr className="border-t border-border bg-muted/30">
