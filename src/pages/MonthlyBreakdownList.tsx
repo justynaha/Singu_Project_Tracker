@@ -729,6 +729,60 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                             </React.Fragment>
                           );
                         })}
+                        {!showGroups && (() => {
+                          const colCount = fixedColCount + MONTH_KEYS.filter(k => visibleMonths[k]).length + (visibleMonths.total ? 1 : 0);
+                          return flatBuckets.map(sub => sub.projects.length === 0 ? null : (
+                            <React.Fragment key={`flat-${sub.label}`}>
+                              {/* Subsection header */}
+                              <TableRow className={cn("h-10", sub.headerBg)}>
+                                <TableCell colSpan={colCount} className={cn("py-0 px-3 text-sm text-left font-semibold text-muted-foreground sticky left-0 z-10 border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]", sub.headerBg)}>
+                                  {sub.label}
+                                </TableCell>
+                              </TableRow>
+                              {sub.projects.map(p => {
+                                const bd = breakdownMap.get(p.id);
+                                let rowTotal = 0;
+                                if (bd) MONTH_KEYS.forEach(k => { rowTotal += (bd as any)[k] || 0; });
+                                const country = p.site ? siteToCountry[p.site] || "—" : "—";
+                                const site = p.site || "—";
+                                return (
+                                  <TableRow key={p.id} className="h-10">
+                                    <TableCell className="py-0 px-3 sticky left-0 bg-background z-10 border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]">
+                                      <span className="text-primary font-medium cursor-pointer hover:underline" onClick={() => navigate(`/project/${p.id}`)}>
+                                        {projectNumberMap.get(p.id) ?? "—"}
+                                      </span>
+                                    </TableCell>
+                                    {visibleExtraColumns.country && <TableCell className="py-0 px-3 text-sm">{country}</TableCell>}
+                                    {visibleExtraColumns.site && <TableCell className="py-0 px-3 text-sm">{site}</TableCell>}
+                                    {visibleExtraColumns.projectName && <TableCell className="py-0 px-3 font-medium">{p.name}</TableCell>}
+                                    {visibleExtraColumns.budgetType && <TableCell className="py-0 px-3 text-sm">{p.budget_type || "—"}</TableCell>}
+                                    {visibleExtraColumns.budgetClassification && <TableCell className="py-0 px-3 text-sm">{p.budget_classification || "—"}</TableCell>}
+                                    {MONTH_KEYS.map(k => visibleMonths[k] && (
+                                      <TableCell key={k} className="py-0 px-3 text-right tabular-nums bg-muted/40">{formatAmount(bd ? (bd as any)[k] : null)}</TableCell>
+                                    ))}
+                                    {visibleMonths.total && <TableCell className="py-0 px-3 text-right font-bold tabular-nums bg-background sticky right-0 z-10">{formatAmount(rowTotal || null)}</TableCell>}
+                                  </TableRow>
+                                );
+                              })}
+                              <TableRow className={cn("h-10", sub.subtotalBg)}>
+                                <TableCell className={cn("py-0 px-3 sticky left-0 z-10 font-semibold text-sm text-left italic border-r-2 border-border shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.5)]", sub.subtotalBg)} colSpan={fixedColCount}>
+                                  Subtotal {sub.label}
+                                </TableCell>
+                                {MONTH_KEYS.map(k => visibleMonths[k] && (
+                                  <TableCell key={k} className="py-0 px-3 text-right tabular-nums font-semibold bg-muted/40">{formatAmount(sub.subtotals[k])}</TableCell>
+                                ))}
+                                {visibleMonths.total && (
+                                  <TableCell className={cn("py-0 px-3 text-right tabular-nums font-semibold sticky right-0 z-10", sub.subtotalBg)}>
+                                    {formatAmount(sub.subtotals.total || null)}
+                                  </TableCell>
+                                )}
+                              </TableRow>
+                              <TableRow className="h-4 border-0">
+                                <TableCell colSpan={colCount} className="p-0 border-0 sticky left-0" />
+                              </TableRow>
+                            </React.Fragment>
+                          ));
+                        })()}
                       </>
                     )}
                     {filteredProjects.length > 0 && (
