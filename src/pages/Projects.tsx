@@ -734,8 +734,8 @@ export default function Projects() {
                 {visibleColumns.progress && <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>}
                 {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
                 {visibleColumns.workCategory && <th className="text-left py-2 px-4 text-sm font-medium w-44">Work category</th>}
-                {visibleColumns.budgetType && <th className="text-left py-2 px-4 text-sm font-medium w-44">Budget type</th>}
-                {visibleColumns.budgetClassification && <th className="text-left py-2 px-4 text-sm font-medium w-28">Classification</th>}
+                {visibleColumns.budgetType && <th className="text-left py-2 px-4 text-sm font-medium whitespace-nowrap w-auto">Budget type</th>}
+                {visibleColumns.budgetClassification && <th className="text-left py-2 px-4 text-sm font-medium whitespace-nowrap w-auto">Classification</th>}
                 {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget</th>}
               </tr>
             </thead>
