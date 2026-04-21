@@ -102,7 +102,7 @@ export default function Projects() {
     { key: "fiscalYear", label: "Fiscal year" },
     { key: "workCategory", label: "Work category" },
     { key: "budgetType", label: "Budget type" },
-    { key: "budgetClassification", label: "Budget classification" },
+    { key: "budgetClassification", label: "Classification" },
     { key: "budget", label: "Budget" },
   ];
   const activeProjectTypes = useMemo(() => projectTypes.filter(pt => pt.status === "active"), [projectTypes]);
@@ -735,7 +735,7 @@ export default function Projects() {
                 {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
                 {visibleColumns.workCategory && <th className="text-left py-2 px-4 text-sm font-medium w-44">Work category</th>}
                 {visibleColumns.budgetType && <th className="text-left py-2 px-4 text-sm font-medium w-32">Budget type</th>}
-                {visibleColumns.budgetClassification && <th className="text-left py-2 px-4 text-sm font-medium w-40">Budget classification</th>}
+                {visibleColumns.budgetClassification && <th className="text-left py-2 px-4 text-sm font-medium w-40">Classification</th>}
                 {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget</th>}
               </tr>
             </thead>
