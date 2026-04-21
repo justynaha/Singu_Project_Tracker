@@ -20,6 +20,10 @@ interface Project {
   currency?: string | null;
   address?: string | null;
   work_description?: string | null;
+  fund_id?: string | null;
+  cc_code?: string | null;
+  area_sqm?: number | null;
+  budget_eur?: number | null;
 }
 
 interface OverviewTabProps {
