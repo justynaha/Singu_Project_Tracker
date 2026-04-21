@@ -252,7 +252,8 @@ const EditSiteForm = ({ site, onCancel, initialBudget, onSaved }: EditSiteFormPr
           <Input
             type="number"
             placeholder={`Amount in ${site.currency || "LC"}`}
-            defaultValue={site.budget ?? ""}
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
           />
         </div>
       </div>
@@ -262,7 +263,7 @@ const EditSiteForm = ({ site, onCancel, initialBudget, onSaved }: EditSiteFormPr
         <button className="text-sm text-destructive hover:underline">Remove property</button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button onClick={onCancel}>Save</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
         </div>
       </div>
     </div>
