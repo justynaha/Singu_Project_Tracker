@@ -101,9 +101,16 @@ export default function OverviewTab({ project }: OverviewTabProps) {
       <DetailRow label="Project end date" value={formatDate(project.end_date)} />
       <DetailRow label="Work category" value={project.budget_line || null} />
       <DetailRow label="Fiscal year" value={project.fiscal_year} />
+      <DetailRow label="Fund ID" value={project.fund_id} />
+      <DetailRow label="CC Code" value={project.cc_code} />
+      <DetailRow label="Area (sqm)" value={project.area_sqm != null ? project.area_sqm.toLocaleString("en-US") : null} />
       <DetailRow 
-        label="Budget" 
+        label="Budget LC" 
         value={project.total_budget ? formatCurrency(project.total_budget, project.currency || "PLN") : null} 
+      />
+      <DetailRow 
+        label="Budget EUR" 
+        value={project.budget_eur ? formatCurrency(Number(project.budget_eur), "EUR") : null} 
       />
       <DetailRow label="Status" value={project.status} />
     </div>
