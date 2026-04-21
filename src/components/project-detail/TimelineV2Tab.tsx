@@ -544,7 +544,7 @@ const DEFAULT_MILESTONES = [
   "Closure and Financial Settlement",
 ];
 
-function MilestoneStatusWidget({
+export function MilestoneStatusWidget({
   milestones,
   allItems,
   trackingStatus,
