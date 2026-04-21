@@ -910,7 +910,7 @@ export default function Projects() {
                       </td>
                       )}
                       {visibleColumns.workCategory && (
-                      <td className="py-2 px-4 text-left">
+                      <td className="py-2 px-4 text-left whitespace-nowrap">
                         <Badge variant="outline" className="text-xs bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600">
                           {project.budget_line || "Unassigned"}
                         </Badge>
