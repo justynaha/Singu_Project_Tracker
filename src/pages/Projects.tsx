@@ -863,10 +863,10 @@ export default function Projects() {
                                 <Badge 
                                   variant="outline" 
                                   className={cn(
-                                    "text-xs font-medium cursor-pointer w-fit",
+                                    "text-xs font-medium cursor-pointer w-fit bg-transparent border-transparent px-0",
                                     progress.onTrack 
-                                      ? "bg-success/10 text-success border-success" 
-                                      : "bg-destructive text-destructive-foreground border-destructive"
+                                      ? "text-success" 
+                                      : "text-destructive"
                                   )}
                                 >
                                   {progress.onTrack ? "on track" : "off track"}
