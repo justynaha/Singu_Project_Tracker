@@ -323,6 +323,17 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     });
   }, [filteredProjects, breakdownMap]);
 
+  const showGroups = filterSiteGroups.length > 0;
+
+  const flatBuckets = useMemo(() => {
+    const icProjects = filteredProjects.filter(p => p.budget_type === 'IC');
+    const adHocProjects = filteredProjects.filter(p => p.budget_type !== 'IC');
+    return [
+      { label: "IC", projects: icProjects, subtotals: calculateSubtotals(icProjects), headerBg: "bg-blue-50", subtotalBg: "bg-blue-100" },
+      { label: "Ad Hoc", projects: adHocProjects, subtotals: calculateSubtotals(adHocProjects), headerBg: "bg-orange-50", subtotalBg: "bg-orange-50" },
+    ];
+  }, [filteredProjects, breakdownMap]);
+
   const loading = projectsLoading || bdLoading;
 
   // XLS Export
