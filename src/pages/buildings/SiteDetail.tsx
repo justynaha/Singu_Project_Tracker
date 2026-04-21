@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { sites } from "@/data/buildingsData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import EditSiteForm from "@/components/buildings/EditSiteForm";
+import { supabase } from "@/integrations/supabase/client";
 
 const SiteDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { siteId } = useParams<{ siteId: string }>();
   const site = sites.find((s) => s.id === siteId);
+  const [fxRate, setFxRate] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!site?.currency) return;
+    if (site.currency === "EUR") { setFxRate(1); return; }
+    supabase
+      .from("fx_rates")
+      .select("rate")
+      .eq("currency", site.currency)
+      .order("valid_from", { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) setFxRate(Number(data[0].rate));
+      });
+  }, [site?.currency]);
 
   if (!site) {
     return <div className="p-6">Property not found</div>;
@@ -48,11 +64,21 @@ const SiteDetail = () => {
     { label: "Dictionary type:", value: site.dictionaryType },
   ];
 
+  const budgetNum = site ? Number((site.budget ?? "").toString().replace(/[^\d.-]/g, "")) : 0;
+  const fmt = (n: number, cur: string) =>
+    `${cur} ${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const budgetValue = site?.budget
+    ? fxRate && fxRate > 0
+      ? `${fmt(budgetNum, site.currency)}  /  ${fmt(budgetNum / fxRate, "EUR")}`
+      : fmt(budgetNum, site!.currency)
+    : "";
+
   const projectTrackerFields = [
     { label: "Fund ID:", value: site.fundId },
     { label: "Legal Entity:", value: site.legalEntity },
     { label: "CC Code:", value: site.ccCode },
     { label: "Area (sqm):", value: site.areaSqm },
+    { label: "Budget:", value: budgetValue },
   ];
 
   return (
