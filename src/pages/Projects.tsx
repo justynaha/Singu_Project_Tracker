@@ -962,7 +962,7 @@ export default function Projects() {
                       <td className="py-2 px-4 text-right">
                         {project.total_budget && project.total_budget > 0 ? (
                           <div className="space-y-0.5">
-                            <div className="text-sm font-medium">
+                            <div className="text-sm font-semibold">
                               {project.currency || "PLN"} {project.total_budget.toLocaleString('de-DE', { minimumFractionDigits: 2 })}
                             </div>
                             <div className="text-xs text-muted-foreground">
