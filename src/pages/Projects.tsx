@@ -897,6 +897,28 @@ export default function Projects() {
                         </Badge>
                       </td>
                       )}
+                      {visibleColumns.budgetType && (
+                      <td className="py-2 px-4 text-left">
+                        {project.budget_type ? (
+                          <Badge variant="outline" className="text-xs bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800">
+                            {project.budget_type}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </td>
+                      )}
+                      {visibleColumns.budgetClassification && (
+                      <td className="py-2 px-4 text-left">
+                        {project.budget_classification ? (
+                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+                            {project.budget_classification}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </td>
+                      )}
                       {visibleColumns.budget && (
                       <td className="py-2 px-4 text-right">
                         {project.total_budget && project.total_budget > 0 ? (
