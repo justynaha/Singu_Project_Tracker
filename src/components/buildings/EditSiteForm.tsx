@@ -216,6 +216,16 @@ const EditSiteForm = ({ site, onCancel }: EditSiteFormProps) => {
           <Label className="text-sm font-medium pt-2">Area (sqm)</Label>
           <Input defaultValue={site.areaSqm} />
         </div>
+
+        {/* Budget */}
+        <div className="grid grid-cols-[200px_1fr] items-start gap-4">
+          <Label className="text-sm font-medium pt-2">Budget</Label>
+          <Input
+            type="number"
+            placeholder={`Amount in ${site.currency || "LC"}`}
+            defaultValue={site.budget ?? ""}
+          />
+        </div>
       </div>
 
       {/* Footer */}

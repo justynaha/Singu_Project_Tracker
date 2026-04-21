@@ -20,6 +20,7 @@ export interface Site {
   legalEntity: string;
   ccCode: string;
   areaSqm: string;
+  budget?: string;
 }
 
 export interface Building {
