@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -10,9 +13,35 @@ import type { Site } from "@/data/buildingsData";
 interface EditSiteFormProps {
   site: Site;
   onCancel: () => void;
+  initialBudget?: number | null;
+  onSaved?: () => void;
 }
 
-const EditSiteForm = ({ site, onCancel }: EditSiteFormProps) => {
+const EditSiteForm = ({ site, onCancel, initialBudget, onSaved }: EditSiteFormProps) => {
+  const { toast } = useToast();
+  const [budget, setBudget] = useState<string>(
+    initialBudget != null ? String(initialBudget) : ""
+  );
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const value = budget === "" ? 0 : Number(budget);
+    const { error } = await (supabase as any)
+      .from("site_budgets")
+      .upsert(
+        { site_id: site.id, budget_lc: value, currency: site.currency || "PLN" },
+        { onConflict: "site_id" }
+      );
+    setSaving(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Saved" });
+    onSaved ? onSaved() : onCancel();
+  };
+
   return (
     <div>
       {/* Wizard steps */}
