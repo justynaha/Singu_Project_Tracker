@@ -919,7 +919,15 @@ export default function Projects() {
                       {visibleColumns.budgetType && (
                       <td className="py-2 px-4 text-left whitespace-nowrap">
                         {project.budget_type ? (
-                          <Badge variant="outline" className="text-xs bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs",
+                              project.budget_type === "IC"
+                                ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800"
+                                : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600"
+                            )}
+                          >
                             {project.budget_type}
                           </Badge>
                         ) : (
@@ -930,7 +938,15 @@ export default function Projects() {
                       {visibleColumns.budgetClassification && (
                       <td className="py-2 px-4 text-left whitespace-nowrap">
                         {project.budget_classification ? (
-                          <Badge variant="outline" className="text-xs bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs",
+                              project.budget_classification === "Speculative"
+                                ? "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800"
+                                : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600"
+                            )}
+                          >
                             {project.budget_classification}
                           </Badge>
                         ) : (
