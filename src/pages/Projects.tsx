@@ -733,7 +733,7 @@ export default function Projects() {
                 {visibleColumns.milestones && <th className="text-left py-2 px-4 text-sm font-medium w-52">Milestones</th>}
                 {visibleColumns.progress && <th className="text-left py-2 px-4 text-sm font-medium w-44">Progress</th>}
                 {visibleColumns.fiscalYear && <th className="text-left py-2 px-4 text-sm font-medium w-24">Fiscal year</th>}
-                {visibleColumns.workCategory && <th className="text-left py-2 px-4 text-sm font-medium w-44">Work category</th>}
+                {visibleColumns.workCategory && <th className="text-left py-2 px-4 text-sm font-medium whitespace-nowrap w-auto">Work category</th>}
                 {visibleColumns.budgetType && <th className="text-left py-2 px-4 text-sm font-medium whitespace-nowrap w-auto">Budget type</th>}
                 {visibleColumns.budgetClassification && <th className="text-left py-2 px-4 text-sm font-medium whitespace-nowrap w-auto">Classification</th>}
                 {visibleColumns.budget && <th className="text-right py-2 px-4 text-sm font-medium w-48">Budget</th>}
@@ -910,7 +910,7 @@ export default function Projects() {
                       </td>
                       )}
                       {visibleColumns.workCategory && (
-                      <td className="py-2 px-4 text-left">
+                      <td className="py-2 px-4 text-left whitespace-nowrap">
                         <Badge variant="outline" className="text-xs bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600">
                           {project.budget_line || "Unassigned"}
                         </Badge>
