@@ -673,7 +673,7 @@ export function MilestoneStatusWidget({
   );
 }
 
-function BudgetWidget({ 
+export function BudgetWidget({ 
   budget,
   forecasted,
   contracted,
