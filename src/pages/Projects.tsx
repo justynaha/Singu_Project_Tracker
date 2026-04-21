@@ -805,7 +805,7 @@ export default function Projects() {
                       </td>
                       )}
                       {visibleColumns.title && (
-                      <td className="py-2 px-4 text-sm text-primary font-medium">{project.name}</td>
+                      <td className="py-2 px-4 text-sm text-primary font-medium whitespace-nowrap overflow-hidden text-ellipsis" style={{ maxWidth: '400px' }}>{project.name}</td>
                       )}
                       {visibleColumns.property && (
                       <td className="py-2 px-4 text-sm text-muted-foreground">
