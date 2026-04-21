@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import ProjectHeader from "@/components/project-detail/ProjectHeader";
-import TimelineV2Tab from "@/components/project-detail/TimelineV2Tab";
+import TimelineV2Tab, { MilestoneStatusWidget, BudgetWidget } from "@/components/project-detail/TimelineV2Tab";
 import OverviewTab from "@/components/project-detail/OverviewTab";
 import FilesTab from "@/components/project-detail/FilesTab";
 import ContractsTab from "@/components/project-detail/ContractsTab";
@@ -178,6 +178,25 @@ export default function ProjectDetail() {
       <div className="flex-1 min-w-0 overflow-y-auto">
         <div className="p-6">
           <ProjectHeader projectNo={project.id.slice(0, 8)} projectName={project.name} site={project.site} address={project.address} onEdit={() => setShowEditModal(true)} />
+
+          {/* Status and Budget Widget (above tabs) */}
+          <div className="flex mb-6 pb-6 border-b border-border">
+            <MilestoneStatusWidget
+              milestones={timelineItems.filter((i) => i.type === "milestone")}
+              allItems={timelineItems}
+              trackingStatus={trackingStatus}
+              offTrackMessage={offTrackMessage}
+            />
+            <BudgetWidget
+              budget={totalBudget}
+              forecasted={cashflowTotals.forecasted}
+              contracted={totalContracted}
+              invoiced={totalInvoiced}
+              currency={costs[0]?.currency || "EUR"}
+              budgetLc={project?.total_budget || 0}
+              localCurrency={project?.currency || "EUR"}
+            />
+          </div>
 
           {/* Tabs */}
           <div className="bg-card border border-border rounded-lg">
