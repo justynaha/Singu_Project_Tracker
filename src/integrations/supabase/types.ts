@@ -469,6 +469,33 @@ export type Database = {
         }
         Relationships: []
       }
+      site_budgets: {
+        Row: {
+          budget_lc: number
+          created_at: string
+          currency: string
+          id: string
+          site_id: string
+          updated_at: string
+        }
+        Insert: {
+          budget_lc?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          site_id: string
+          updated_at?: string
+        }
+        Update: {
+          budget_lc?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          site_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       timeline_item_comments: {
         Row: {
           author_name: string
