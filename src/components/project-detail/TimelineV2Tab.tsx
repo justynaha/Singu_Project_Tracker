@@ -544,7 +544,7 @@ const DEFAULT_MILESTONES = [
   "Closure and Financial Settlement",
 ];
 
-function MilestoneStatusWidget({
+export function MilestoneStatusWidget({
   milestones,
   allItems,
   trackingStatus,
@@ -673,7 +673,7 @@ function MilestoneStatusWidget({
   );
 }
 
-function BudgetWidget({ 
+export function BudgetWidget({ 
   budget,
   forecasted,
   contracted,
@@ -1183,25 +1183,6 @@ export default function TimelineV2Tab({
 
   return (
     <div className="p-6">
-      {/* Status and Budget Widget */}
-      <div className="flex mb-8 pb-6 border-b border-border">
-        <MilestoneStatusWidget
-          milestones={milestones}
-          allItems={items}
-          trackingStatus={trackingStatus}
-          offTrackMessage={offTrackMessage}
-        />
-        <BudgetWidget
-          budget={budget}
-          forecasted={totals.forecasted}
-          contracted={propContracted}
-          invoiced={totals.invoiced}
-          currency={currency}
-          budgetLc={budgetLc}
-          localCurrency={localCurrency}
-        />
-      </div>
-
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">Project Plan</h2>
         <div className="flex items-center gap-2">
