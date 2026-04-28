@@ -300,12 +300,10 @@ export default function Projects() {
   };
 
   const DEFAULT_MILESTONES = [
-    "Planning and Concept",
-    "Tendering",
-    "Formal Approval and Contracting",
-    "Logistics and Work Kick-off",
-    "Execution and Delivery",
-    "Closure and Financial Settlement",
+    "Preparation start",
+    "Tendering start",
+    "Works on site start",
+    "Works completed",
   ];
 
   const handleFormSubmit = async () => {
