@@ -53,6 +53,59 @@ const STATUS_OPTIONS = [
   { value: "done", label: "Done", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
 ];
 
+const RESPONSIBLE_OPTIONS = [
+  "Anna Kowalski",
+  "Marek Nowak",
+  "Sophie Dubois",
+  "Liam O'Connor",
+  "Elena Rossi",
+  "Tomasz Wiśniewski",
+  "Hannah Müller",
+  "Diego Fernández",
+  "Yuki Tanaka",
+  "Olivia Smith",
+];
+
+function ResponsibleDropdown({
+  value,
+  onChange,
+}: {
+  value: string | null | undefined;
+  onChange: (val: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button className="text-left text-sm hover:bg-muted/50 px-2 py-1 rounded min-w-[120px] flex items-center justify-between gap-2">
+          <span className={cn(!value && "text-muted-foreground")}>{value || "--"}</span>
+          <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-1 z-50 bg-popover" align="start">
+        <button
+          onClick={() => { onChange(null); setOpen(false); }}
+          className="w-full text-left px-2 py-1.5 rounded text-xs text-muted-foreground hover:bg-muted/50 flex items-center justify-between"
+        >
+          Unassigned
+          {!value && <Check className="h-3.5 w-3.5" />}
+        </button>
+        <div className="h-px bg-border my-1" />
+        {RESPONSIBLE_OPTIONS.map((name) => (
+          <button
+            key={name}
+            onClick={() => { onChange(name); setOpen(false); }}
+            className="w-full text-left px-2 py-1.5 rounded text-xs hover:bg-muted/50 flex items-center justify-between"
+          >
+            {name}
+            {value === name && <Check className="h-3.5 w-3.5" />}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 interface ColumnConfig {
   id: string;
   label: string;
@@ -1089,10 +1142,9 @@ export default function TimelineV2Tab({
         );
       case "responsible":
         return (
-          <EditableTextCell
+          <ResponsibleDropdown
             value={item.responsible}
             onChange={(val) => handleResponsibleChange(item.id, val)}
-            placeholder="Responsible"
           />
         );
       case "start_date":
