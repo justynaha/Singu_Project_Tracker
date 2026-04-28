@@ -647,7 +647,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                       {visibleExtraColumns.projectName && <TableHead className="h-10 py-0 px-3 min-w-[200px]">Project Name</TableHead>}
                       {visibleExtraColumns.budgetType && <TableHead className="h-10 py-0 px-3">Budget Type</TableHead>}
                       {visibleExtraColumns.budgetClassification && <TableHead className="h-10 py-0 px-3">Budget Classification</TableHead>}
-                      {MONTH_KEYS.map((k, i) => visibleMonths[k] && <TableHead key={k} className="h-10 py-0 px-3 text-right min-w-[100px] bg-muted/40">{MONTH_HEADERS[i]}</TableHead>)}
+                      {MONTH_KEYS.map((k, i) => visibleMonths[k] && <TableHead key={k} className="h-10 py-0 px-3 text-right min-w-[100px] bg-background">{MONTH_HEADERS[i]}</TableHead>)}
                       {visibleMonths.total && <TableHead className="h-10 py-0 px-3 text-right min-w-[140px] font-bold bg-background sticky right-0 z-40">Total (EUR)</TableHead>}
                     </TableRow>
                   </TableHeader>
