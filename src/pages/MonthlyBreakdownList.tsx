@@ -120,6 +120,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
   const [pendingBudgetType, setPendingBudgetType] = useState("");
   const [pendingBudgetClassification, setPendingBudgetClassification] = useState("");
+  const [pendingFundName, setPendingFundName] = useState("");
 
   const [filterCountry, setFilterCountry] = useState("");
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
@@ -129,6 +130,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
   const [filterBudgetType, setFilterBudgetType] = useState("");
   const [filterBudgetClassification, setFilterBudgetClassification] = useState("");
+  const [filterFundName, setFilterFundName] = useState("");
 
   // Column visibility
   const [visibleMonths, setVisibleMonths] = useState<Record<string, boolean>>(
@@ -152,7 +154,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const baseColCount = 1 + (visibleExtraColumns.country ? 1 : 0) + (visibleExtraColumns.site ? 1 : 0) + (visibleExtraColumns.projectName ? 1 : 0);
   const fixedColCount = baseColCount + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0);
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification;
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification || filterFundName;
 
   const applyFilters = () => {
     setFilterCountry(pendingCountry);
@@ -163,16 +165,17 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     setFilterSiteGroups(pendingSiteGroups);
     setFilterBudgetType(pendingBudgetType);
     setFilterBudgetClassification(pendingBudgetClassification);
+    setFilterFundName(pendingFundName);
     setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setPendingCountry(""); setPendingBudgetLine(""); setPendingSite("");
     setPendingStatus(""); setPendingFiscalYear(""); setPendingSiteGroups([]);
-    setPendingBudgetType(""); setPendingBudgetClassification("");
+    setPendingBudgetType(""); setPendingBudgetClassification(""); setPendingFundName("");
     setFilterCountry(""); setFilterBudgetLine(""); setFilterSite("");
     setFilterStatus(""); setFilterFiscalYear(""); setFilterSiteGroups([]);
-    setFilterBudgetType(""); setFilterBudgetClassification("");
+    setFilterBudgetType(""); setFilterBudgetClassification(""); setFilterFundName("");
   };
 
   const togglePendingSiteGroup = (group: string) => {
