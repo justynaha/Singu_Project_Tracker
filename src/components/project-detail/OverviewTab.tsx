@@ -74,8 +74,18 @@ export default function OverviewTab({ project }: OverviewTabProps) {
     }
   };
 
-  const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  const matchedSite = project.site ? sites.find(s => normalize(s.name) === normalize(project.site!)) : null;
+  const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const matchedSite = project.site
+    ? (() => {
+        const q = normalize(project.site!);
+        return (
+          sites.find(s => normalize(s.name) === q) ||
+          sites.find(s => normalize(s.name).includes(q)) ||
+          sites.find(s => q.includes(normalize(s.name))) ||
+          null
+        );
+      })()
+    : null;
 
   const currency = project.currency || matchedSite?.currency || "PLN";
 
