@@ -1,25 +1,21 @@
 ## Goal
-Make "Budget classification" in the Add Project modal conditional on the selected Property, with options driven by that property's fund.
 
-## Behavior
-1. **Hidden by default** — The "Budget classification" field is not rendered until a Property (Site) is selected.
-2. **Once Property is selected** — The field appears with:
-   - An "i" info icon next to the label.
-   - Tooltip text: *"Available classification options depend on the fund of the selected property."*
-3. **Options based on fund** — Look up the selected site in `src/data/buildingsData.ts` and read `fundId`/fund name:
-   - **MUSEL** (treat sites whose name maps to the MUSEL fund — currently we only display "MUSEL" in the UI, so map all `fundId` starting with `S13` to MUSEL for the prototype): show **Mandatory / Speculative**.
-   - **Other funds (FundName1, FundName2)**: show generic options **Standard / Custom**.
-4. **Reset on Property change** — If the user changes the Property and the new fund doesn't include the previously selected option, clear `formData.budgetClassification`.
-5. **Submit guard** — `Add project` button stays disabled until a classification is picked (existing rule unchanged).
+Ensure every existing project has exactly these 4 milestones, in this order:
+1. Preparation start
+2. Tendering start
+3. Works on site start
+4. Works completed
 
-## Technical notes
-- File: `src/pages/Projects.tsx` (modal section ~lines 1049 and 1249–1265).
-- Add a helper `getFundForSite(siteName)` and `getClassificationOptions(fund)` near the top of the component.
-- Use existing `Tooltip`/`TooltipProvider`/`Info` imports already used for the Currency field (line ~1207).
-- Wrap the entire `<div>` containing the "Budget classification" label and `RadioGroup` in `{formData.site && (...)}`.
-- Replace the hardcoded radio items with a `.map()` over the dynamic options array.
-- Add a `useEffect` (or inline check inside the site `onValueChange`) to reset `budgetClassification` when the new property's fund options don't include it.
+## Approach
 
-## Out of scope
-- No changes to the Edit Project modal, project list filters, or reports.
-- No DB schema changes (classification stays a free string).
+Run a data operation (via the insert/update tool) that:
+
+1. Detaches any tasks currently nested under a milestone by setting `timeline_items.parent_id = NULL` where the parent is a milestone (preserves tasks).
+2. Deletes related `milestone_cashflow` rows for existing milestones (avoids orphans).
+3. Deletes all rows in `timeline_items` where `type = 'milestone'`.
+4. Inserts the 4 milestones for every project via `INSERT ... SELECT ... CROSS JOIN`, with `sort_order` 0–3 and `status = 'not-started'`.
+
+## Notes
+
+- Tasks remain in the project but become unparented (top-level) — same behavior as the prior reset.
+- No schema changes; no code changes. Frontend already uses these 4 as defaults for new projects.
