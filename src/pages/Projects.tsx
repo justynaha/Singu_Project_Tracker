@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useProjects, CreateProjectInput } from "@/hooks/useProjects";
 import { SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
+import { sites as buildingSites } from "@/data/buildingsData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
