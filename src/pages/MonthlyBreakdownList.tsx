@@ -120,6 +120,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [pendingSiteGroups, setPendingSiteGroups] = useState<string[]>([]);
   const [pendingBudgetType, setPendingBudgetType] = useState("");
   const [pendingBudgetClassification, setPendingBudgetClassification] = useState("");
+  const [pendingFundName, setPendingFundName] = useState("");
 
   const [filterCountry, setFilterCountry] = useState("");
   const [filterBudgetLine, setFilterBudgetLine] = useState("");
@@ -129,6 +130,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const [filterSiteGroups, setFilterSiteGroups] = useState<string[]>([]);
   const [filterBudgetType, setFilterBudgetType] = useState("");
   const [filterBudgetClassification, setFilterBudgetClassification] = useState("");
+  const [filterFundName, setFilterFundName] = useState("");
 
   // Column visibility
   const [visibleMonths, setVisibleMonths] = useState<Record<string, boolean>>(
@@ -152,7 +154,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const baseColCount = 1 + (visibleExtraColumns.country ? 1 : 0) + (visibleExtraColumns.site ? 1 : 0) + (visibleExtraColumns.projectName ? 1 : 0);
   const fixedColCount = baseColCount + (visibleExtraColumns.budgetType ? 1 : 0) + (visibleExtraColumns.budgetClassification ? 1 : 0);
 
-  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification;
+  const hasAppliedFilters = filterCountry || filterSite || filterBudgetLine || filterStatus || filterFiscalYear || filterSiteGroups.length > 0 || filterBudgetType || filterBudgetClassification || filterFundName;
 
   const applyFilters = () => {
     setFilterCountry(pendingCountry);
@@ -163,16 +165,17 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     setFilterSiteGroups(pendingSiteGroups);
     setFilterBudgetType(pendingBudgetType);
     setFilterBudgetClassification(pendingBudgetClassification);
+    setFilterFundName(pendingFundName);
     setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setPendingCountry(""); setPendingBudgetLine(""); setPendingSite("");
     setPendingStatus(""); setPendingFiscalYear(""); setPendingSiteGroups([]);
-    setPendingBudgetType(""); setPendingBudgetClassification("");
+    setPendingBudgetType(""); setPendingBudgetClassification(""); setPendingFundName("");
     setFilterCountry(""); setFilterBudgetLine(""); setFilterSite("");
     setFilterStatus(""); setFilterFiscalYear(""); setFilterSiteGroups([]);
-    setFilterBudgetType(""); setFilterBudgetClassification("");
+    setFilterBudgetType(""); setFilterBudgetClassification(""); setFilterFundName("");
   };
 
   const togglePendingSiteGroup = (group: string) => {
@@ -442,7 +445,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
             (filterStatus ? 1 : 0) +
             (filterFiscalYear ? 1 : 0) +
             (filterBudgetType ? 1 : 0) +
-            (filterBudgetClassification ? 1 : 0);
+            (filterBudgetClassification ? 1 : 0) +
+            (filterFundName ? 1 : 0);
           return (
             <div className="flex items-center gap-3 mb-3">
               <div className="relative flex-1 max-w-md">
@@ -546,6 +550,18 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="min-w-[110px] flex-1">
+                  <Label className="text-xs text-muted-foreground mb-2 block">Fund name</Label>
+                  <Select value={pendingFundName || "all"} onValueChange={v => setPendingFundName(v === "all" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="All funds" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All funds</SelectItem>
+                      <SelectItem value="MUSEL">MUSEL</SelectItem>
+                      <SelectItem value="FundName1">FundName1</SelectItem>
+                      <SelectItem value="FundName2">FundName2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button className="shrink-0" onClick={applyFilters}>
                   <Search className="h-4 w-4 mr-2" />Search
                 </Button>
@@ -570,6 +586,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
             {filterFiscalYear && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">FY {filterFiscalYear}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFiscalYear(""); setPendingFiscalYear(""); }} /></Badge>}
             {filterBudgetType && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">Type: {filterBudgetType}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetType(""); setPendingBudgetType(""); }} /></Badge>}
             {filterBudgetClassification && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">{filterBudgetClassification}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterBudgetClassification(""); setPendingBudgetClassification(""); }} /></Badge>}
+            {filterFundName && <Badge variant="secondary" className="px-3 py-1.5 text-sm gap-2">Fund: {filterFundName}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => { setFilterFundName(""); setPendingFundName(""); }} /></Badge>}
             <Button variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
           </div>
         )}
