@@ -1274,23 +1274,36 @@ export default function Projects() {
               </RadioGroup>
             </div>
 
-            <div>
-              <Label>Budget classification <span className="text-destructive">*</span></Label>
-              <RadioGroup
-                value={formData.budgetClassification}
-                onValueChange={(val) => setFormData({ ...formData, budgetClassification: val })}
-                className="flex gap-6 mt-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Mandatory" id="budget-class-mandatory" />
-                  <Label htmlFor="budget-class-mandatory" className="font-normal cursor-pointer">Mandatory</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Speculative" id="budget-class-speculative" />
-                  <Label htmlFor="budget-class-speculative" className="font-normal cursor-pointer">Speculative</Label>
-                </div>
-              </RadioGroup>
-            </div>
+            {formData.site && (
+              <div>
+                <Label className="flex items-center gap-1.5">
+                  Budget classification <span className="text-destructive">*</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        Available classification options depend on the fund of the selected property
+                        {getFundForSite(formData.site) ? ` (${getFundForSite(formData.site)})` : ""}.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <RadioGroup
+                  value={formData.budgetClassification}
+                  onValueChange={(val) => setFormData({ ...formData, budgetClassification: val })}
+                  className="flex gap-6 mt-2"
+                >
+                  {getClassificationOptions(getFundForSite(formData.site)).map((opt) => (
+                    <div key={opt} className="flex items-center space-x-2">
+                      <RadioGroupItem value={opt} id={`budget-class-${opt.toLowerCase()}`} />
+                      <Label htmlFor={`budget-class-${opt.toLowerCase()}`} className="font-normal cursor-pointer">{opt}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowNewProject(false)}>
