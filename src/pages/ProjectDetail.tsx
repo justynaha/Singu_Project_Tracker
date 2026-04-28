@@ -180,7 +180,7 @@ export default function ProjectDetail() {
           <ProjectHeader projectNo={project.id.slice(0, 8)} projectName={project.name} site={project.site} address={project.address} onEdit={() => setShowEditModal(true)} />
 
           {/* Status and Budget Widget (above tabs) */}
-          <div className="flex mb-6 bg-card border border-border rounded-lg overflow-hidden p-2">
+          <div className="flex mb-6 bg-card border border-border rounded-lg overflow-hidden p-2 pr-6">
             <MilestoneStatusWidget
               milestones={timelineItems.filter((i) => i.type === "milestone")}
               allItems={timelineItems}
