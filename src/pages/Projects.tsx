@@ -923,7 +923,7 @@ export default function Projects() {
                             variant="outline"
                             className={cn(
                               "text-xs",
-                              project.budget_type === "IC"
+                              project.budget_type === "Budgeted"
                                 ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800"
                                 : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600"
                             )}
@@ -1236,8 +1236,8 @@ export default function Projects() {
                 className="flex gap-6 mt-2"
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="IC" id="budget-type-ic" />
-                  <Label htmlFor="budget-type-ic" className="font-normal cursor-pointer">IC</Label>
+                  <RadioGroupItem value="Budgeted" id="budget-type-budgeted" />
+                  <Label htmlFor="budget-type-budgeted" className="font-normal cursor-pointer">Budgeted</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Ad Hoc" id="budget-type-adhoc" />
