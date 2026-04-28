@@ -85,7 +85,7 @@ export default function AcgReport() {
                   Total (EUR)
                 </TableHead>
                 <TableHead rowSpan={2} className="sticky top-0 z-20 bg-background text-right align-bottom">
-                  IC Budget (EUR)
+                  Budgeted (EUR)
                 </TableHead>
                 <TableHead rowSpan={2} className="sticky top-0 z-20 bg-background text-right align-bottom">
                   SocGen Budget *
