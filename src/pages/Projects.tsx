@@ -1042,7 +1042,14 @@ export default function Projects() {
               <Label htmlFor="site">
                 Property<span className="text-destructive">*</span>
               </Label>
-              <Select value={formData.site} onValueChange={(val) => setFormData({ ...formData, site: val })}>
+              <Select value={formData.site} onValueChange={(val) => {
+                const newOptions = getClassificationOptions(getFundForSite(val));
+                setFormData((prev) => ({
+                  ...prev,
+                  site: val,
+                  budgetClassification: newOptions.includes(prev.budgetClassification) ? prev.budgetClassification : "",
+                }));
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose property" />
                 </SelectTrigger>
