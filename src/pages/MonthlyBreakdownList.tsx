@@ -318,8 +318,8 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
     return order.filter(k => groups[k]?.length).map(k => {
       const gProjects = groups[k];
       const subtotals = calculateSubtotals(gProjects);
-      const icProjects = gProjects.filter(p => p.budget_type === 'IC');
-      const adHocProjects = gProjects.filter(p => p.budget_type !== 'IC');
+      const icProjects = gProjects.filter(p => p.budget_type === 'Budgeted');
+      const adHocProjects = gProjects.filter(p => p.budget_type !== 'Budgeted');
       const icSubtotals = calculateSubtotals(icProjects);
       const adHocSubtotals = calculateSubtotals(adHocProjects);
       return { group: k, label: SITE_GROUP_DISPLAY[k] || k, projects: gProjects, subtotals, icProjects, icSubtotals, adHocProjects, adHocSubtotals };
@@ -329,10 +329,10 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
   const showGroups = filterSiteGroups.length > 0;
 
   const flatBuckets = useMemo(() => {
-    const icProjects = filteredProjects.filter(p => p.budget_type === 'IC');
-    const adHocProjects = filteredProjects.filter(p => p.budget_type !== 'IC');
+    const icProjects = filteredProjects.filter(p => p.budget_type === 'Budgeted');
+    const adHocProjects = filteredProjects.filter(p => p.budget_type !== 'Budgeted');
     return [
-      { label: "IC", projects: icProjects, subtotals: calculateSubtotals(icProjects), headerBg: "bg-blue-50", subtotalBg: "bg-blue-100" },
+      { label: "Budgeted", projects: icProjects, subtotals: calculateSubtotals(icProjects), headerBg: "bg-blue-50", subtotalBg: "bg-blue-100" },
       { label: "Ad Hoc", projects: adHocProjects, subtotals: calculateSubtotals(adHocProjects), headerBg: "bg-orange-50", subtotalBg: "bg-orange-50" },
     ];
   }, [filteredProjects, breakdownMap]);
@@ -385,7 +385,7 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
       rows.push({ "#": "", "Project Name": `${group.label} (${group.projects.length} project${group.projects.length !== 1 ? "s" : ""})` });
 
       renderSubsectionsToRows([
-        { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals },
+        { label: "Budgeted", projects: group.icProjects, subtotals: group.icSubtotals },
         { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals },
       ], group.label);
 
@@ -673,9 +673,9 @@ export default function MonthlyBreakdownList({ embedded = false }: { embedded?: 
                                   </span>
                                 </TableCell>
                               </TableRow>
-                              {/* Subsections: IC and Ad Hoc */}
+                              {/* Subsections: Budgeted and Ad Hoc */}
                               {!isCollapsed && [
-                                { label: "IC", projects: group.icProjects, subtotals: group.icSubtotals, headerBg: "bg-blue-50", subtotalBg: "bg-blue-100" },
+                                { label: "Budgeted", projects: group.icProjects, subtotals: group.icSubtotals, headerBg: "bg-blue-50", subtotalBg: "bg-blue-100" },
                                 { label: "Ad Hoc", projects: group.adHocProjects, subtotals: group.adHocSubtotals, headerBg: "bg-orange-50", subtotalBg: "bg-orange-50" },
                               ].map(sub => sub.projects.length === 0 ? null : (
                                 <React.Fragment key={`sub-${group.group}-${sub.label}`}>
