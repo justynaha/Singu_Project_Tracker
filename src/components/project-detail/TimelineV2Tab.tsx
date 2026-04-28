@@ -77,7 +77,7 @@ function ResponsibleDropdown({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="text-left text-sm hover:bg-muted/50 px-2 py-1 rounded min-w-[120px] flex items-center justify-between gap-2">
+        <button className="text-left text-sm hover:bg-muted/50 px-2 py-2 rounded min-w-[120px] flex items-center justify-between gap-2">
           <span className={cn(!value && "text-muted-foreground")}>{value || "--"}</span>
           <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
         </button>
