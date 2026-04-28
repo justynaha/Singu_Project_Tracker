@@ -66,6 +66,26 @@ const MOCK_IMPORTED_PROJECTS = [
   { name: "EV Charging Station Network", site: "Schiphol", budget_line: "Sustainability", total_budget: 680000, owner: "Sophie de Vries", budget_type: "Budgeted", budget_classification: "Mandatory" },
 ];
 
+// Map property -> fund display name. For prototype, S13-prefixed funds = MUSEL; others rotate FundName1/FundName2.
+function getFundForSite(siteName: string | null | undefined): string | null {
+  if (!siteName) return null;
+  const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const q = normalize(siteName);
+  const matched =
+    buildingSites.find((s) => normalize(s.name) === q) ||
+    buildingSites.find((s) => normalize(s.name).includes(q)) ||
+    buildingSites.find((s) => q.includes(normalize(s.name)));
+  if (!matched) return "MUSEL";
+  if (matched.fundId?.startsWith("S13")) return "MUSEL";
+  if (matched.fundId?.startsWith("SII1")) return "FundName1";
+  return "FundName2";
+}
+
+function getClassificationOptions(fund: string | null): string[] {
+  if (fund === "MUSEL") return ["Mandatory", "Speculative"];
+  return ["Standard", "Custom"];
+}
+
 export default function Projects() {
   const navigate = useNavigate();
   const { projects: dbProjects, loading, createProject, fetchProjects } = useProjects();
