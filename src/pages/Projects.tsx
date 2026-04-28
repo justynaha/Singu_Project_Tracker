@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useProjects, CreateProjectInput } from "@/hooks/useProjects";
 import { SITE_GROUP_OPTIONS, COUNTRY_TO_SITE_GROUP } from "@/hooks/useDashboardData";
+import { sites as buildingSites } from "@/data/buildingsData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
@@ -64,6 +65,26 @@ const MOCK_IMPORTED_PROJECTS = [
   { name: "Cross-Dock Area Expansion", site: "Tilburg", budget_line: "Asset Enhancement Initiatives", total_budget: 1250000, owner: "Jeroen van Dijk", budget_type: "Budgeted", budget_classification: "Mandatory" },
   { name: "EV Charging Station Network", site: "Schiphol", budget_line: "Sustainability", total_budget: 680000, owner: "Sophie de Vries", budget_type: "Budgeted", budget_classification: "Mandatory" },
 ];
+
+// Map property -> fund display name. For prototype, S13-prefixed funds = MUSEL; others rotate FundName1/FundName2.
+function getFundForSite(siteName: string | null | undefined): string | null {
+  if (!siteName) return null;
+  const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const q = normalize(siteName);
+  const matched =
+    buildingSites.find((s) => normalize(s.name) === q) ||
+    buildingSites.find((s) => normalize(s.name).includes(q)) ||
+    buildingSites.find((s) => q.includes(normalize(s.name)));
+  if (!matched) return "MUSEL";
+  if (matched.fundId?.startsWith("S13")) return "MUSEL";
+  if (matched.fundId?.startsWith("SII1")) return "FundName1";
+  return "FundName2";
+}
+
+function getClassificationOptions(fund: string | null): string[] {
+  if (fund === "MUSEL") return ["Mandatory", "Speculative"];
+  return ["Standard", "Custom"];
+}
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -1021,7 +1042,14 @@ export default function Projects() {
               <Label htmlFor="site">
                 Property<span className="text-destructive">*</span>
               </Label>
-              <Select value={formData.site} onValueChange={(val) => setFormData({ ...formData, site: val })}>
+              <Select value={formData.site} onValueChange={(val) => {
+                const newOptions = getClassificationOptions(getFundForSite(val));
+                setFormData((prev) => ({
+                  ...prev,
+                  site: val,
+                  budgetClassification: newOptions.includes(prev.budgetClassification) ? prev.budgetClassification : "",
+                }));
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose property" />
                 </SelectTrigger>
@@ -1246,23 +1274,36 @@ export default function Projects() {
               </RadioGroup>
             </div>
 
-            <div>
-              <Label>Budget classification <span className="text-destructive">*</span></Label>
-              <RadioGroup
-                value={formData.budgetClassification}
-                onValueChange={(val) => setFormData({ ...formData, budgetClassification: val })}
-                className="flex gap-6 mt-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Mandatory" id="budget-class-mandatory" />
-                  <Label htmlFor="budget-class-mandatory" className="font-normal cursor-pointer">Mandatory</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Speculative" id="budget-class-speculative" />
-                  <Label htmlFor="budget-class-speculative" className="font-normal cursor-pointer">Speculative</Label>
-                </div>
-              </RadioGroup>
-            </div>
+            {formData.site && (
+              <div>
+                <Label className="flex items-center gap-1.5">
+                  Budget classification <span className="text-destructive">*</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        Available classification options depend on the fund of the selected property
+                        {getFundForSite(formData.site) ? ` (${getFundForSite(formData.site)})` : ""}.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Label>
+                <RadioGroup
+                  value={formData.budgetClassification}
+                  onValueChange={(val) => setFormData({ ...formData, budgetClassification: val })}
+                  className="flex gap-6 mt-2"
+                >
+                  {getClassificationOptions(getFundForSite(formData.site)).map((opt) => (
+                    <div key={opt} className="flex items-center space-x-2">
+                      <RadioGroupItem value={opt} id={`budget-class-${opt.toLowerCase()}`} />
+                      <Label htmlFor={`budget-class-${opt.toLowerCase()}`} className="font-normal cursor-pointer">{opt}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowNewProject(false)}>
