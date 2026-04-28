@@ -57,12 +57,12 @@ interface CashflowData {
 }
 
 const MOCK_IMPORTED_PROJECTS = [
-  { name: "LED Lighting Retrofit", site: "Bedzin", budget_line: "ESG", total_budget: 100000, owner: "Anna Kowalska", budget_type: "IC", budget_classification: "Mandatory" },
-  { name: "Main Switchgear Replacement", site: "Bedzin", budget_line: "ELECTRICAL SYSTEMS", total_budget: 100000, owner: "Piotr Nowak", budget_type: "IC", budget_classification: "Mandatory" },
-  { name: "Roof Solar Panel Installation", site: "Marseille", budget_line: "Sustainability", total_budget: 890000, owner: "Claire Dubois", budget_type: "IC", budget_classification: "Mandatory" },
+  { name: "LED Lighting Retrofit", site: "Bedzin", budget_line: "ESG", total_budget: 100000, owner: "Anna Kowalska", budget_type: "Budgeted", budget_classification: "Mandatory" },
+  { name: "Main Switchgear Replacement", site: "Bedzin", budget_line: "ELECTRICAL SYSTEMS", total_budget: 100000, owner: "Piotr Nowak", budget_type: "Budgeted", budget_classification: "Mandatory" },
+  { name: "Roof Solar Panel Installation", site: "Marseille", budget_line: "Sustainability", total_budget: 890000, owner: "Claire Dubois", budget_type: "Budgeted", budget_classification: "Mandatory" },
   { name: "Automated Gate Access System", site: "Lyon", budget_line: "Building upgrading works", total_budget: 350000, owner: "Marc Lefevre", budget_type: "Ad Hoc", budget_classification: "Speculative" },
-  { name: "Cross-Dock Area Expansion", site: "Tilburg", budget_line: "Asset Enhancement Initiatives", total_budget: 1250000, owner: "Jeroen van Dijk", budget_type: "IC", budget_classification: "Mandatory" },
-  { name: "EV Charging Station Network", site: "Schiphol", budget_line: "Sustainability", total_budget: 680000, owner: "Sophie de Vries", budget_type: "IC", budget_classification: "Mandatory" },
+  { name: "Cross-Dock Area Expansion", site: "Tilburg", budget_line: "Asset Enhancement Initiatives", total_budget: 1250000, owner: "Jeroen van Dijk", budget_type: "Budgeted", budget_classification: "Mandatory" },
+  { name: "EV Charging Station Network", site: "Schiphol", budget_line: "Sustainability", total_budget: 680000, owner: "Sophie de Vries", budget_type: "Budgeted", budget_classification: "Mandatory" },
 ];
 
 export default function Projects() {
@@ -1389,12 +1389,12 @@ export default function Projects() {
                 { label: "Budget classification", red: false },
               ];
               const sampleRows = [
-                ["LED Lighting Retrofit", "", "Bedzin", "ESG", "2025/2026", "100000", "EUR", "Anna Kowalska", "IC", "Mandatory"],
-                ["Main Switchgear Replacement", "", "Bedzin", "ELECTRICAL SYSTEMS", "2025/2026", "100000", "EUR", "Piotr Nowak", "IC", "Mandatory"],
-                ["Roof Solar Panel Installation", "", "Marseille", "Sustainability", "2025/2026", "890000", "EUR", "Claire Dubois", "IC", "Mandatory"],
+                ["LED Lighting Retrofit", "", "Bedzin", "ESG", "2025/2026", "100000", "EUR", "Anna Kowalska", "Budgeted", "Mandatory"],
+                ["Main Switchgear Replacement", "", "Bedzin", "ELECTRICAL SYSTEMS", "2025/2026", "100000", "EUR", "Piotr Nowak", "Budgeted", "Mandatory"],
+                ["Roof Solar Panel Installation", "", "Marseille", "Sustainability", "2025/2026", "890000", "EUR", "Claire Dubois", "Budgeted", "Mandatory"],
                 ["Automated Gate Access System", "", "Lyon", "Building upgrading works", "2025/2026", "350000", "EUR", "Marc Lefevre", "Ad Hoc", "Speculative"],
-                ["Cross-Dock Area Expansion", "", "Tilburg", "Asset Enhancement Initiatives", "2025/2026", "1250000", "EUR", "Jeroen van Dijk", "IC", "Mandatory"],
-                ["EV Charging Station Network", "", "Schiphol", "Sustainability", "2025/2026", "680000", "EUR", "Sophie de Vries", "IC", "Mandatory"],
+                ["Cross-Dock Area Expansion", "", "Tilburg", "Asset Enhancement Initiatives", "2025/2026", "1250000", "EUR", "Jeroen van Dijk", "Budgeted", "Mandatory"],
+                ["EV Charging Station Network", "", "Schiphol", "Sustainability", "2025/2026", "680000", "EUR", "Sophie de Vries", "Budgeted", "Mandatory"],
               ];
               const colLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
               const totalRows = 34;
