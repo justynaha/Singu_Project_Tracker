@@ -1,39 +1,25 @@
+## Goal
+Make "Budget classification" in the Add Project modal conditional on the selected Property, with options driven by that property's fund.
 
-## Add card background behind Milestone + Budget widgets
+## Behavior
+1. **Hidden by default** — The "Budget classification" field is not rendered until a Property (Site) is selected.
+2. **Once Property is selected** — The field appears with:
+   - An "i" info icon next to the label.
+   - Tooltip text: *"Available classification options depend on the fund of the selected property."*
+3. **Options based on fund** — Look up the selected site in `src/data/buildingsData.ts` and read `fundId`/fund name:
+   - **MUSEL** (treat sites whose name maps to the MUSEL fund — currently we only display "MUSEL" in the UI, so map all `fundId` starting with `S13` to MUSEL for the prototype): show **Mandatory / Speculative**.
+   - **Other funds (FundName1, FundName2)**: show generic options **Standard / Custom**.
+4. **Reset on Property change** — If the user changes the Property and the new fund doesn't include the previously selected option, clear `formData.budgetClassification`.
+5. **Submit guard** — `Add project` button stays disabled until a classification is picked (existing rule unchanged).
 
-Currently the Milestone Status and Budget widgets sit directly on the page background (transparent strip above the tabs). The goal is to wrap that strip in a card surface that matches the look of the tab card below it — same border, radius, and background — so the area above the tabs reads as a unified panel consistent with the rest of the UI.
+## Technical notes
+- File: `src/pages/Projects.tsx` (modal section ~lines 1049 and 1249–1265).
+- Add a helper `getFundForSite(siteName)` and `getClassificationOptions(fund)` near the top of the component.
+- Use existing `Tooltip`/`TooltipProvider`/`Info` imports already used for the Currency field (line ~1207).
+- Wrap the entire `<div>` containing the "Budget classification" label and `RadioGroup` in `{formData.site && (...)}`.
+- Replace the hardcoded radio items with a `.map()` over the dynamic options array.
+- Add a `useEffect` (or inline check inside the site `onValueChange`) to reset `budgetClassification` when the new property's fund options don't include it.
 
-### Change
-
-In `src/pages/ProjectDetail.tsx`, the wrapper around the two widgets:
-
-```tsx
-<div className="flex mb-6">
-  <MilestoneStatusWidget ... />
-  <BudgetWidget ... />
-</div>
-```
-
-becomes a card-styled container, mirroring the classes used on the tabs container right below (`bg-card border border-border rounded-lg`):
-
-```tsx
-<div className="flex mb-6 bg-card border border-border rounded-lg overflow-hidden">
-  <MilestoneStatusWidget ... />
-  <BudgetWidget ... />
-</div>
-```
-
-### Details
-
-- `bg-card` + `border border-border` + `rounded-lg` — identical tokens to the tab card below, ensuring visual consistency (same surface color in light/dark mode, same 1px border, same corner radius).
-- `overflow-hidden` — clips the inner widgets to the rounded corners so the existing `border-l` divider between Milestones and Budget doesn't poke past the card edge.
-- `flex` and `mb-6` are preserved so the two widgets keep their side-by-side layout and spacing above the tabs.
-- No changes inside `MilestoneStatusWidget` or `BudgetWidget` — their internal padding, divider, and typography stay intact.
-
-### Result
-
-The Milestone Status + Budget strip now sits on a card surface that visually matches the tab card directly beneath it. The two stacked panels (widgets card + tabs card) share the same border, radius, and background, giving the project view a consistent paneled look.
-
-### Files touched
-
-- `src/pages/ProjectDetail.tsx` — single className change on the widget wrapper div.
+## Out of scope
+- No changes to the Edit Project modal, project list filters, or reports.
+- No DB schema changes (classification stays a free string).
