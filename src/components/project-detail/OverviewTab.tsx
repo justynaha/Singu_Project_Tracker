@@ -142,6 +142,7 @@ export default function OverviewTab({ project }: OverviewTabProps) {
       <DetailRow label="Work category" value={project.budget_line || null} />
       <DetailRow label="Fiscal year" value={project.fiscal_year} />
       <DetailRow label="Fund ID" value={fundId} />
+      <DetailRow label="Fund name" value="MUSEL" />
       <DetailRow label="CC Code" value={ccCode} />
       <DetailRow label="Area (sqm)" value={areaSqm} />
       <DetailRow 
