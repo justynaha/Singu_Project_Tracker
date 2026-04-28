@@ -93,6 +93,7 @@ const SiteDetail = () => {
 
   const projectTrackerFields = [
     { label: "Fund ID:", value: site.fundId },
+    { label: "Fund name:", value: "MUSEL" },
     { label: "Legal Entity:", value: site.legalEntity },
     { label: "CC Code:", value: site.ccCode },
     { label: "Area (sqm):", value: site.areaSqm },
