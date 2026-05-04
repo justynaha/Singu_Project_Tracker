@@ -24,7 +24,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/Singu_Project_Tracker/">
         <div className="flex w-full h-screen overflow-hidden">
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
