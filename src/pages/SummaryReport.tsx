@@ -20,16 +20,16 @@ const fmtSigned = (v: number) => {
 // Deterministic per-property sample amounts (Budget LC in local currency).
 // Numbers chosen to keep proportions credible and align with Mandatory v Spec tab.
 const AMOUNTS: Record<string, { budgetLC: number; ongoing: number; planned3M: number }> = {
-  "Mapletree Park Lyon": { budgetLC: 725000, ongoing: 0, planned3M: 180000 },
-  "Mapletree Park Schiphol": { budgetLC: 105839, ongoing: 105839, planned3M: 30000 },
-  "Mapletree Park Marseille": { budgetLC: 650000, ongoing: 0, planned3M: 160000 },
-  "Mapletree Park Piotrków 1": { budgetLC: 10113, ongoing: 2326, planned3M: 3000 }, // PLN
-  "Mapletree Park Piotrków 2": { budgetLC: 27804, ongoing: 6395, planned3M: 5000 }, // PLN
-  "Mapletree Park Tilburg": { budgetLC: 42399, ongoing: 42399, planned3M: 12000 },
-  "Mapletree Park Szczecin": { budgetLC: 2022, ongoing: 465, planned3M: 800 }, // PLN
-  "Mapletree Park Fogars": { budgetLC: 2332908, ongoing: 130710, planned3M: 480000 },
-  "Mapletree Park Sallent": { budgetLC: 3220614, ongoing: 73144, planned3M: 620000 },
-  "Mapletree Park Valls": { budgetLC: 0, ongoing: 0, planned3M: 0 },
+  "Verdant Parks Park Lyon": { budgetLC: 725000, ongoing: 0, planned3M: 180000 },
+  "Verdant Parks Park Schiphol": { budgetLC: 105839, ongoing: 105839, planned3M: 30000 },
+  "Verdant Parks Park Marseille": { budgetLC: 650000, ongoing: 0, planned3M: 160000 },
+  "Verdant Parks Park Piotrków 1": { budgetLC: 10113, ongoing: 2326, planned3M: 3000 }, // PLN
+  "Verdant Parks Park Piotrków 2": { budgetLC: 27804, ongoing: 6395, planned3M: 5000 }, // PLN
+  "Verdant Parks Park Tilburg": { budgetLC: 42399, ongoing: 42399, planned3M: 12000 },
+  "Verdant Parks Park Szczecin": { budgetLC: 2022, ongoing: 465, planned3M: 800 }, // PLN
+  "Verdant Parks Park Fogars": { budgetLC: 2332908, ongoing: 130710, planned3M: 480000 },
+  "Verdant Parks Park Sallent": { budgetLC: 3220614, ongoing: 73144, planned3M: 620000 },
+  "Verdant Parks Park Valls": { budgetLC: 0, ongoing: 0, planned3M: 0 },
 };
 
 interface Row {

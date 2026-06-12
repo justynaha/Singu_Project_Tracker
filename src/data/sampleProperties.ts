@@ -8,16 +8,16 @@ export interface SampleProperty {
 }
 
 export const SAMPLE_PROPERTIES: SampleProperty[] = [
-  { property: "Mapletree Park Lyon", country: "France", currency: "EUR" },
-  { property: "Mapletree Park Schiphol", country: "Netherlands", currency: "EUR" },
-  { property: "Mapletree Park Marseille", country: "France", currency: "EUR" },
-  { property: "Mapletree Park Piotrków 1", country: "Poland", currency: "PLN" },
-  { property: "Mapletree Park Piotrków 2", country: "Poland", currency: "PLN" },
-  { property: "Mapletree Park Tilburg", country: "Netherlands", currency: "EUR" },
-  { property: "Mapletree Park Szczecin", country: "Poland", currency: "PLN" },
-  { property: "Mapletree Park Fogars", country: "Spain", currency: "EUR" },
-  { property: "Mapletree Park Sallent", country: "Spain", currency: "EUR" },
-  { property: "Mapletree Park Valls", country: "Spain", currency: "EUR" },
+  { property: "Verdant Parks Park Lyon", country: "France", currency: "EUR" },
+  { property: "Verdant Parks Park Schiphol", country: "Netherlands", currency: "EUR" },
+  { property: "Verdant Parks Park Marseille", country: "France", currency: "EUR" },
+  { property: "Verdant Parks Park Piotrków 1", country: "Poland", currency: "PLN" },
+  { property: "Verdant Parks Park Piotrków 2", country: "Poland", currency: "PLN" },
+  { property: "Verdant Parks Park Tilburg", country: "Netherlands", currency: "EUR" },
+  { property: "Verdant Parks Park Szczecin", country: "Poland", currency: "PLN" },
+  { property: "Verdant Parks Park Fogars", country: "Spain", currency: "EUR" },
+  { property: "Verdant Parks Park Sallent", country: "Spain", currency: "EUR" },
+  { property: "Verdant Parks Park Valls", country: "Spain", currency: "EUR" },
 ];
 
 const byName = new Map(SAMPLE_PROPERTIES.map((p) => [p.property, p]));
