@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import ContractsList from "./ContractsList";
 import MonthlyBreakdownList from "./MonthlyBreakdownList";
@@ -6,6 +7,7 @@ import SummaryReport from "./SummaryReport";
 import AcgReport from "./AcgReport";
 import MandatoryVsSpeculativeReport from "./MandatoryVsSpeculativeReport";
 import MandatoryVsSpeculativeByCountryReport from "./MandatoryVsSpeculativeByCountryReport";
+import AddReportModal from "@/components/reports/AddReportModal";
 
 const tabs = [
   { id: "summary", label: "Summary" },
@@ -19,6 +21,7 @@ const tabs = [
 export default function Reports() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "summary";
+  const [showAddReportModal, setShowAddReportModal] = useState(false);
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
@@ -46,6 +49,12 @@ export default function Reports() {
                 {tab.label}
               </button>
             ))}
+            <button
+              onClick={() => setShowAddReportModal(true)}
+              className="px-4 py-3 text-sm font-medium text-[hsl(217_91%_60%)] hover:underline transition-colors flex items-center gap-1"
+            >
+              + Add
+            </button>
           </div>
           <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             {activeTab === "summary" && <SummaryReport />}
@@ -57,6 +66,7 @@ export default function Reports() {
           </div>
         </div>
       </div>
+      <AddReportModal open={showAddReportModal} onOpenChange={setShowAddReportModal} />
     </div>
   );
 }
