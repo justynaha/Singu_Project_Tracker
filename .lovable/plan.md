@@ -1,21 +1,38 @@
-## Replace "Mapletree" with "Verdant Parks"
+
+## Add "+ Add" Tab + Report Configuration Modal
 
 ### Scope
-Replace all instances of the company name "Mapletree" with "Verdant Parks" across the codebase. Do not change any other logic, formatting, or data structure.
+On the Reports page (`src/pages/Reports.tsx`), add a new tab entry rendered as a blue clickable "+ Add" text button next to "Contract Tracker". Clicking it opens a modal styled like the uploaded Widget Configuration screenshot, adapted for creating **Reports** in our CAPEX/projects context. This is UI-only (no persistence yet) — the modal collects inputs and closes on Save (toast confirmation).
 
-### Affected Files (8)
-1. `src/pages/ContractsList.tsx`
-2. `src/pages/SummaryReport.tsx`
-3. `src/pages/Projects.tsx`
-4. `src/data/mandatoryVsSpeculativeAmounts.ts`
-5. `src/hooks/useDashboardData.ts`
-6. `src/data/sampleProperties.ts`
-7. `src/data/buildingsData.ts`
-8. `src/pages/MonthlyBreakdownList.tsx`
+### Tab change (`src/pages/Reports.tsx`)
+- Render existing tabs unchanged.
+- After the last tab, render a `+ Add` button (not a real tab — no active state, no route param). Styling: `text-primary` (blue), same vertical padding as tabs, hover underline. No bottom border indicator.
+- On click → `setShowAddReportModal(true)`.
 
-### Approach
-Use a project-wide find-and-replace (`sed` or similar) to swap "Mapletree" → "Verdant Parks" in all affected files in one operation. Verify with a post-replacement search to confirm zero remaining instances.
+### New component: `src/components/reports/AddReportModal.tsx`
+Dialog (shadcn `Dialog`) with title **"Report Configuration"** and subtitle "Configure your report by selecting data and visualization options". Top-right `Import` button (visual only).
 
-### Verification
-- Search confirms no "Mapletree" or "Mapleree" strings remain.
-- App builds successfully after changes.
+Sections + fields (adapted to our context):
+
+**Data Selection** (with `Presets` button top-right, visual only)
+- **View** (Select): Projects, Contracts, Invoices, Monthly Breakdown, CAPEX Tracker, Mandatory vs Speculative
+- **Metric** (Select): Count, Total Budget, Contracted Value, Invoiced Value, Forecasted, Savings, Variance
+- **Filters**: "+ Add filter" button (visual placeholder, no rows yet)
+- **Breakdown Dimension (Optional)** (Select): None, Country, Site, Region, Work Category, Budget Type, Classification, Fiscal Year, Currency
+
+**Visualization**
+- **Name** (Input, default: `"{Metric} ({View})"`)
+- **Description** (Input, default: `"Shows the {metric} of {view}"`)
+- **Chart Type** (Select with icons): Table, Line Chart, Bar Chart, Stacked Bar, Pie Chart, KPI Card
+- **Fiscal Year** (Select): FY 2024, FY 2025, **FY 2026 (default)**, FY 2027 — replaces the screenshot's "Date Range" since our reports are FY-scoped per project memory.
+
+**Footer**: Full-width dark **"Save Report"** button. On click → `toast.success("Report created")` and close. (No backend wiring in this step.)
+
+### Files
+- Edit: `src/pages/Reports.tsx` (add button + modal state + mount modal)
+- Add: `src/components/reports/AddReportModal.tsx`
+
+### Out of scope
+- Persisting reports to DB
+- Wiring the created report into the tab list
+- Real filter row builder
