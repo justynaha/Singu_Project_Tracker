@@ -1,21 +1,21 @@
-## Goal
+## Replace "Mapletree" with "Verdant Parks"
 
-Ensure every existing project has exactly these 4 milestones, in this order:
-1. Preparation start
-2. Tendering start
-3. Works on site start
-4. Works completed
+### Scope
+Replace all instances of the company name "Mapletree" with "Verdant Parks" across the codebase. Do not change any other logic, formatting, or data structure.
 
-## Approach
+### Affected Files (8)
+1. `src/pages/ContractsList.tsx`
+2. `src/pages/SummaryReport.tsx`
+3. `src/pages/Projects.tsx`
+4. `src/data/mandatoryVsSpeculativeAmounts.ts`
+5. `src/hooks/useDashboardData.ts`
+6. `src/data/sampleProperties.ts`
+7. `src/data/buildingsData.ts`
+8. `src/pages/MonthlyBreakdownList.tsx`
 
-Run a data operation (via the insert/update tool) that:
+### Approach
+Use a project-wide find-and-replace (`sed` or similar) to swap "Mapletree" → "Verdant Parks" in all affected files in one operation. Verify with a post-replacement search to confirm zero remaining instances.
 
-1. Detaches any tasks currently nested under a milestone by setting `timeline_items.parent_id = NULL` where the parent is a milestone (preserves tasks).
-2. Deletes related `milestone_cashflow` rows for existing milestones (avoids orphans).
-3. Deletes all rows in `timeline_items` where `type = 'milestone'`.
-4. Inserts the 4 milestones for every project via `INSERT ... SELECT ... CROSS JOIN`, with `sort_order` 0–3 and `status = 'not-started'`.
-
-## Notes
-
-- Tasks remain in the project but become unparented (top-level) — same behavior as the prior reset.
-- No schema changes; no code changes. Frontend already uses these 4 as defaults for new projects.
+### Verification
+- Search confirms no "Mapletree" or "Mapleree" strings remain.
+- App builds successfully after changes.
